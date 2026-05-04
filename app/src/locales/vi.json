@@ -1,0 +1,358 @@
+{
+  "common": {
+    "home": "Trang chủ",
+    "booking": "Đặt chỗ",
+    "service": "Dịch vụ",
+    "next": "Tiếp theo",
+    "back": "Quay lại",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "confirm": "Xác nhận",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "add": "Thêm",
+    "search": "Tìm kiếm",
+    "loading": "Đang tải...",
+    "retry": "Thử lại",
+    "success": "Thành công",
+    "error": "Lỗi",
+    "warning": "Cảnh báo",
+    "optional": "Không bắt buộc",
+    "required": "Bắt buộc",
+    "yes": "Có",
+    "no": "Không",
+    "apply": "Áp dụng",
+    "remove": "Gỡ bỏ",
+    "viewMore": "Xem thêm",
+    "viewLess": "Ẩn bớt",
+    "appVersion": "Phiên bản",
+    "submit": "Gửi",
+    "applying": "Đang áp dụng...",
+    "done": "Xong",
+    "now": "Bây giờ",
+    "change": "Thay đổi",
+    "remark": "Ghi chú",
+    "noInformationAvailable": "Không có thông tin",
+    "loadingAddons": "Đang tải dịch vụ đi kèm...",
+    "noAddonsAvailable": "Không có dịch vụ đi kèm. Hãy khám phá các dịch vụ khác!",
+    "floors": "Tầng",
+    "bedroom": "Phòng ngủ",
+    "hours": "Giờ",
+    "technician": "Kỹ thuật viên",
+    "technicians": "Kỹ thuật viên",
+    "cleaner": "Nhân viên vệ sinh",
+    "cleaners": "Nhân viên vệ sinh",
+    "continue": "Tiếp tục",
+    "days": {
+      "sun": "CN",
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7"
+    },
+    "months": {
+      "jan": "Thg 1",
+      "feb": "Thg 2",
+      "mar": "Thg 3",
+      "apr": "Thg 4",
+      "may": "Thg 5",
+      "jun": "Thg 6",
+      "jul": "Thg 7",
+      "aug": "Thg 8",
+      "sep": "Thg 9",
+      "oct": "Thg 10",
+      "nov": "Thg 11",
+      "dec": "Thg 12"
+    }
+  },
+  "navigation": {
+    "homeTab": "bEasy",
+    "bookingTab": "Đặt chỗ"
+  },
+  "home": {
+    "welcome": "Chào mừng"
+  },
+  "booking": {
+    "inProgress": "Đang thực hiện",
+    "recent": "Gần đây",
+    "noBookingFound": "Không tìm thấy lịch đặt",
+    "bookNow": "Đặt ngay"
+  },
+  "service": {
+    "serviceType": "Loại dịch vụ",
+    "serviceAddon": "Dịch vụ đi kèm",
+    "taskInformation": "Thông tin công việc",
+    "whatsIncluded": "Bao gồm những gì",
+    "additionalInfo": "Thông tin thêm",
+    "extraServices": "Dịch vụ thêm"
+  },
+  "banner": {
+    "banner": "Banner"
+  },
+  "checkout": {
+    "checkout": "Thanh toán",
+    "service": "Dịch vụ",
+    "serviceFee": "Phí dịch vụ",
+    "subtotal": "Tạm tính",
+    "total": "Tổng cộng",
+    "totalPrice": "Tổng giá tiền",
+    "discount": "Giảm giá",
+    "payment": "Thanh toán",
+    "selectPayment": "Chọn phương thức thanh toán",
+    "confirmPayment": "Xác nhận thanh toán",
+    "payNow": "Thanh toán ngay",
+    "processingPayment": "Đang xử lý thanh toán...",
+    "failedToLoadServices": "Không thể tải dịch vụ",
+    "pleaseSelectDate": "Vui lòng chọn ngày trước khi tiếp tục.",
+    "pleaseProvidePhone": "Vui lòng cung cấp số điện thoại.",
+    "failedToCreateOrder": "Không thể tạo đơn hàng. Vui lòng thử lại.",
+    "yourBooking": "Lịch đặt của bạn",
+    "oftenPairedWith": "Thường đi kèm với",
+    "creatingOrder": "Đang tạo đơn hàng...",
+    "next": "Tiếp theo"
+  },
+  "location": {
+    "location": "Vị trí",
+    "address": "Địa chỉ",
+    "addressDetails": "Chi tiết địa chỉ",
+    "addNewLocation": "Thêm vị trí mới",
+    "editLocation": "Sửa vị trí",
+    "deleteLocation": "Xóa vị trí",
+    "deleteLocationConfirm": "Bạn có chắc chắn muốn xóa vị trí này?",
+    "locationSavedSuccess": "Đã lưu vị trí thành công!",
+    "locationUpdatedSuccess": "Đã cập nhật vị trí thành công!",
+    "searchLocation": "Tìm kiếm vị trí",
+    "floor": "Tầng",
+    "room": "Phòng",
+    "note": "Ghi chú",
+    "noLocationFound": "Không tìm thấy vị trí",
+    "selectLocation": "Chọn vị trí",
+    "addNewLocationBtn": "Thêm vị trí mới",
+    "loadingAddresses": "Đang tải...",
+    "errorLoadingAddresses": "Lỗi khi tải địa chỉ.",
+    "addressDeletedSuccess": "Xóa địa chỉ thành công!",
+    "failedToDeleteAddress": "Không thể xóa địa chỉ. Vui lòng thử lại."
+  },
+  "addLocation": {
+    "editLocation": "Sửa vị trí",
+    "addLocation": "Thêm vị trí",
+    "locationUpdatedSuccess": "Cập nhật vị trí thành công!",
+    "locationSavedSuccess": "Lưu vị trí thành công!",
+    "failedToSaveLocation": "Không thể lưu vị trí",
+    "updating": "Đang cập nhật...",
+    "saving": "Đang lưu...",
+    "updateLocation": "Cập nhật vị trí",
+    "saveLocation": "Lưu vị trí"
+  },
+  "order": {
+    "orderDetails": "Chi tiết đơn hàng",
+    "orderId": "Mã đơn hàng",
+    "status": {
+      "pending": "Đang chờ",
+      "inProgress": "Đang thực hiện",
+      "confirmed": "Đã xác nhận",
+      "completed": "Đã hoàn thành",
+      "cancelled": "Đã hủy",
+      "rejected": "Đã từ chối",
+      "unknown": "Không xác định"
+    },
+    "orderNotFound": "Không tìm thấy đơn hàng",
+    "customerDetails": "Thông tin khách hàng",
+    "services": "Dịch vụ",
+    "schedule": "Lịch trình",
+    "date": "Ngày",
+    "time": "Giờ",
+    "selectDate": "Chọn ngày",
+    "selectTime": "Chọn giờ",
+    "confirmTime": "Xác nhận giờ",
+    "personalInfo": "Thông tin cá nhân",
+    "customerInfo": "Thông tin khách",
+    "customerName": "Tên",
+    "customerPhone": "Số điện thoại",
+    "customerEmail": "Email",
+    "firstName": "Tên",
+    "lastName": "Họ",
+    "fullName": "Họ và tên",
+    "dateAndTime": "Ngày và giờ",
+    "pickNewTime": "Chọn giờ mới?",
+    "rescheduleLimitError": "Chỉ cho phép đổi lịch ít nhất 1 ngày trước ngày đã đặt。"
+  },
+  "coupon": {
+    "enterPromoCode": "Nhập mã khuyến mãi",
+    "promoCodePlaceholder": "Nhập mã của bạn",
+    "couponApplied": "Đã áp dụng mã!",
+    "couponInvalid": "Mã không hợp lệ",
+    "removeCoupon": "Gỡ bỏ",
+    "enterPromoCodeTitle": "Nhập mã khuyến mãi",
+    "pleaseEnterPromoCode": "Vui lòng nhập mã khuyến mãi",
+    "couponAppliedSuccess": "Áp dụng mã thành công!"
+  },
+  "addon": {
+    "addon": "Dịch vụ đi kèm",
+    "selectAddon": "Chọn dịch vụ đi kèm",
+    "whatsIncluded": "Bao gồm những gì",
+    "noAddons": "Không có dịch vụ đi kèm. Hãy khám phá các dịch vụ khác!"
+  },
+  "payment": {
+    "paid": "Đã thanh toán",
+    "unpaid": "Chưa thanh toán",
+    "inReview": "Đang xem xét",
+    "unknown": "Không xác định",
+    "paymentSuccess": "Thanh toán thành công",
+    "paymentFailed": "Thanh toán thất bại",
+    "appointmentConfirmed": "Lịch hẹn đã được xác nhận",
+    "useDefaultPayment": "Sử dụng phương thức mặc định",
+    "confirmPaymentMethod": "Xác nhận phương thức thanh toán",
+    "paymentDetails": "Chi tiết thanh toán",
+    "service": "Dịch vụ",
+    "discount": "Giảm giá",
+    "serviceFee": "Phí dịch vụ",
+    "transportFee": "Phí vận chuyển",
+    "subtotal": "Tạm tính",
+    "vat": "VAT (10%)",
+    "totalPayable": "Tổng phải thanh toán",
+    "total": "Tổng cộng",
+    "coupon": "Phiếu giảm giá",
+    "paymentMethod": "Phương thức thanh toán",
+    "paymentStatus": "Trạng thái thanh toán",
+    "abaPay": "ABA PAY",
+    "pay": "Thanh toán",
+    "statusDialog": {
+      "pendingTitle": "Đang xử lý thanh toán",
+      "pendingMessage": "Thanh toán của bạn vẫn đang được xử lý. Vui lòng đợi và thử lại.",
+      "errorTitle": "Lỗi thanh toán",
+      "errorMessage": "Đã xảy ra lỗi kỹ thuật khi kiểm tra thanh toán. Vui lòng thử lại.",
+      "failedTitle": "Thanh toán bị từ chối",
+      "failedMessage": "Thanh toán của bạn bị từ chối hoặc không tìm thấy. Vui lòng thử phương thức khác.",
+      "retryButton": "Thử lại ({{current}}/{{max}})",
+      "retriesLeft": "Lần thử {{current}} / {{max}}",
+      "maxRetriesMessage": "Đã hết số lần thử. Vui lòng đóng và thử thanh toán lại sau."
+    }
+  },
+  "purchaseSuccess": {
+    "success": "Thành công",
+    "purchaseSuccessful": "Mua hàng thành công",
+    "orderId": "Mã đơn hàng",
+    "orderDate": "Ngày đặt hàng",
+    "paidTo": "Thanh toán cho",
+    "paidFrom": "Thanh toán từ",
+    "originalAmount": "Giá gốc",
+    "totalAmount": "Tổng tiền",
+    "totalAmountLabel": "Tổng cộng:",
+    "viewBookingDetails": "Xem chi tiết đặt chỗ",
+    "goHome": "Về trang chủ"
+  },
+  "schedule": {
+    "selectDateTime": "Chọn ngày & giờ",
+    "reschedule": "Đổi lịch",
+    "closed": "Đã đóng",
+    "chooseYourTime": "Chọn thời gian:"
+  },
+  "searchLocation": {
+    "searchLocation": "Tìm kiếm vị trí",
+    "useCurrentLocation": "Sử dụng vị trí hiện tại",
+    "noSuggestionsFound": "Không tìm thấy gợi ý"
+  },
+  "personalInfo": {
+    "personalInformation": "Thông tin cá nhân",
+    "firstName": "Tên",
+    "lastName": "Họ",
+    "phone": "Số điện thoại",
+    "email": "Email",
+    "edit": "Sửa",
+    "confirm": "Xác nhận",
+    "firstNameRequired": "Vui lòng nhập tên",
+    "lastNameRequired": "Vui lòng nhập họ",
+    "phoneRequired": "Vui lòng nhập số điện thoại",
+    "phoneInvalid": "Số điện thoại không hợp lệ",
+    "nameRequired": "Trường này là bắt buộc",
+    "nameTooShort": "Tên quá ngắn",
+    "nameTooLong": "Tên quá dài",
+    "nameInvalid": "Tên chứa ký tự không hợp lệ",
+    "emailInvalid": "Địa chỉ email không hợp lệ"
+  },
+  "errors": {
+    "networkError": "Lỗi mạng. Vui lòng kiểm tra kết nối.",
+    "somethingWentWrong": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    "loadFailed": "Tải dữ liệu thất bại",
+    "noInternetConnection": "Không có kết nối internet",
+    "checkNetworkConnection": "Vui lòng kiểm tra kết nối mạng của bạn.",
+    "tryAgain": "Thử lại"
+  },
+  "notFound": {
+    "pageNotFound": "Không tìm thấy trang",
+    "goBackHome": "Quay về trang chủ",
+    "oopsSomethingWentWrong": "Rất tiếc! Đã có lỗi xảy ra."
+  },
+  "success": {
+    "purchaseSuccess": "Mua hàng thành công!",
+    "orderPlaced": "Đơn hàng của bạn đã được đặt thành công."
+  },
+  "quantity": {
+    "quantity": "Số lượng",
+    "decrease": "Giảm",
+    "increase": "Tăng"
+  },
+  "additionalInfo": {
+    "additionalInfo": "Thông tin thêm",
+    "writeHere": "Viết tại đây..."
+  },
+  "dateTime": {
+    "selectDate": "Chọn ngày",
+    "time": "Giờ",
+    "hour": "Giờ",
+    "minute": "Phút",
+    "hh": "HH",
+    "mm": "MM",
+    "now": "Bây giờ",
+    "done": "Xong"
+  },
+  "addressList": {
+    "addressDetails": "Chi tiết địa chỉ:",
+    "edit": "Sửa",
+    "delete": "Xóa"
+  },
+  "orderList": {
+    "services": "Dịch vụ",
+    "noServices": "Không có dịch vụ"
+  },
+  "appExit": {
+    "title": "bEasy: Vệ sinh & Diệt côn trùng",
+    "description": "Bạn có chắc chắn muốn thoát bEasy không?"
+  },
+  "timeDialog": {
+    "selectStartTime": "Chọn thời gian bắt đầu"
+  },
+  "distanceDialog": {
+    "title": "Giới hạn khu vực phục vụ",
+    "description": "Vị trí này nằm ngoài khu vực phục vụ hiện tại của chúng tôi (tối đa {{maxDistanceKm}} km). Vui lòng chọn vị trí khác.",
+    "closeButton": "Đóng"
+  },
+  "whatInclude": {
+    "noEquipmentAvailable": "Không có thông tin thiết bị"
+  },
+  "alert": {
+    "serviceNote": "<span className=\"font-bold\">Lưu ý:</span> Chúng tôi cung cấp dịch vụ tối đa <b>4 giờ</b>. Nếu bạn cần thêm thời gian, vui lòng chọn <b>vệ sinh chuyên sâu</b> hoặc đặt thêm buổi."
+  },
+  "taskInfo": {
+    "noTaskInfoAvailable": "Không có thông tin công việc"
+  },
+  "servicePreview": {
+    "upholstery": "Vệ sinh nệm/sofa",
+    "addons": "Tiện ích bổ sung"
+  },
+  "paymentSuccess": {
+    "appointmentConfirmed": "Lịch hẹn đã xác nhận",
+    "lookForward": "Chúng tôi rất mong được phục vụ bạn",
+    "viewBooking": "Xem lịch đặt"
+  },
+  "appInfo": {
+    "showInfo": "Hiện thông tin",
+    "appName": "bEASY: Vệ sinh & Diệt côn trùng",
+    "appDescription": "Ứng dụng giúp ngôi nhà sạch bóng và không còn côn trùng. Dịch vụ uy tín ngay trong tầm tay.",
+    "address": "Floor 23th, Flatiron Building, Phnom Penh, Cambodia"
+  }
+}

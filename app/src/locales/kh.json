@@ -1,0 +1,358 @@
+{
+  "common": {
+    "home": "ទំព័រដើម",
+    "booking": "ការកក់",
+    "service": "សេវាកម្ម",
+    "next": "បន្ទាប់",
+    "back": "ត្រឡប់ក្រោយ",
+    "save": "រក្សាទុក",
+    "cancel": "បោះបង់",
+    "close": "បិទ",
+    "confirm": "បញ្ជាក់",
+    "delete": "លុប",
+    "edit": "កែសម្រួល",
+    "add": "បន្ថែម",
+    "search": "ស្វែងរក",
+    "loading": "កំពុងផ្ទុក...",
+    "retry": "ព្យាយាមម្តងទៀត",
+    "success": "ជោគជ័យ",
+    "error": "កំហុស",
+    "warning": "ការព្រមាន",
+    "optional": "ជម្រើស",
+    "required": "ចាំបាច់",
+    "yes": "បាទ/ចាស",
+    "no": "ទេ",
+    "apply": "យល់ព្រម",
+    "remove": "ដកចេញ",
+    "viewMore": "មើលបន្ថែម",
+    "viewLess": "មើលតិចជាងមុន",
+    "appVersion": "កំណែកម្មវិធី",
+    "submit": "បញ្ជូន",
+    "applying": "កំពុងអនុវត្ត...",
+    "done": "រួចរាល់",
+    "now": "ឥឡូវនេះ",
+    "change": "ផ្លាស់ប្តូរ",
+    "remark": "ចំណាំ",
+    "noInformationAvailable": "មិនមានព័ត៌មាន",
+    "loadingAddons": "កំពុងផ្ទុកសេវាកម្មបន្ថែម...",
+    "noAddonsAvailable": "មិនមានសេវាកម្មបន្ថែមទេ។ ស្វែងរកសេវាកម្មផ្សេងទៀត!",
+    "floors": "ជាន់",
+    "bedroom": "បន្ទប់គេង",
+    "hours": "ម៉ោង",
+    "technician": "អ្នកបច្ចេកទេស",
+    "technicians": "អ្នកបច្ចេកទេស",
+    "cleaner": "អ្នកសម្អាត",
+    "cleaners": "អ្នកសម្អាត",
+    "continue": "បន្ត",
+    "days": {
+      "sun": "អាទិត្យ",
+      "mon": "ច័ន្ទ",
+      "tue": "អង្គារ",
+      "wed": "ពុធ",
+      "thu": "ព្រ.ហ",
+      "fri": "សុក្រ",
+      "sat": "សៅរ៍"
+    },
+    "months": {
+      "jan": "មករា",
+      "feb": "កុម្ភៈ",
+      "mar": "មីនា",
+      "apr": "មេសា",
+      "may": "ឧសភា",
+      "jun": "មិថុនា",
+      "jul": "កក្កដា",
+      "aug": "សីហា",
+      "sep": "កញ្ញា",
+      "oct": "តុលា",
+      "nov": "វិច្ឆិកា",
+      "dec": "ធ្នូ"
+    }
+  },
+  "navigation": {
+    "homeTab": "bEasy",
+    "bookingTab": "ការកក់"
+  },
+  "home": {
+    "welcome": "សូមស្វាគមន៍"
+  },
+  "booking": {
+    "inProgress": "កំពុងដំណើរការ",
+    "recent": "ថ្មីៗ",
+    "noBookingFound": "រកមិនឃើញការកក់ទេ",
+    "bookNow": "កក់ឥឡូវនេះ"
+  },
+  "service": {
+    "serviceType": "ប្រភេទសេវាកម្ម",
+    "serviceAddon": "សេវាកម្មបន្ថែម",
+    "taskInformation": "ព័ត៌មានភារកិច្ច",
+    "whatsIncluded": "អ្វីដែលរួមបញ្ចូល",
+    "additionalInfo": "ព័ត៌មានបន្ថែម",
+    "extraServices": "សេវាកម្មបន្ថែម"
+  },
+  "banner": {
+    "banner": "បដា"
+  },
+  "checkout": {
+    "checkout": "ការទូទាត់",
+    "service": "សេវាកម្ម",
+    "serviceFee": "ថ្លៃសេវា",
+    "subtotal": "សរុប",
+    "total": "សរុប",
+    "totalPrice": "តម្លៃសរុប",
+    "discount": "ការបញ្ចុះតម្លៃ",
+    "payment": "ការទូទាត់",
+    "selectPayment": "ជ្រើសរើសវិធីទូទាត់",
+    "confirmPayment": "បញ្ជាក់ការទូទាត់",
+    "payNow": "បង់ប្រាក់ឥឡូវនេះ",
+    "processingPayment": "កំពុងដំណើរការការទូទាត់...",
+    "failedToLoadServices": "មិនអាចផ្ទុកសេវាកម្មបានទេ",
+    "pleaseSelectDate": "សូមជ្រើសរើសកាលបរិច្ឆេទមុននឹងបន្ត",
+    "pleaseProvidePhone": "សូមផ្តល់លេខទូរស័ព្ទរបស់អ្នក",
+    "failedToCreateOrder": "មិនអាចបង្កើតការបញ្ជាទិញបានទេ។ សូមព្យាយាមម្តងទៀត!",
+    "yourBooking": "ការកក់របស់អ្នក",
+    "oftenPairedWith": "កក់បន្ថែមជាមួយ",
+    "creatingOrder": "កំពុងបង្កើតការបញ្ជាទិញ...",
+    "next": "បន្ទាប់"
+  },
+  "location": {
+    "location": "ទីតាំង",
+    "address": "អាស័យដ្ឋាន",
+    "addressDetails": "ព័ត៌មានអាស័យដ្ឋាន",
+    "addNewLocation": "បន្ថែមទីតាំងថ្មី",
+    "editLocation": "កែសម្រួលទីតាំង",
+    "deleteLocation": "លុបទីតាំង",
+    "deleteLocationConfirm": "តើអ្នកប្រាកដថាចង់លុបទីតាំងនេះមែនទេ?",
+    "locationSavedSuccess": "រក្សាទុកទីតាំងដោយជោគជ័យ!",
+    "locationUpdatedSuccess": "ធ្វើបច្ចុប្បន្នភាពទីតាំងដោយជោគជ័យ!",
+    "searchLocation": "ស្វែងរកទីតាំង",
+    "floor": "ជាន់",
+    "room": "បន្ទប់",
+    "note": "ចំណាំ",
+    "noLocationFound": "រកមិនឃើញទីតាំងទេ",
+    "selectLocation": "ជ្រើសរើសទីតាំង",
+    "addNewLocationBtn": "បន្ថែមទីតាំងថ្មី",
+    "loadingAddresses": "កំពុងផ្ទុក...",
+    "errorLoadingAddresses": "មានកំហុសក្នុងការផ្ទុកអាស័យដ្ឋាន។",
+    "addressDeletedSuccess": "លុបអាស័យដ្ឋានដោយជោគជ័យ!",
+    "failedToDeleteAddress": "មិនអាចលុបអាស័យដ្ឋានបានទេ។ សូមព្យាយាមម្តងទៀត!"
+  },
+  "addLocation": {
+    "editLocation": "កែសម្រួលទីតាំង",
+    "addLocation": "បន្ថែមទីតាំង",
+    "locationUpdatedSuccess": "ធ្វើបច្ចុប្បន្នភាពទីតាំងដោយជោគជ័យ!",
+    "locationSavedSuccess": "រក្សាទុកទីតាំងដោយជោគជ័យ!",
+    "failedToSaveLocation": "មិនអាចរក្សាទុកទីតាំងបានទេ",
+    "updating": "កំពុងធ្វើបច្ចុប្បន្នភាព...",
+    "saving": "កំពុងរក្សាទុក...",
+    "updateLocation": "ធ្វើបច្ចុប្បន្នភាពទីតាំង",
+    "saveLocation": "រក្សាទុកទីតាំង"
+  },
+  "order": {
+    "orderDetails": "ព័ត៌មានលម្អិតការបញ្ជាទិញ",
+    "orderId": "លេខសម្គាល់ការបញ្ជាទិញ",
+    "status": {
+      "pending": "កំពុងរង់ចាំ",
+      "inProgress": "កំពុងដំណើរការ",
+      "confirmed": "បានបញ្ជាក់",
+      "completed": "បានបញ្ចប់",
+      "cancelled": "បានបោះបង់",
+      "rejected": "ត្រូវបានបដិសេធ",
+      "unknown": "មិនស្គាល់"
+    },
+    "orderNotFound": "រកមិនឃើញការបញ្ជាទិញទេ",
+    "customerDetails": "ព័ត៌មានអតិថិជន",
+    "services": "សេវាកម្ម",
+    "schedule": "កាលវិភាគ",
+    "date": "កាលបរិច្ឆេទ",
+    "time": "ម៉ោង",
+    "selectDate": "ជ្រើសរើសកាលបរិច្ឆេទ",
+    "selectTime": "ជ្រើសរើសម៉ោង",
+    "confirmTime": "បញ្ជាក់ម៉ោង",
+    "personalInfo": "ព័ត៌មានផ្ទាល់ខ្លួន",
+    "customerInfo": "ព័ត៌មានអតិថិជន",
+    "customerName": "ឈ្មោះ",
+    "customerPhone": "ទូរស័ព្ទ",
+    "customerEmail": "អ៊ីមែល",
+    "firstName": "នាមខ្លួន",
+    "lastName": "នាមត្រកូល",
+    "fullName": "ឈ្មោះពេញ",
+    "dateAndTime": "កាលបរិច្ឆេទ និងម៉ោង",
+    "pickNewTime": "ជ្រើសរើសម៉ោងថ្មី?",
+    "rescheduleLimitError": "ការកំណត់ពេលវេលាឡើងវិញ អាចធ្វើបានតែយ៉ាងហោចណាស់ ១ ថ្ងៃ មុនថ្ងៃដែលបានកំណត់។"
+  },
+  "coupon": {
+    "enterPromoCode": "បញ្ចូលកូដប្រូម៉ូសិន",
+    "promoCodePlaceholder": "បញ្ចូលកូដប្រូម៉ូសិនរបស់អ្នក",
+    "couponApplied": "បានប្រើប្រាស់ប័ណ្ណបញ្ចុះតម្លៃ!",
+    "couponInvalid": "កូដមិនត្រឹមត្រូវ",
+    "removeCoupon": "ដកចេញ",
+    "enterPromoCodeTitle": "បញ្ចូលកូដប្រូម៉ូសិន",
+    "pleaseEnterPromoCode": "សូមបញ្ចូលកូដប្រូម៉ូសិន",
+    "couponAppliedSuccess": "ប្រើប្រាស់ប័ណ្ណបញ្ចុះតម្លៃដោយជោគជ័យ!"
+  },
+  "addon": {
+    "addon": "សេវាកម្មបន្ថែម",
+    "selectAddon": "ជ្រើសរើសសេវាកម្មបន្ថែម",
+    "whatsIncluded": "សម្ភារៈរួមបញ្ចូល",
+    "noAddons": "មិនមានសេវាកម្មបន្ថែមទេ។ ស្វែងរកសេវាកម្មផ្សេងទៀត!"
+  },
+  "payment": {
+    "paid": "បានទូទាត់",
+    "unpaid": "មិនទាន់ទូទាត់",
+    "inReview": "កំពុងពិនិត្យ",
+    "unknown": "មិនស្គាល់",
+    "paymentSuccess": "ការទូទាត់ជោគជ័យ",
+    "paymentFailed": "ការទូទាត់បរាជ័យ",
+    "appointmentConfirmed": "ការកក់ត្រូវបានបញ្ជាក់",
+    "useDefaultPayment": "ប្រើវិធីទូទាត់តាមលំនាំដើម",
+    "confirmPaymentMethod": "បញ្ជាក់វិធីទូទាត់",
+    "paymentDetails": "ព័ត៌មានលម្អិតការទូទាត់",
+    "service": "សេវាកម្ម",
+    "discount": "ការបញ្ចុះតម្លៃ",
+    "serviceFee": "ថ្លៃសេវា",
+    "transportFee": "ថ្លៃធ្វើដំណើរ",
+    "subtotal": "សរុប",
+    "vat": "ពន្ធអាករ (១០%)",
+    "totalPayable": "សរុបត្រូវបង់",
+    "total": "សរុប",
+    "coupon": "ប័ណ្ណបញ្ចុះតម្លៃ",
+    "paymentMethod": "វិធីទូទាត់",
+    "paymentStatus": "ស្ថានភាពការទូទាត់",
+    "abaPay": "ABA PAY",
+    "pay": "បង់ប្រាក់",
+    "statusDialog": {
+      "pendingTitle": "កំពុងដំណើរការ",
+      "pendingMessage": "ការទូទាត់របស់អ្នកកំពុងដំណើរការ។ សូមរង់ចាំបន្តិច ហើយព្យាយាមម្តងទៀត។",
+      "errorTitle": "កំហុសការទូទាត់",
+      "errorMessage": "មានកំហុសបច្ចេកទេសក្នុងការពិនិត្យការទូទាត់។ សូមព្យាយាមម្តងទៀត។",
+      "failedTitle": "ការទូទាត់ត្រូវបានបដិសេធ",
+      "failedMessage": "ការទូទាត់របស់អ្នកត្រូវបានបដិសេធ ឬរកមិនឃើញ។ សូមព្យាយាមវិធីទូទាត់មួយទៀត។",
+      "retryButton": "ព្យាយាមមើលម្តងទៀត ({{current}}/{{max}})",
+      "retriesLeft": "ការព្យាយាម {{current}} ក្នុង {{max}}",
+      "maxRetriesMessage": "បានព្យាយាមច្រើនដង។ សូមបិទ ហើយព្យាយាមទូទាត់ម្តងទៀតនៅពេលក្រោយ។"
+    }
+  },
+  "purchaseSuccess": {
+    "success": "ជោគជ័យ",
+    "purchaseSuccessful": "ការទិញបានជោគជ័យ",
+    "orderId": "លេខសម្គាល់",
+    "orderDate": "កាលបរិច្ឆេទបញ្ជាទិញ",
+    "paidTo": "បង់ទៅឱ្យ",
+    "paidFrom": "បង់ចេញពី",
+    "originalAmount": "ចំនួនដើម",
+    "totalAmount": "ចំនួនសរុប",
+    "totalAmountLabel": "ចំនួនសរុប៖",
+    "viewBookingDetails": "មើលព័ត៌មានការកក់",
+    "goHome": "ទៅកាន់ទំព័រដើម"
+  },
+  "schedule": {
+    "selectDateTime": "ជ្រើសរើសកាលបរិច្ឆេទ និងម៉ោង",
+    "reschedule": "ប្តូរកាលវិភាគ",
+    "closed": "បិទ",
+    "chooseYourTime": "ជ្រើសរើសម៉ោងរបស់អ្នក៖"
+  },
+  "searchLocation": {
+    "searchLocation": "ស្វែងរកទីតាំង",
+    "useCurrentLocation": "ប្រើទីតាំងបច្ចុប្បន្ន",
+    "noSuggestionsFound": "រកមិនឃើញការណែនាំទេ"
+  },
+  "personalInfo": {
+    "personalInformation": "ព័ត៌មានផ្ទាល់ខ្លួន",
+    "firstName": "នាមខ្លួន",
+    "lastName": "នាមត្រកូល",
+    "phone": "ទូរស័ព្ទ",
+    "email": "អ៊ីមែល",
+    "edit": "កែសម្រួល",
+    "confirm": "បញ្ជាក់",
+    "firstNameRequired": "សូមបញ្ចូលនាមខ្លួន",
+    "lastNameRequired": "សូមបញ្ចូលនាមត្រកូល",
+    "phoneRequired": "សូមបញ្ចូលលេខទូរស័ព្ទ",
+    "phoneInvalid": "លេខទូរស័ព្ទមិនត្រឹមត្រូវ",
+    "nameRequired": "សូមបញ្ចូលឈ្មោះ",
+    "nameTooShort": "ឈ្មោះខ្លីពេក",
+    "nameTooLong": "ឈ្មោះវែងពេក",
+    "nameInvalid": "ឈ្មោះមានតួអក្សរមិនត្រឹមត្រូវ",
+    "emailInvalid": "អាស័យដ្ឋានអ៊ីមែលមិនត្រឹមត្រូវ"
+  },
+  "errors": {
+    "networkError": "កំហុសបណ្តាញ។ សូមពិនិត្យមើលការភ្ជាប់របស់អ្នក!",
+    "somethingWentWrong": "មានអ្វីមួយខុសប្រក្រតី។ សូមព្យាយាមម្តងទៀត។",
+    "loadFailed": "មិនអាចផ្ទុកទិន្នន័យបានទេ",
+    "noInternetConnection": "មិនមានការតភ្ជាប់អ៊ីនធឺណិត",
+    "checkNetworkConnection": "សូមពិនិត្យមើលការភ្ជាប់បណ្តាញរបស់អ្នក ហើយព្យាយាមម្តងទៀត!",
+    "tryAgain": "ព្យាយាមម្តងទៀត"
+  },
+  "notFound": {
+    "pageNotFound": "រកមិនឃើញទំព័រទេ",
+    "goBackHome": "ត្រឡប់ទៅទំព័រដើម",
+    "oopsSomethingWentWrong": "អូ! មើលទៅមានអ្វីមួយខុសហើយ!"
+  },
+  "success": {
+    "purchaseSuccess": "ការទិញបានជោគជ័យ!",
+    "orderPlaced": "ការបញ្ជាទិញរបស់អ្នកត្រូវបានធ្វើឡើងដោយជោគជ័យ។"
+  },
+  "quantity": {
+    "quantity": "បរិមាណ",
+    "decrease": "បន្ថយ",
+    "increase": "បង្កើន"
+  },
+  "additionalInfo": {
+    "additionalInfo": "ព័ត៌មានបន្ថែម",
+    "writeHere": "សរសេរនៅទីនេះ..."
+  },
+  "dateTime": {
+    "selectDate": "ជ្រើសរើសកាលបរិច្ឆេទ",
+    "time": "ម៉ោង",
+    "hour": "ម៉ោង",
+    "minute": "នាទី",
+    "hh": "ម៉ោង",
+    "mm": "នាទី",
+    "now": "ឥឡូវនេះ",
+    "done": "រួចរាល់"
+  },
+  "addressList": {
+    "addressDetails": "ព័ត៌មានលម្អិតអាសយដ្ឋាន៖",
+    "edit": "កែសម្រួល",
+    "delete": "លុប"
+  },
+  "orderList": {
+    "services": "សេវាកម្ម",
+    "noServices": "មិនមានសេវាកម្ម"
+  },
+  "appExit": {
+    "title": "bEasy: Cleaning & Pest",
+    "description": "តើអ្នកប្រាកដថាចង់បិទកម្មវិធី bEasy: Cleaning & Pest មែនទេ?"
+  },
+  "timeDialog": {
+    "selectStartTime": "ជ្រើសរើសម៉ោងចាប់ផ្តើម"
+  },
+  "distanceDialog": {
+    "title": "ក្រៅតំបន់សេវាកម្ម",
+    "description": "ទីតាំងនេះស្ថិតក្រៅតំបន់សេវាកម្មបច្ចុប្បន្នរបស់យើង (អតិបរមា {{maxDistanceKm}} គម)។ សូមជ្រើសរើសទីតាំងផ្សេងទៀត។",
+    "closeButton": "បិទ"
+  },
+  "whatInclude": {
+    "noEquipmentAvailable": "មិនមានព័ត៌មានឧបករណ៍ទេ"
+  },
+  "alert": {
+    "serviceNote": "<span className=\"font-bold\">ចំណាំ៖</span> យើងផ្តល់សេវាកម្មរហូតដល់ <b>៤ ម៉ោង</b>។ ប្រសិនបើអ្នកត្រូវការពេលវេលាបន្ថែម សូមពិចារណាកក់ <b>ជម្រើសសម្អាតស៊ីជម្រៅ</b> របស់យើង ឬកំណត់ពេលបន្ថែម។"
+  },
+  "taskInfo": {
+    "noTaskInfoAvailable": "មិនមានព័ត៌មានភារកិច្ចទេ"
+  },
+  "servicePreview": {
+    "upholstery": "សម្អាតគ្រឿងសង្ហារឹម",
+    "addons": "បន្ថែម"
+  },
+  "paymentSuccess": {
+    "appointmentConfirmed": "ការណាត់ជួបត្រូវបានបញ្ជាក់",
+    "lookForward": "យើងទន្ទឹងរង់ចាំជួបអ្នក",
+    "viewBooking": "មើលការកក់"
+  },
+  "appInfo": {
+    "showInfo": "បង្ហាញព័ត៌មាន",
+    "appName": "bEASY: Cleaning & Pest",
+    "appDescription": "កម្មវិធីសម្រាប់គេហដ្ឋានស្អាត និងការរស់នៅដោយគ្មានសត្វល្អិត។ សេវាកម្មសម្អាត និងកំចាត់សត្វល្អិតដែលគួរឱ្យទុកចិត្តនៅនឹងដៃអ្នក។",
+    "address": "ជាន់ទី ២៣ អាគារ Flatiron រាជធានីភ្នំពេញ ប្រទេសកម្ពុជា"
+  }
+}

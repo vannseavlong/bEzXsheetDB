@@ -1,0 +1,358 @@
+{
+  "common": {
+    "home": "首页",
+    "booking": "预订",
+    "service": "服务",
+    "next": "下一步",
+    "back": "返回",
+    "save": "保存",
+    "cancel": "取消",
+    "close": "关闭",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "search": "搜索",
+    "loading": "加载中...",
+    "retry": "重试",
+    "success": "成功",
+    "error": "错误",
+    "warning": "警告",
+    "optional": "选填",
+    "required": "必填",
+    "yes": "是",
+    "no": "否",
+    "apply": "应用",
+    "remove": "移除",
+    "viewMore": "查看更多",
+    "viewLess": "收起",
+    "appVersion": "版本",
+    "submit": "提交",
+    "applying": "应用中...",
+    "done": "完成",
+    "now": "现在",
+    "change": "更改",
+    "remark": "备注",
+    "noInformationAvailable": "暂无信息",
+    "loadingAddons": "正在加载附加服务...",
+    "noAddonsAvailable": "暂无附加服务。探索其他服务以提升您的体验！",
+    "floors": "楼层",
+    "bedroom": "卧室",
+    "hours": "小时",
+    "technician": "技术人员",
+    "technicians": "技术人员",
+    "cleaner": "清洁工",
+    "cleaners": "清洁工",
+    "continue": "继续",
+    "days": {
+      "sun": "周日",
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六"
+    },
+    "months": {
+      "jan": "1月",
+      "feb": "2月",
+      "mar": "3月",
+      "apr": "4月",
+      "may": "5月",
+      "jun": "6月",
+      "jul": "7月",
+      "aug": "8月",
+      "sep": "9月",
+      "oct": "10月",
+      "nov": "11月",
+      "dec": "12月"
+    }
+  },
+  "navigation": {
+    "homeTab": "bEasy",
+    "bookingTab": "预订"
+  },
+  "home": {
+    "welcome": "欢迎"
+  },
+  "booking": {
+    "inProgress": "进行中",
+    "recent": "最近",
+    "noBookingFound": "未找到预订",
+    "bookNow": "立即预订"
+  },
+  "service": {
+    "serviceType": "服务类型",
+    "serviceAddon": "附加服务",
+    "taskInformation": "任务详情",
+    "whatsIncluded": "包含内容",
+    "additionalInfo": "附加信息",
+    "extraServices": "额外服务"
+  },
+  "banner": {
+    "banner": "横幅"
+  },
+  "checkout": {
+    "checkout": "结算",
+    "service": "服务",
+    "serviceFee": "服务费",
+    "subtotal": "小计",
+    "total": "总计",
+    "totalPrice": "总价格",
+    "discount": "折扣",
+    "payment": "付款",
+    "selectPayment": "选择付款方式",
+    "confirmPayment": "确认付款",
+    "payNow": "立即支付",
+    "processingPayment": "正在处理付款...",
+    "failedToLoadServices": "加载服务失败",
+    "pleaseSelectDate": "请在继续前选择日期。",
+    "pleaseProvidePhone": "请提供您的电话号码。",
+    "failedToCreateOrder": "创建订单失败。请重试。",
+    "yourBooking": "您的预订",
+    "oftenPairedWith": "通常搭配",
+    "creatingOrder": "正在创建订单...",
+    "next": "下一步"
+  },
+  "location": {
+    "location": "位置",
+    "address": "地址",
+    "addressDetails": "地址详情",
+    "addNewLocation": "添加新位置",
+    "editLocation": "编辑位置",
+    "deleteLocation": "删除位置",
+    "deleteLocationConfirm": "您确定要删除此位置吗？",
+    "locationSavedSuccess": "位置保存成功！",
+    "locationUpdatedSuccess": "位置更新成功！",
+    "searchLocation": "搜索位置",
+    "floor": "楼层",
+    "room": "房号",
+    "note": "笔记",
+    "noLocationFound": "未找到位置",
+    "selectLocation": "选择位置",
+    "addNewLocationBtn": "添加新位置",
+    "loadingAddresses": "加载中...",
+    "errorLoadingAddresses": "加载地址时出错。",
+    "addressDeletedSuccess": "地址删除成功！",
+    "failedToDeleteAddress": "删除地址失败。请重试。"
+  },
+  "addLocation": {
+    "editLocation": "编辑位置",
+    "addLocation": "添加位置",
+    "locationUpdatedSuccess": "位置更新成功！",
+    "locationSavedSuccess": "位置保存成功！",
+    "failedToSaveLocation": "保存位置失败",
+    "updating": "正在更新...",
+    "saving": "正在保存...",
+    "updateLocation": "更新位置",
+    "saveLocation": "保存位置"
+  },
+  "order": {
+    "orderDetails": "订单详情",
+    "orderId": "订单 ID",
+    "status": {
+      "pending": "待处理",
+      "inProgress": "进行中",
+      "confirmed": "已确认",
+      "completed": "已完成",
+      "cancelled": "已取消",
+      "rejected": "已拒绝",
+      "unknown": "未知"
+    },
+    "orderNotFound": "未找到订单",
+    "customerDetails": "客户详情",
+    "services": "服务",
+    "schedule": "预约",
+    "date": "日期",
+    "time": "时间",
+    "selectDate": "选择日期",
+    "selectTime": "选择时间",
+    "confirmTime": "确认时间",
+    "personalInfo": "个人信息",
+    "customerInfo": "客户信息",
+    "customerName": "姓名",
+    "customerPhone": "电话",
+    "customerEmail": "电子邮件",
+    "firstName": "名字",
+    "lastName": "姓氏",
+    "fullName": "全名",
+    "dateAndTime": "日期与时间",
+    "pickNewTime": "选择新时间？",
+    "rescheduleLimitError": "仅允许在预定日期前至少 1 天重新预约。"
+  },
+  "coupon": {
+    "enterPromoCode": "输入优惠码",
+    "promoCodePlaceholder": "输入您的优惠码",
+    "couponApplied": "已应用优惠券！",
+    "couponInvalid": "优惠码无效",
+    "removeCoupon": "移除",
+    "enterPromoCodeTitle": "输入优惠码",
+    "pleaseEnterPromoCode": "请输入优惠码",
+    "couponAppliedSuccess": "优惠券应用成功！"
+  },
+  "addon": {
+    "addon": "附加服务",
+    "selectAddon": "选择附加服务",
+    "whatsIncluded": "包含内容",
+    "noAddons": "暂无附加服务。探索其他服务以提升您的体验！"
+  },
+  "payment": {
+    "paid": "已支付",
+    "unpaid": "未支付",
+    "inReview": "审核中",
+    "unknown": "未知",
+    "paymentSuccess": "付款成功",
+    "paymentFailed": "付款失败",
+    "appointmentConfirmed": "预约已确认",
+    "useDefaultPayment": "使用默认付款方式",
+    "confirmPaymentMethod": "确认付款方式",
+    "paymentDetails": "付款详情",
+    "service": "服务",
+    "discount": "折扣",
+    "serviceFee": "服务费",
+    "transportFee": "交通费",
+    "subtotal": "小计",
+    "vat": "增值税 (10%)",
+    "totalPayable": "应付总额",
+    "total": "总计",
+    "coupon": "优惠券",
+    "paymentMethod": "付款方式",
+    "paymentStatus": "付款状态",
+    "abaPay": "ABA PAY",
+    "pay": "支付",
+    "statusDialog": {
+      "pendingTitle": "支付处理中",
+      "pendingMessage": "您的支付仍在处理中，请稍候后重试查看状态。",
+      "errorTitle": "支付错误",
+      "errorMessage": "检查支付时发生技术错误，请重试。",
+      "failedTitle": "支付被拒绝",
+      "failedMessage": "您的支付被拒绝或未找到，请尝试其他支付方式。",
+      "retryButton": "重试 ({{current}}/{{max}})",
+      "retriesLeft": "第 {{current}} 次，共 {{max}} 次",
+      "maxRetriesMessage": "已达最大重试次数，请关闭后稍后再试。"
+    }
+  },
+  "purchaseSuccess": {
+    "success": "成功",
+    "purchaseSuccessful": "购买成功",
+    "orderId": "订单 ID",
+    "orderDate": "订单日期",
+    "paidTo": "付款至",
+    "paidFrom": "付款自",
+    "originalAmount": "原价",
+    "totalAmount": "总金额",
+    "totalAmountLabel": "总金额：",
+    "viewBookingDetails": "查看预订详情",
+    "goHome": "返回首页"
+  },
+  "schedule": {
+    "selectDateTime": "选择日期与时间",
+    "reschedule": "重新预约",
+    "closed": "已关闭",
+    "chooseYourTime": "选择您的时间："
+  },
+  "searchLocation": {
+    "searchLocation": "搜索位置",
+    "useCurrentLocation": "使用当前位置",
+    "noSuggestionsFound": "未找到建议"
+  },
+  "personalInfo": {
+    "personalInformation": "个人信息",
+    "firstName": "名字",
+    "lastName": "姓氏",
+    "phone": "电话",
+    "email": "电子邮件",
+    "edit": "编辑",
+    "confirm": "确认",
+    "firstNameRequired": "请输入名字",
+    "lastNameRequired": "请输入姓氏",
+    "phoneRequired": "请输入电话号码",
+    "phoneInvalid": "电话号码无效",
+    "nameRequired": "此字段为必填项",
+    "nameTooShort": "名字太短",
+    "nameTooLong": "名字太长",
+    "nameInvalid": "名字包含无效字符",
+    "emailInvalid": "电子邮件地址无效"
+  },
+  "errors": {
+    "networkError": "网络错误。请检查您的连接。",
+    "somethingWentWrong": "出错了。请重试。",
+    "loadFailed": "加载数据失败",
+    "noInternetConnection": "无网络连接",
+    "checkNetworkConnection": "请检查您的网络连接并重试。",
+    "tryAgain": "重试"
+  },
+  "notFound": {
+    "pageNotFound": "页面未找到",
+    "goBackHome": "返回首页",
+    "oopsSomethingWentWrong": "糟糕！似乎出错了。"
+  },
+  "success": {
+    "purchaseSuccess": "购买成功！",
+    "orderPlaced": "您的订单已成功下单。"
+  },
+  "quantity": {
+    "quantity": "数量",
+    "decrease": "减少",
+    "increase": "增加"
+  },
+  "additionalInfo": {
+    "additionalInfo": "附加信息",
+    "writeHere": "在此输入..."
+  },
+  "dateTime": {
+    "selectDate": "选择日期",
+    "time": "时间",
+    "hour": "小时",
+    "minute": "分钟",
+    "hh": "时",
+    "mm": "分",
+    "now": "现在",
+    "done": "完成"
+  },
+  "addressList": {
+    "addressDetails": "地址详情：",
+    "edit": "编辑",
+    "delete": "删除"
+  },
+  "orderList": {
+    "services": "服务",
+    "noServices": "无服务"
+  },
+  "appExit": {
+    "title": "bEasy: 清洁与除虫",
+    "description": "您确定要关闭 bEasy: 清洁与除虫吗？"
+  },
+  "timeDialog": {
+    "selectStartTime": "选择开始时间"
+  },
+  "distanceDialog": {
+    "title": "服务范围限制",
+    "description": "该位置超出我们当前的服务范围（最大 {{maxDistanceKm}} 公里）。请选择其他位置。",
+    "closeButton": "关闭"
+  },
+  "whatInclude": {
+    "noEquipmentAvailable": "无设备信息可用"
+  },
+  "alert": {
+    "serviceNote": "<span className=\"font-bold\">注意：</span> 我们提供长达 <b>4 小时</b> 的服务。如果您需要更多时间，请考虑预订我们的 <b>深度清洁选项</b> 或安排额外时段。"
+  },
+  "taskInfo": {
+    "noTaskInfoAvailable": "无任务信息可用"
+  },
+  "servicePreview": {
+    "upholstery": "软装清洁",
+    "addons": "附加组件"
+  },
+  "paymentSuccess": {
+    "appointmentConfirmed": "预约已确认",
+    "lookForward": "我们期待为您服务",
+    "viewBooking": "查看预订"
+  },
+  "appInfo": {
+    "showInfo": "显示信息",
+    "appName": "bEASY: 清洁与除虫",
+    "appDescription": "您首选的家居清洁与除虫应用。触手可及的可靠清洁与除虫服务。",
+    "address": "Floor 23th, Flatiron Building, Phnom Penh, Cambodia"
+  }
+}

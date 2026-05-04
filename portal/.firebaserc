@@ -1,0 +1,24 @@
+{
+  "projects": {
+    "default": "suntel-tech",
+    "dev": "suntel-beasy-dev",
+    "pro": "suntel-tech"
+  },
+  "targets": {
+    "suntel-tech": {
+      "hosting": {
+        "pro": [
+          "beasy-admin"
+        ]
+      }
+    },
+    "suntel-beasy-dev": {
+      "hosting": {
+        "dev": [
+          "suntel-beasy-dev"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

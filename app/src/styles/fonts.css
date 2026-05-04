@@ -1,0 +1,59 @@
+/* ─── Font tokens ───────────────────────────────────────────────────────────── */
+:root {
+  /* Per-language pairs */
+  --font-heading-km: 'Kantumruy Pro', sans-serif;
+  --font-body-km: 'Kantumruy Pro', sans-serif;
+
+  --font-heading-en: 'Inter', sans-serif;
+  --font-body-en: 'Inter', sans-serif;
+
+  --font-heading-zh: 'Noto Serif SC', serif;
+  --font-body-zh: 'Noto Sans SC', sans-serif;
+
+  --font-heading-tw: 'Noto Serif TC', serif;
+  --font-body-tw: 'Noto Sans TC', sans-serif;
+
+  --font-heading-vi: 'Inter', sans-serif;
+  --font-body-vi: 'Inter', sans-serif;
+
+  --font-heading-kh: 'Kantumruy Pro', sans-serif;
+  --font-body-kh: 'Kantumruy Pro', sans-serif;
+
+  /* Active pair — defaults to English */
+  --font-heading: var(--font-heading-en);
+  --font-body: var(--font-body-en);
+  --line-height-base: 1.5;
+}
+
+/* ─── Per-language overrides ────────────────────────────────────────────────── */
+html[lang='km'],
+html[lang='kh'] {
+  --font-heading: var(--font-heading-km);
+  --font-body: var(--font-body-km);
+  --line-height-base: 1.8;
+}
+
+html[lang='en'] {
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --line-height-base: 1.5;
+}
+
+html[lang='zh'],
+html[lang='cn'] {
+  --font-heading: var(--font-heading-zh);
+  --font-body: var(--font-body-zh);
+  --line-height-base: 1.6;
+}
+
+html[lang='tw'] {
+  --font-heading: var(--font-heading-tw);
+  --font-body: var(--font-body-tw);
+  --line-height-base: 1.6;
+}
+
+html[lang='vi'] {
+  --font-heading: var(--font-heading-vi);
+  --font-body: var(--font-body-vi);
+  --line-height-base: 1.5;
+}

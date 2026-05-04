@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "default": "suntel-beasy-dev",
+    "dev": "suntel-beasy-dev"
+  },
+  "targets": {
+    "suntel-beasy-dev": {
+      "hosting": {
+        "dev": [
+          "beasy-mini-dev"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
