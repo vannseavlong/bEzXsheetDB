@@ -1,0 +1,90 @@
+export const mockCategoryAddons: ProductAddOnGroupListAttributes[] = [
+  {
+    id: 1,
+    categoryId: 1,
+    nameEn: 'Cleaning Supplies',
+    nameKm: 'សម្ភារៈសំអាត',
+    nameVi: 'Vật liệu vệ sinh',
+    nameCn: '清洁用品',
+    nameTw: '清潔用品',
+    badgeEn: 'Optional',
+    badgeKm: null,
+    badgeVi: null,
+    badgeCn: null,
+    badgeTw: null,
+    selectionType: 'MULTIPLE',
+    isRequired: false,
+    sort: 1,
+    addOns: [
+      {
+        id: 1,
+        groupId: 1,
+        nameEn: 'Mop & Bucket',
+        nameKm: 'ជូត',
+        nameVi: 'Cây lau nhà',
+        nameCn: '拖把',
+        nameTw: '拖把',
+        imgUrl: 'https://placehold.co/64x64?text=Mop',
+        amount: 5,
+        duration: 0,
+        status: true,
+        type: 'SINGLE',
+        parentId: null,
+        categoryId: 1
+      },
+      {
+        id: 2,
+        groupId: 1,
+        nameEn: 'Vacuum Cleaner',
+        nameKm: 'ម៉ាស៊ីនស្ស',
+        nameVi: 'Máy hút bụi',
+        nameCn: '吸尘器',
+        nameTw: '吸塵器',
+        imgUrl: 'https://placehold.co/64x64?text=Vac',
+        amount: 10,
+        duration: 0,
+        status: true,
+        type: 'SINGLE',
+        parentId: null,
+        categoryId: 1
+      }
+    ],
+    category: { id: 1, nameEn: 'Home Cleaning', nameKm: null, nameVi: null, nameCn: null, nameTw: null }
+  },
+  {
+    id: 2,
+    categoryId: 2,
+    nameEn: 'Pest Treatment Options',
+    nameKm: 'ការព្យាបាលសត្វល្អិត',
+    nameVi: 'Tùy chọn xử lý côn trùng',
+    nameCn: '害虫处理选项',
+    nameTw: '害蟲處理選項',
+    badgeEn: 'Required',
+    badgeKm: null,
+    badgeVi: null,
+    badgeCn: null,
+    badgeTw: null,
+    selectionType: 'SINGLE',
+    isRequired: true,
+    sort: 1,
+    addOns: [
+      {
+        id: 3,
+        groupId: 2,
+        nameEn: 'Spray Treatment',
+        nameKm: 'ការបាញ់ថ្នាំ',
+        nameVi: 'Phun thuốc',
+        nameCn: '喷洒处理',
+        nameTw: '噴灑處理',
+        imgUrl: null,
+        amount: 15,
+        duration: 30,
+        status: true,
+        type: 'SINGLE',
+        parentId: null,
+        categoryId: 2
+      }
+    ],
+    category: { id: 2, nameEn: 'Pest Control', nameKm: null, nameVi: null, nameCn: null, nameTw: null }
+  }
+];

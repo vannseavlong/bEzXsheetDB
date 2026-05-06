@@ -12,6 +12,9 @@ GEMINI.md
 AGENTS.md
 CODEX.md
 
+# Unwated folders
+portal/
+
 # ─── Environment / secrets ────────────────────────────────────────────────────
 .env
 .env.*
@@ -23,8 +26,8 @@ node_modules/
 # ─── Build outputs ────────────────────────────────────────────────────────────
 dist/
 dist-ssr/
-/build/
-/.react-router/
+build/
+.react-router/
 
 # ─── Logs ─────────────────────────────────────────────────────────────────────
 logs/

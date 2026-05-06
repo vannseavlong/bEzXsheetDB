@@ -59,3 +59,4 @@ Thumbs.db
 *.zip
 *.local
 certs/
+bin/src/page/checkout-backup.txt
