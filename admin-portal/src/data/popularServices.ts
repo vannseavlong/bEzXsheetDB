@@ -1,0 +1,58 @@
+export const mockPopularServices = [
+  {
+    id: "POP-001",
+    nameEn: "Standard Home Cleaning",
+    status: true,
+    displayOrder: 1,
+    imageUrl: null,
+  },
+  {
+    id: "POP-002",
+    nameEn: "Deep Cleaning Package",
+    status: true,
+    displayOrder: 2,
+    imageUrl: null,
+  },
+  {
+    id: "POP-003",
+    nameEn: "Wash & Fold Laundry",
+    status: true,
+    displayOrder: 3,
+    imageUrl: null,
+  },
+  {
+    id: "POP-004",
+    nameEn: "Post-Construction Clean",
+    status: true,
+    displayOrder: 4,
+    imageUrl: null,
+  },
+  {
+    id: "POP-005",
+    nameEn: "Move-Out Cleaning",
+    status: true,
+    displayOrder: 5,
+    imageUrl: null,
+  },
+  {
+    id: "POP-006",
+    nameEn: "Office Cleaning",
+    status: false,
+    displayOrder: 6,
+    imageUrl: null,
+  },
+  {
+    id: "POP-007",
+    nameEn: "Dry Cleaning",
+    status: true,
+    displayOrder: 7,
+    imageUrl: null,
+  },
+  {
+    id: "POP-008",
+    nameEn: "Premium Home Cleaning",
+    status: true,
+    displayOrder: 8,
+    imageUrl: null,
+  },
+];
