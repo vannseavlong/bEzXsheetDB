@@ -48,7 +48,7 @@ export default function CategoryList() {
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
         />
-        <div className="flex min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto">
           <DraggableContext data={data} setData={setData} onChange={handleReorder}>
             <Table className="min-w-full">
               <DataTableHeader isDraggable table={table} />

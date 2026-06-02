@@ -37,16 +37,18 @@
 - [x] EmptyState, LoadingSkeleton, ProfilePicker, MultiLanguageInput
 - [x] Uploader, NotificationDrawer
 
-## Phase TS: TanStack Table Infrastructure ✅
+## Phase TS: TanStack Table Infrastructure ✅ (UI mirrored from bEasy-portal)
 - [x] src/hooks/use-table-state.ts
 - [x] src/hooks/use-data-table-config.ts
-- [x] src/components/data-table/DataTableHeader.tsx
-- [x] src/components/data-table/TableRows.tsx
+- [x] src/components/data-table/DataTableHeader.tsx  — pl-4 first col, meta sticky/width support
+- [x] src/components/data-table/TableRows.tsx         — no double-wrap, pl-4 first cell, h-12 rows
 - [x] src/components/data-table/SortableRows.tsx
 - [x] src/components/data-table/DraggableContext.tsx
-- [x] src/components/data-table/DataTablePagination.tsx
-- [x] src/components/data-table/TableRowSkeleton.tsx
+- [x] src/components/data-table/DataTablePagination.tsx — bEasy py-1 right-aligned pagination
+- [x] src/components/data-table/TableRowSkeleton.tsx  — no TableBody wrapper
 - [x] src/components/ui/pagination.tsx
+- [x] src/components/shared/SearchBar.tsx             — onChange(string) pattern
+- [x] src/components/shared/CustomHeader.tsx          — h-88px, ChevronLeft, bEasy form header
 
 ## Phase 10: Setup / Services Pages ✅ COMPLETE (HIGHEST PRIORITY)
 
@@ -60,7 +62,7 @@
 - [x] BlockedScheduleColumns.tsx
 - [x] ActivityLogColumns.tsx
 
-### Header components (src/components/headers/)
+### Header components (src/components/headers/) — bEasy flex layout, SearchBar, no border-b
 - [x] CategoryTableHeader.tsx
 - [x] ProductHeader.tsx
 - [x] CategoryAddonHeader.tsx

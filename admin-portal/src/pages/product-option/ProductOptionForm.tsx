@@ -98,7 +98,6 @@ export default function ProductOptionForm() {
         onBack={() => navigate('/product-option')}
         onSave={handleSave}
         saveLabel="Save"
-        showSave
       />
 
       <div className="flex-1 overflow-auto px-6 py-6">

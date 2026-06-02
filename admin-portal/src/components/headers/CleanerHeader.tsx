@@ -1,6 +1,6 @@
-import { NavLink } from 'react-router-dom'
-import { Plus } from 'lucide-react'
 import type { Table } from '@tanstack/react-table'
+import { Plus } from 'lucide-react'
+import { NavLink } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from '@/components/shared/SearchBar'
 import {
@@ -10,26 +10,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Product } from '@/types'
+import type { Cleaner } from '@/types'
 
-interface Props {
-  table: Table<Product>
+type Props = {
+  table: Table<Cleaner>
   statusFilter: string
-  setStatusFilter: (v: string) => void
+  setStatusFilter: (value: string) => void
 }
 
-export function ProductHeader({ table, statusFilter, setStatusFilter }: Props) {
+export function CleanerHeader({ table, statusFilter, setStatusFilter }: Props) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
       <SearchBar
-        placeholder="Search products..."
-        value={(table.getColumn('nameEn')?.getFilterValue() as string) ?? ''}
-        onChange={(val) => table.getColumn('nameEn')?.setFilterValue(val)}
+        placeholder="Search for cleaner..."
+        value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+        onChange={(val) => table.getColumn('name')?.setFilterValue(val)}
       />
       <div className="flex flex-row gap-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All Status" />
+            <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
@@ -37,12 +37,11 @@ export function ProductHeader({ table, statusFilter, setStatusFilter }: Props) {
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
-        <Button size="sm" asChild>
-          <NavLink to="/product/new">
-            <Plus className="h-4 w-4 mr-1" />
-            New Product
-          </NavLink>
-        </Button>
+        <NavLink to="/cleaner/new">
+          <Button size="sm">
+            New Cleaner <Plus className="ml-1 h-4 w-4" />
+          </Button>
+        </NavLink>
       </div>
     </div>
   )

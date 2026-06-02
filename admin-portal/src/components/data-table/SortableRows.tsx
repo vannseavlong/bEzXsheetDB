@@ -5,6 +5,7 @@ import { GripVertical } from 'lucide-react'
 import { TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 interface SortableRowsProps<TData extends { id: string }> {
   table: Table<TData>
@@ -27,8 +28,8 @@ function SortableRow<TData extends { id: string }>({ row }: SortableRowProps<TDa
   }
 
   return (
-    <TableRow ref={setNodeRef} style={style} className="h-12">
-      <TableCell className="w-12">
+    <TableRow ref={setNodeRef} style={style} data-state={row.getIsSelected() && 'selected'}>
+      <TableCell className="w-12 h-12 py-0 px-2">
         <Button
           variant="ghost"
           size="sm"
@@ -39,11 +40,31 @@ function SortableRow<TData extends { id: string }>({ row }: SortableRowProps<TDa
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </Button>
       </TableCell>
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
+      {row.getVisibleCells().map((cell, idx) => {
+        const meta = cell.column.columnDef.meta as
+          | { isSticky?: boolean; width?: number; stickyRight?: number; stickyLeft?: number; className?: string }
+          | undefined
+
+        return (
+          <TableCell
+            key={cell.id}
+            className={cn(
+              idx === 0 && 'pl-4',
+              'h-12 py-0',
+              meta?.isSticky && 'sticky z-[1] bg-background',
+              meta?.className,
+            )}
+            style={{
+              width: meta?.width || 'auto',
+              minWidth: meta?.width || 'auto',
+              right: meta?.isSticky ? `${meta.stickyRight ?? 0}px` : undefined,
+              left: meta?.isSticky ? `${meta.stickyLeft ?? 0}px` : undefined,
+            }}
+          >
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </TableCell>
+        )
+      })}
     </TableRow>
   )
 }
@@ -57,12 +78,12 @@ export function SortableRows<TData extends { id: string }>({
     return (
       <TableBody>
         {Array.from({ length: 6 }).map((_, rowIdx) => (
-          <TableRow key={rowIdx} className="h-12">
-            <TableCell className="w-12">
+          <TableRow key={rowIdx}>
+            <TableCell className="w-12 h-12 py-0 px-2">
               <Skeleton className="h-4 w-6" />
             </TableCell>
             {Array.from({ length: columns.length }).map((_, colIdx) => (
-              <TableCell key={colIdx}>
+              <TableCell key={colIdx} className={cn(colIdx === 0 && 'pl-4', 'h-12 py-0')}>
                 <Skeleton className="h-4 w-full" />
               </TableCell>
             ))}

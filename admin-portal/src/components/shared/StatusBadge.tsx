@@ -1,57 +1,63 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
+import type { BadgeProps } from "@/components/ui/badge"
 
-const STATUS_MAP = {
-  // success (green)
-  ACTIVE: { variant: "success", label: "Active" },
-  active: { variant: "success", label: "Active" },
-  true: { variant: "success", label: "Active" },
-  APPROVED: { variant: "success", label: "Approved" },
-  COMPLETED: { variant: "success", label: "Completed" },
-  RESOLVED: { variant: "success", label: "Resolved" },
-  USED: { variant: "success", label: "Used" },
+type BadgeVariant = BadgeProps["variant"]
 
-  // warning (yellow)
-  PENDING: { variant: "warning", label: "Pending" },
-  IN_REVIEW: { variant: "warning", label: "In Review" },
-  UNDER_REVIEW: { variant: "warning", label: "Under Review" },
-  DEDUCTION_PENDING: { variant: "warning", label: "Deduction Pending" },
-  SCHEDULED: { variant: "warning", label: "Scheduled" },
-  OTP_ACTIVE: { variant: "warning", label: "Active" },
+const STATUS_MAP: Record<string, { variant: BadgeVariant; label: string }> = {
+  // approve (green) — bEasy variant
+  ACTIVE:     { variant: "approve", label: "Active" },
+  active:     { variant: "approve", label: "Active" },
+  true:       { variant: "approve", label: "Active" },
+  APPROVED:   { variant: "approve", label: "Approved" },
+  COMPLETED:  { variant: "approve", label: "Completed" },
+  RESOLVED:   { variant: "approve", label: "Resolved" },
+  USED:       { variant: "approve", label: "Used" },
+  SUCCESS:    { variant: "approve", label: "Success" },
 
-  // destructive (red)
-  INACTIVE: { variant: "destructive", label: "Inactive" },
-  false: { variant: "destructive", label: "Inactive" },
-  BANNED: { variant: "destructive", label: "Banned" },
-  REJECTED: { variant: "destructive", label: "Rejected" },
-  CANCELLED: { variant: "destructive", label: "Cancelled" },
-  FAILED: { variant: "destructive", label: "Failed" },
-  EXPIRED: { variant: "destructive", label: "Expired" },
+  // warning (yellow) — bEasy variant
+  PENDING:            { variant: "warning", label: "Pending" },
+  IN_REVIEW:          { variant: "warning", label: "In Review" },
+  UNDER_REVIEW:       { variant: "warning", label: "Under Review" },
+  DEDUCTION_PENDING:  { variant: "warning", label: "Deduction Pending" },
+  SCHEDULED:          { variant: "warning", label: "Scheduled" },
+  OTP_ACTIVE:         { variant: "warning", label: "Active" },
+  IN_PROGRESS:        { variant: "warning", label: "In Progress" },
 
-  // info (blue)
-  IN_PROGRESS: { variant: "info", label: "In Progress" },
-  PROCESSING: { variant: "info", label: "Processing" },
-  DRAFT: { variant: "info", label: "Draft" },
-};
+  // reject (red) — bEasy variant
+  INACTIVE:   { variant: "reject", label: "Inactive" },
+  false:      { variant: "reject", label: "Inactive" },
+  BANNED:     { variant: "reject", label: "Banned" },
+  REJECTED:   { variant: "reject", label: "Rejected" },
+  CANCELLED:  { variant: "reject", label: "Cancelled" },
+  FAILED:     { variant: "reject", label: "Failed" },
+  EXPIRED:    { variant: "reject", label: "Expired" },
+
+  // confirm (blue) — bEasy variant
+  DRAFT:      { variant: "confirm", label: "Draft" },
+  PROCESSING: { variant: "confirm", label: "Processing" },
+  SENT:       { variant: "confirm", label: "Sent" },
+
+  // purple — bEasy variant
+  SUBMITTED:  { variant: "purple", label: "Submitted" },
+  PAID:       { variant: "purple", label: "Paid" },
+}
 
 export function StatusBadge({
   status,
   label,
 }: {
-  status?: string | boolean | null;
-  label?: string;
+  status?: string | boolean | null
+  label?: string
 }) {
   if (status === null || status === undefined) {
-    return <Badge variant="secondary">{label ?? "Unknown"}</Badge>;
+    return <Badge variant="secondary">{label ?? "Unknown"}</Badge>
   }
 
-  const key = typeof status === "boolean" ? String(status) : String(status).toUpperCase();
-  const normalizedKey =
-    (STATUS_MAP as any)[key] ? key : (STATUS_MAP as any)[String(status)] ? String(status) : String(status);
+  const key = typeof status === "boolean" ? String(status) : String(status).toUpperCase()
+  const config = STATUS_MAP[key] ?? STATUS_MAP[String(status)] ?? null
 
-  const config = (STATUS_MAP as any)[normalizedKey] ?? (STATUS_MAP as any)[String(status)] ?? null;
+  const variant = config?.variant ?? "secondary"
+  const displayLabel = label ?? config?.label ?? String(status)
 
-  const variant = config?.variant ?? "secondary";
-  const displayLabel = label ?? config?.label ?? String(status);
-
-  return <Badge variant={variant as any}>{displayLabel}</Badge>;
+  return <Badge variant={variant}>{displayLabel}</Badge>
 }

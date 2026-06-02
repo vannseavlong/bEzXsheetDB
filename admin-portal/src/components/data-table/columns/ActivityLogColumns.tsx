@@ -9,12 +9,12 @@ import {
 } from '@/components/ui/tooltip'
 import type { ActivityLog } from '@/types'
 
-const METHOD_VARIANTS: Record<string, 'success' | 'info' | 'warning' | 'destructive'> = {
-  GET: 'success',
-  POST: 'info',
+const METHOD_VARIANTS: Record<string, 'approve' | 'confirm' | 'warning' | 'reject'> = {
+  GET: 'approve',
+  POST: 'confirm',
   PUT: 'warning',
   PATCH: 'warning',
-  DELETE: 'destructive',
+  DELETE: 'reject',
 }
 
 export const activityLogColumns: ColumnDef<ActivityLog>[] = [

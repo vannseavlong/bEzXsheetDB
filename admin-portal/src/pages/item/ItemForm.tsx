@@ -62,7 +62,6 @@ export default function ItemForm() {
         onBack={() => navigate('/item')}
         onSave={handleSave}
         saveLabel="Save"
-        showSave
       />
 
       <div className="flex-1 overflow-auto px-6 py-6">

@@ -18,9 +18,9 @@ const TYPE_LABELS: Record<string, string> = {
   TOGGLE: 'Toggle',
 }
 
-const TYPE_VARIANTS: Record<string, 'info' | 'default' | 'secondary'> = {
-  SINGLE_CHOICE: 'info',
-  MULTI_CHOICE: 'default',
+const TYPE_VARIANTS: Record<string, 'confirm' | 'purple' | 'secondary'> = {
+  SINGLE_CHOICE: 'confirm',
+  MULTI_CHOICE: 'purple',
   TOGGLE: 'secondary',
 }
 

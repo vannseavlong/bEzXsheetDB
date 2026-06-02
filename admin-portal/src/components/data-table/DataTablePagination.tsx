@@ -2,7 +2,6 @@ import type { Table } from '@tanstack/react-table'
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -13,26 +12,31 @@ interface DataTablePaginationProps<TData> {
   table: Table<TData>
 }
 
-function getPageNumbers(currentPage: number, totalPages: number): (number | 'ellipsis')[] {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1)
+function getPageNumbers(current: number, total: number, delta = 1): (number | '...')[] {
+  const pages: (number | '...')[] = []
+  const range: number[] = []
+
+  for (let i = Math.max(0, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+    range.push(i)
   }
 
-  const pages: (number | 'ellipsis')[] = []
+  if (range[0] > 0) {
+    pages.push(0)
+    if (range[0] > 1) pages.push('...')
+  }
 
-  if (currentPage <= 4) {
-    pages.push(1, 2, 3, 4, 5, 'ellipsis', totalPages)
-  } else if (currentPage >= totalPages - 3) {
-    pages.push(1, 'ellipsis', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages)
-  } else {
-    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages)
+  pages.push(...range)
+
+  if (range[range.length - 1] < total - 1) {
+    if (range[range.length - 1] < total - 2) pages.push('...')
+    pages.push(total - 1)
   }
 
   return pages
 }
 
 export function DataTablePagination<TData>({ table }: DataTablePaginationProps<TData>) {
-  const currentPage = table.getState().pagination.pageIndex + 1
+  const currentPage = table.getState().pagination.pageIndex
   const totalPages = table.getPageCount()
 
   if (totalPages <= 1) return null
@@ -40,34 +44,32 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
   const pageNumbers = getPageNumbers(currentPage, totalPages)
 
   return (
-    <div className="flex items-center justify-end py-3">
-      <Pagination>
-        <PaginationContent>
+    <div className="py-1">
+      <Pagination className="w-full">
+        <PaginationContent className="w-full flex justify-end items-center">
           <PaginationItem>
             <PaginationPrevious
-              onClick={() => table.previousPage()}
-              aria-disabled={!table.getCanPreviousPage()}
-              className={
-                !table.getCanPreviousPage()
-                  ? 'pointer-events-none opacity-50'
-                  : 'cursor-pointer'
-              }
+              href="#"
+              onClick={(e) => { e.preventDefault(); table.previousPage() }}
+              className={!table.getCanPreviousPage() ? 'pointer-events-none opacity-50' : ''}
             />
           </PaginationItem>
 
           {pageNumbers.map((page, idx) =>
-            page === 'ellipsis' ? (
+            page === '...' ? (
               <PaginationItem key={`ellipsis-${idx}`}>
-                <PaginationEllipsis />
+                <span className="px-2 text-muted-foreground">...</span>
               </PaginationItem>
             ) : (
               <PaginationItem key={page}>
                 <PaginationLink
+                  href="#"
                   isActive={page === currentPage}
-                  onClick={() => table.setPageIndex(page - 1)}
-                  className="cursor-pointer"
+                  className="size-7"
+                  aria-current={page === currentPage ? 'page' : undefined}
+                  onClick={(e) => { e.preventDefault(); table.setPageIndex(page) }}
                 >
-                  {page}
+                  {page + 1}
                 </PaginationLink>
               </PaginationItem>
             )
@@ -75,13 +77,9 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
 
           <PaginationItem>
             <PaginationNext
-              onClick={() => table.nextPage()}
-              aria-disabled={!table.getCanNextPage()}
-              className={
-                !table.getCanNextPage()
-                  ? 'pointer-events-none opacity-50'
-                  : 'cursor-pointer'
-              }
+              href="#"
+              onClick={(e) => { e.preventDefault(); table.nextPage() }}
+              className={!table.getCanNextPage() ? 'pointer-events-none opacity-50' : ''}
             />
           </PaginationItem>
         </PaginationContent>
