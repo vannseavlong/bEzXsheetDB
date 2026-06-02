@@ -1,0 +1,33 @@
+import { defineTable, string, number, date } from 'longcelot-sheet-db';
+
+export default defineTable({
+  name: 'orders',
+  actor: 'operation',
+  timestamps: true,
+  columns: {
+    bulk_order_id: string(),
+    customer_first_name: string().required(),
+    customer_last_name: string().required(),
+    customer_phone: string().required(),
+    profile_url: string(),
+    category: string().required(),
+    service_type: string().required(),
+    schedule_date: date().required(),
+    duration: number().required(),
+    address: string().required(),
+    status: string().required().enum(['PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).default('PENDING'),
+    payment_status: string().enum(['PAID', 'UNPAID']).default('UNPAID'),
+    payment_method: string(),
+    coupon_code: string(),
+    amount: number().min(0).required(),
+    service_fee: number().min(0).default(0),
+    transport_fee: number().min(0).default(0),
+    vat_fee: number().min(0).default(0),
+    discount: number().min(0).default(0),
+    net_revenue: number().min(0).default(0),
+    note: string(),
+    type: string().enum(['ORDER', 'DIRECT_SALE']).default('ORDER'),
+    exchange_rate: number(),
+    assigned_cleaner_id: string().ref('cleaners._id'),
+  },
+});

@@ -1,5 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
+import ProtectedRoute from '@/components/layout/ProtectedRoute'
+import LoginPage from '@/pages/auth/LoginPage'
+import AuthCallbackPage from '@/pages/auth/AuthCallbackPage'
 
 import Dashboard from '@/pages/Dashboard'
 import OrderPage from '@/pages/OrderPage'
@@ -61,12 +64,19 @@ import Tickets from '@/pages/customer-service/Tickets'
 export default function App() {
   return (
     <Routes>
-      {/* Full-screen routes (no layout) */}
-      <Route path="/order" element={<OrderPage />} />
-      <Route path="/calendar" element={<CalendarPage />} />
-      <Route path="/chat" element={<ChatPage />} />
+      {/* Public routes */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
-      {/* Layout-wrapped routes */}
+      {/* Full-screen authenticated routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/order" element={<OrderPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />
+        <Route path="/chat" element={<ChatPage />} />
+      </Route>
+
+      {/* Layout-wrapped authenticated routes */}
+      <Route element={<ProtectedRoute />}>
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
 
@@ -131,6 +141,7 @@ export default function App() {
         <Route path="/registered-customer" element={<RegisteredCustomer />} />
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/tickets/:id" element={<Tickets />} />
+      </Route>
       </Route>
     </Routes>
   )

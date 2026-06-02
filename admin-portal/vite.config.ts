@@ -16,5 +16,10 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    proxy: {
+      '/api': 'http://localhost:3000',
+      // Only proxy the trigger route — /auth/callback must stay with React Router
+      '/auth/google': 'http://localhost:3000',
+    },
   },
 })

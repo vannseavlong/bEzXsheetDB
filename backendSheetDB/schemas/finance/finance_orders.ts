@@ -1,0 +1,30 @@
+import { defineTable, string, number, date } from 'longcelot-sheet-db';
+
+export default defineTable({
+  name: 'finance_orders',
+  actor: 'finance',
+  timestamps: true,
+  columns: {
+    order_id: string().required().ref('orders._id'),
+    customer_name: string().required(),
+    customer_phone: string().required(),
+    service_category: string().required(),
+    specific_service: string().required(),
+    schedule_date: date().required(),
+    time: string().required(),
+    address: string().required(),
+    status: string().required().enum(['PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
+    payment_init_date: date(),
+    payment_completed_date: date(),
+    payment_method: string(),
+    promo_code: string(),
+    original_price: number().min(0).required(),
+    discount: number().min(0).default(0),
+    service_fee: number().min(0).default(0),
+    transport_fee: number().min(0).default(0),
+    net_revenue: number().min(0).default(0),
+    vat: number().min(0).default(0),
+    total_fee: number().min(0).required(),
+    remark: string(),
+  },
+});

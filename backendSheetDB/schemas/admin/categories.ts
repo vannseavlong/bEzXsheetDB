@@ -1,0 +1,16 @@
+import { defineTable, string, boolean, number, json } from 'longcelot-sheet-db';
+
+export default defineTable({
+  name: 'categories',
+  actor: 'admin',
+  timestamps: true,
+  softDelete: true,
+  columns: {
+    name_en: string().required(),
+    name_km: string().required(),
+    thumbnail_url: string(),
+    status: boolean().default(true),
+    sort: number().default(0),
+    task_information: json(),
+  },
+});
