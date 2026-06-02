@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { MenuIcon, ChevronLeft, LogOut, User, Settings } from 'lucide-react'
-import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
+import { useSidebar } from '@/components/ui/sidebar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/auth-context'
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Dashboard',
@@ -51,7 +52,9 @@ function getPageTitle(pathname: string): string {
 }
 
 function LogoutDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { logout } = useAuth()
   const handleLogout = () => {
+    logout()
     onClose()
   }
   return (
@@ -79,13 +82,43 @@ function LogoutDialog({ open, onClose }: { open: boolean; onClose: () => void })
   )
 }
 
+function UserAvatar({ name, profileUrl, size = 10 }: { name: string; profileUrl?: string | null; size?: number }) {
+  const initials = name
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+  const sizeClass = `h-${size} w-${size}`
+
+  if (profileUrl) {
+    return (
+      <img
+        src={profileUrl}
+        alt={name}
+        className={`${sizeClass} rounded-full object-cover`}
+      />
+    )
+  }
+
+  return (
+    <div className={`flex ${sizeClass} items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground`}>
+      {initials}
+    </div>
+  )
+}
+
 export default function Topbar() {
   const location = useLocation()
   const { toggleSidebar } = useSidebar()
+  const { user } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [logoutOpen, setLogoutOpen] = useState(false)
 
   const title = getPageTitle(location.pathname)
+  const displayName = user?.name ?? '—'
+  const displayRole = user?.role?.replace(/_/g, ' ').toUpperCase() ?? ''
 
   return (
     <>
@@ -112,12 +145,10 @@ export default function Topbar() {
             onClick={() => setUserMenuOpen((v) => !v)}
             className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-accent"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground">
-              TE
-            </div>
+            <UserAvatar name={displayName} profileUrl={user?.profileUrl} size={10} />
             <div className="hidden flex-col items-start sm:flex">
-              <span className="text-sm font-semibold leading-none">Testing</span>
-              <span className="mt-1 text-xs leading-none text-muted-foreground">ADMIN</span>
+              <span className="text-sm font-semibold leading-none">{displayName}</span>
+              <span className="mt-1 text-xs leading-none text-muted-foreground">{displayRole}</span>
             </div>
           </button>
 
@@ -126,8 +157,8 @@ export default function Topbar() {
               <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
               <div className="absolute right-0 top-14 z-50 w-48 rounded-lg border bg-popover shadow-lg">
                 <div className="border-b px-4 py-3">
-                  <p className="text-sm font-semibold">Testing</p>
-                  <p className="text-xs text-muted-foreground">ADMIN</p>
+                  <p className="text-sm font-semibold">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">{displayRole}</p>
                 </div>
                 <ul className="py-1">
                   <li>

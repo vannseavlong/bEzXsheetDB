@@ -19,6 +19,14 @@ Discovered while building the bEasy admin portal.
 
 ---
 
+## ✅ Fixed in v0.1.17
+
+| # | Item |
+|---|---|
+| 1 | `sync` now appends missing column headers to existing tabs — reads row-1 headers, diffs against schema, appends any missing (purely additive, existing data untouched) |
+
+---
+
 ## 🗺️ Owner Roadmap (not yet shipped)
 
 | Item | Priority |
@@ -33,21 +41,4 @@ Discovered while building the bEasy admin portal.
 
 ## 🐛 Open Bugs (discovered during testing)
 
-### 1. `sync` does not add new columns to existing tables
-
-**Documented promise (CLI skill):**
-> "Calls `syncSchema()` for every schema — creates missing tabs and **adds missing headers**"
-
-**Actual behaviour:**
-`syncSchema()` only adds headers when creating a **brand-new tab**. For tables that already exist, it does nothing — even when columns are added to the schema. Tested with both `onSchemaMismatch: 'warn'` and `'auto-sync'`; neither resolved it. The sync output reports "✅ synced" regardless, giving a false impression the sheet is current.
-
-**Reproduction:**
-1. Run `sync` on a fresh project — columns created correctly ✓
-2. Add a new column to any existing schema
-3. Run `sync` again — output says "✅ synced" but the new column header is **not** in the sheet ✗
-
-**Impact:**
-Developers have no package-provided path to push new columns onto existing sheets. The only current workaround is manually typing column headers in Google Sheets — which defeats the point of a schema-first tool.
-
-**Suggested fix:**
-When `syncSchema()` runs on an existing tab, read the current row-1 headers, diff against the schema column list, and append any that are missing. Purely additive — consistent with the existing "never deletes data" guarantee.
+_No open bugs._

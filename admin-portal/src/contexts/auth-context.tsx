@@ -9,6 +9,7 @@ export interface AdminUser {
   role: AdminRole
   /** Flat list of "MODULE:ACTION" strings granted to this user */
   permissions: string[]
+  profileUrl?: string | null
 }
 
 interface AuthState {
