@@ -74,6 +74,18 @@ export interface Order {
   reseller?: SaleAgent
 }
 
+// ─── RBAC / Roles ────────────────────────────────────────────────────────────
+
+export type RoleStatus = 'Active' | 'Inactive' | 'Pending'
+
+export interface RolesProps {
+  id: string
+  role: string
+  status: RoleStatus
+  createdAt: Date
+  createdBy: string
+}
+
 // ─── Cleaner ─────────────────────────────────────────────────────────────────
 
 export interface Cleaner {

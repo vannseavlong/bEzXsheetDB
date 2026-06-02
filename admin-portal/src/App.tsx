@@ -9,6 +9,9 @@ import ChatPage from '@/pages/ChatPage'
 import CleanerList from '@/pages/cleaner/CleanerList'
 import CleanerForm from '@/pages/cleaner/CleanerForm'
 
+import RoleList from '@/pages/role/RoleList'
+import RoleForm from '@/pages/role/RoleForm'
+
 import PartnerList from '@/pages/partner/PartnerList'
 import PartnerDetail from '@/pages/partner/PartnerDetail'
 import PartnerOnboarding from '@/pages/partner/PartnerOnboarding'
@@ -71,6 +74,11 @@ export default function App() {
         <Route path="/cleaner" element={<CleanerList />} />
         <Route path="/cleaner/new" element={<CleanerForm />} />
         <Route path="/cleaner/:id" element={<CleanerForm />} />
+
+        {/* Roles / RBAC */}
+        <Route path="/roles" element={<RoleList />} />
+        <Route path="/roles/new" element={<RoleForm />} />
+        <Route path="/roles/:id" element={<RoleForm />} />
 
         {/* Partners */}
         <Route path="/partner" element={<PartnerList />} />

@@ -93,6 +93,16 @@
 
 ---
 
+## Phase RBAC: Roles & Permissions ✅ COMPLETE (cloned from bEasy-portal)
+- [x] `src/lib/permission.ts` — ACTIONS + MODULES (incl. RBAC) + MODULE_ACTIONS constants
+- [x] `src/hooks/use-permission.ts` — `usePermission` hook
+- [x] `src/pages/role/_constants.ts` — RBAC_ROLES, MODULE_SECTIONS, PERMISSION_COLUMNS
+- [x] `src/pages/role/RoleList.tsx` — permissions matrix UI (role tabs + module/action grid + New Role button)
+- [x] `src/pages/role/RoleForm.tsx` — form page (name multi-lang + status)
+- [x] Wire routes in `App.tsx`: `/roles` → RoleList, `/roles/new` → RoleForm, `/roles/:id` → RoleForm
+
+---
+
 ## Phase 6: Core Pages (stubs — need full implementation)
 - [ ] src/pages/Dashboard.jsx → needs charts (recharts)
 - [ ] src/pages/OrderPage.jsx → needs split-pane

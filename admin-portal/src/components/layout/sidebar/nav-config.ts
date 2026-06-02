@@ -125,6 +125,7 @@ export const navSections: NavSection[] = [
           { title: 'Product Option', url: '/product-option' },
           { title: 'Items', url: '/item' },
           { title: 'Blocked Schedule', url: '/blocked-schedule' },
+          { title: 'Roles & Permissions', url: '/roles' },
           { title: 'Activity Log', url: '/activity-log' },
         ],
       },
