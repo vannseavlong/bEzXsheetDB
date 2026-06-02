@@ -59,6 +59,7 @@ const auth = createAuthRouter({
       name: profile.name,
       role: user.role,
       permissions: [],
+      profileUrl: profile.picture ?? user.profile_url ?? null,
     }
   },
 })

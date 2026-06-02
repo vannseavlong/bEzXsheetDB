@@ -13,5 +13,6 @@ export default defineTable({
     status: string().enum(['active', 'inactive']).default('active'),
     // null for Google-OAuth-only users; set for email+password accounts
     password_hash: string(),
+    profile_url: string(),
   },
 });

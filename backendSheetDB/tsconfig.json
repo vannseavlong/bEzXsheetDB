@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "esModuleInterop": true,
     "strict": false,
     "outDir": "dist",
@@ -10,6 +10,12 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["server.ts", "schemas/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "server.ts",
+    "schemas/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

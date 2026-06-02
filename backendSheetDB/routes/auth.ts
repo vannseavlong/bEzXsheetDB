@@ -39,6 +39,7 @@ export function createEmailLoginRouter(adapter: SheetAdapter) {
         name: user.name,
         role: user.role,
         permissions: [],
+        profileUrl: user.profile_url ?? null,
       }
 
       const token = signJwt(
