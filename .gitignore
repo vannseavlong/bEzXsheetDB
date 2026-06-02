@@ -14,6 +14,7 @@ CODEX.md
 
 # Unwated folders
 portal/
+bEasy-portal/
 
 # ─── Environment / secrets ────────────────────────────────────────────────────
 .env

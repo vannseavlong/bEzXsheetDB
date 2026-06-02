@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { UniqueIdentifier } from '@dnd-kit/core'
-import { Table, TableBody } from '@/components/ui/table'
+import { Table } from '@/components/ui/table'
 import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
 import { DataTableHeader } from '@/components/data-table/DataTableHeader'
@@ -48,18 +48,16 @@ export default function CategoryList() {
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
         />
-        <div className="flex min-h-0 overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-y-auto">
           <DraggableContext data={data} setData={setData} onChange={handleReorder}>
             <Table className="min-w-full">
               <DataTableHeader isDraggable table={table} />
-              <TableBody>
-                <SortableContext
-                  items={data.map((item) => item.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <SortableRows table={table} columns={columns} />
-                </SortableContext>
-              </TableBody>
+              <SortableContext
+                items={data.map((item) => item.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <SortableRows table={table} columns={columns} />
+              </SortableContext>
             </Table>
           </DraggableContext>
         </div>

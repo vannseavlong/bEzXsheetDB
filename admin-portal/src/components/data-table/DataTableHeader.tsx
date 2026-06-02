@@ -15,7 +15,7 @@ export function DataTableHeader<TData>({
   isDraggable = false,
 }: DataTableHeaderProps<TData>) {
   return (
-    <TableHeader className="sticky top-0 bg-muted z-20">
+    <TableHeader className="sticky top-0 bg-gray-100 z-20">
       {table.getHeaderGroups().map((headerGroup) => (
         <TableRow key={headerGroup.id}>
           {isDraggable && <TableHead className="w-12" />}
