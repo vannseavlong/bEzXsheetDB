@@ -29,5 +29,6 @@ export default defineTable({
     type: string().enum(['ORDER', 'DIRECT_SALE']).default('ORDER'),
     exchange_rate: number(),
     assigned_cleaner_id: string().ref('cleaners._id'),
+    newsletter_subscription:string().enum(['SUBSCRIBED', 'UNSUBSCRIBED']).default('UNSUBSCRIBED'),
   },
 });

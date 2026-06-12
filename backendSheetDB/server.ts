@@ -30,6 +30,7 @@ const adapter = createSheetAdapter({
   adminSheetId: process.env.ADMIN_SHEET_ID!,
   credentials,
   tokens: sheetsTokens,
+  onSchemaMismatch: 'warn',
 })
 adapter.registerSchema(usersSchema)
 
