@@ -36,7 +36,7 @@ export function CustomHeader({
   }
 
   return (
-    <div className="h-[88px] p-6 pl-4 flex w-full items-center flex-row bg-background border-b">
+    <div className="h-[88px] p-6 pl-4 flex w-full items-center flex-row bg-background">
       <div className="flex flex-1 flex-row gap-4 items-center">
         <Button variant="ghost" size="icon" type="button" onClick={handleBack}>
           <ChevronLeft className="h-6 w-6" />

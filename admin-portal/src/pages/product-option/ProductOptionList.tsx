@@ -7,19 +7,33 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { productOptionColumns } from '@/components/data-table/columns/ProductOptionColumns'
 import { ProductOptionHeader } from '@/components/headers/ProductOptionHeader'
-import { mockProductOptions } from '@/data/productOptions'
+import { productOptionsApi } from '@/api/product-options'
 import type { ProductOption } from '@/types'
 
 export default function ProductOptionList() {
   const tableState = useTableState()
   const { statusFilter, setStatusFilter } = tableState
 
-  const [data, setData] = useState<ProductOption[]>(() => [...mockProductOptions] as ProductOption[])
+  const [data, setData] = useState<ProductOption[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const columns = useMemo(
-    () => productOptionColumns({ onDelete: (id) => setData((prev) => prev.filter((i) => i.id !== id)) }),
-    []
-  )
+  useEffect(() => {
+    productOptionsApi.list()
+      .then(rows => setData(rows.map(r => ({
+        id: r._id, nameEn: r.name_en, type: r.type, itemCount: 0, status: r.status,
+      }))))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleDelete = async (id: string) => {
+    try {
+      await productOptionsApi.remove(id)
+      setData(prev => prev.filter(i => i.id !== id))
+    } catch (err) { console.error('Delete failed:', err) }
+  }
+
+  const columns = useMemo(() => productOptionColumns({ onDelete: handleDelete }), [])
 
   const table = useDataTableConfig(data, columns, tableState)
 
@@ -28,6 +42,8 @@ export default function ProductOptionList() {
     if (!col) return
     col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
   }, [statusFilter, table])
+
+  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">

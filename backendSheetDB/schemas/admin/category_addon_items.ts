@@ -10,7 +10,10 @@ export default defineTable({
     name_en: string().required(),
     name_km: string().required(),
     type: string().required(),
-    price: number().min(0).default(0),
+    img_url: string(),
+    amount: number().min(0).default(0),
+    duration: number().min(0).default(0),
     status: boolean().default(true),
+    sort: number().default(0),
   },
 });

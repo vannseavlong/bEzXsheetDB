@@ -1,31 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { CustomHeader, MultiLanguageInput } from '@/components/shared'
-import { mockProducts } from '@/data/products'
-import { mockCategories } from '@/data/categories'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CustomHeader } from '@/components/shared/CustomHeader'
+import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
+import { ProfilePicker } from '@/components/shared/ProfilePicker'
+import TaskInformationPanel, { type TaskItem } from '@/components/category/task-information/TaskInformationPanel'
+import { TaskInformationDialog, type TaskData } from '@/components/category/task-information/TaskInformationDialog'
+import DraggableComboboxPanel from '@/components/common/draggable/DraggableComboboxPanel'
+import type { ComboItem } from '@/components/common/draggable/SortableComboBox'
+import { productsApi } from '@/api/products'
+import { productOptionsApi } from '@/api/product-options'
+import { taskInfoApi } from '@/api/task-info'
 
-interface MultiLangVal {
-  en: string
-  km: string
-  vi: string
-  tw: string
-  cn: string
-}
-
-function emptyLang(val = ''): MultiLangVal {
-  return { en: val, km: '', vi: '', tw: '', cn: '' }
-}
+type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
+function emptyLang(val = ''): MultiLangVal { return { en: val, km: '', vi: '', tw: '', cn: '' } }
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>()
@@ -33,42 +24,79 @@ export default function ProductForm() {
   const isEdit = id !== 'new'
 
   const [name, setName] = useState<MultiLangVal>(emptyLang())
-  const [categoryId, setCategoryId] = useState('')
-  const [basePrice, setBasePrice] = useState<number>(0)
-  const [duration, setDuration] = useState<number>(1)
+  const [basePrice, setBasePrice] = useState(0)
+  const [duration, setDuration] = useState(1)
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
-  const [sortOrder, setSortOrder] = useState<number>(1)
-  const [description, setDescription] = useState('')
-  const [saveMsg, setSaveMsg] = useState('')
+  const [sort, setSort] = useState(0)
+  const [imageUrl, setImageUrl] = useState('')
+  const [taskItems, setTaskItems] = useState<TaskItem[]>([])
+  const [linkedOptions, setLinkedOptions] = useState<ComboItem[]>([])
+  const [optionChoices, setOptionChoices] = useState<{ label: string; value: string }[]>([])
 
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false)
+  const [editingTaskIndex, setEditingTaskIndex] = useState<number | undefined>()
+  const [saving, setSaving] = useState(false)
+
+  // Load all product options for the dropdown
   useEffect(() => {
-    if (isEdit && id) {
-      const product = (mockProducts as any[]).find((p) => p.id === id)
-      if (product) {
-        setName(emptyLang(product.nameEn))
-        setCategoryId(product.categoryId)
-        setBasePrice(product.basePrice)
-        setDuration(product.duration)
-        setStatus(product.status ? 'active' : 'inactive')
-        setSortOrder(product.sort)
-      }
-    }
+    productOptionsApi.list().then(rows =>
+      setOptionChoices(rows.map(r => ({ label: r.name_en, value: r._id })))
+    ).catch(console.error)
+  }, [])
+
+  // Load existing product on edit
+  useEffect(() => {
+    if (!isEdit || !id) return
+    Promise.all([
+      productsApi.get(id),
+      productOptionsApi.list(id),
+      taskInfoApi.listByProduct(id),
+    ]).then(([product, options, tasks]) => {
+      setName(emptyLang(product.name_en))
+      setBasePrice(product.base_price)
+      setDuration(product.duration)
+      setStatus(product.status ? 'active' : 'inactive')
+      setSort(product.sort)
+      setLinkedOptions(options.map(o => ({ id: o._id, value: o._id })))
+      setTaskItems(tasks.map(taskInfoApi.toTaskItem))
+    }).catch(console.error)
   }, [id, isEdit])
 
-  function handleSave() {
-    const payload = {
-      id: isEdit ? id : undefined,
-      name,
-      categoryId,
-      basePrice,
-      duration,
-      status: status === 'active',
-      sortOrder,
-      description,
+  async function handleSave() {
+    setSaving(true)
+    try {
+      const payload = {
+        name_en: name.en, name_km: name.km,
+        base_price: basePrice, duration,
+        status: status === 'active', sort,
+      }
+
+      let productId = id!
+      if (isEdit) {
+        await productsApi.update(productId, payload)
+      } else {
+        const created = await productsApi.create(payload)
+        productId = created._id
+      }
+
+      await taskInfoApi.replaceForProduct(productId, taskItems)
+      navigate('/product')
+    } catch (err) {
+      console.error('Save failed:', err)
+    } finally {
+      setSaving(false)
     }
-    console.log('Save product:', payload)
-    setSaveMsg('Saved successfully!')
-    setTimeout(() => setSaveMsg(''), 3000)
+  }
+
+  function openAddTask() { setEditingTaskIndex(undefined); setTaskDialogOpen(true) }
+  function openEditTask(index: number) { setEditingTaskIndex(index); setTaskDialogOpen(true) }
+
+  function handleTaskSave(data: TaskData) {
+    if (editingTaskIndex !== undefined) {
+      setTaskItems(prev => prev.map((t, i) => i === editingTaskIndex ? { ...t, ...data } : t))
+    } else {
+      setTaskItems(prev => [...prev, { id: `tmp_${Date.now()}`, ...data }])
+    }
   }
 
   return (
@@ -77,123 +105,61 @@ export default function ProductForm() {
         title={isEdit ? 'Edit Product' : 'New Product'}
         onBack={() => navigate(-1)}
         onSave={handleSave}
-      >
-        {saveMsg && (
-          <span className="text-sm text-green-600 font-medium">{saveMsg}</span>
-        )}
-      </CustomHeader>
+        isLoading={saving}
+      />
 
-      <div className="p-6 overflow-auto max-w-3xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {/* Name — full width */}
-            <MultiLanguageInput
-              label="Name"
-              required
-              values={name}
-              onChange={setName}
-            />
+      <div className="flex gap-6 p-6 overflow-auto">
+        <div className="flex-1 space-y-4">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Details</CardTitle></CardHeader>
+            <CardContent className="space-y-5">
+              <ProfilePicker imageUrl={imageUrl} onChange={(_, url) => setImageUrl(url)} />
 
-            {/* Grid 2-col */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Category */}
-              <div className="space-y-1.5">
-                <Label>Category</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(mockCategories as any[]).map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.nameEn}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <MultiLanguageInput label="Name" required values={name} onChange={setName} />
 
-              {/* Status */}
-              <div className="space-y-1.5">
-                <Label>Status</Label>
-                <Select
-                  value={status}
-                  onValueChange={(v) => setStatus(v as 'active' | 'inactive')}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Base Price */}
-              <div className="space-y-1.5">
-                <Label>Base Price</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                    $
-                  </span>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={basePrice}
-                    onChange={(e) => setBasePrice(parseFloat(e.target.value) || 0)}
-                    className="pl-7"
-                  />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Base Price ($)</Label>
+                  <Input type="number" min="0" step="0.01" value={basePrice}
+                    onChange={e => setBasePrice(parseFloat(e.target.value) || 0)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Duration (hours)</Label>
+                  <Input type="number" min="0" value={duration}
+                    onChange={e => setDuration(parseInt(e.target.value) || 0)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Status</Label>
+                  <Select value={status} onValueChange={v => setStatus(v as 'active' | 'inactive')}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Sort Order</Label>
+                  <Input type="number" min="0" value={sort}
+                    onChange={e => setSort(parseInt(e.target.value) || 0)} />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </div>
 
-              {/* Duration */}
-              <div className="space-y-1.5">
-                <Label>Duration</Label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    min="1"
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value) || 1)}
-                    className="pr-16"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                    hours
-                  </span>
-                </div>
-              </div>
+        <div className="w-80 space-y-4">
+          <TaskInformationPanel items={taskItems} onChange={setTaskItems}
+            onAdd={openAddTask} onEdit={openEditTask} />
 
-              {/* Sort Order */}
-              <div className="space-y-1.5">
-                <Label>Sort Order</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(parseInt(e.target.value) || 1)}
-                />
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <Label>Description</Label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter product description in English..."
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-          </CardContent>
-        </Card>
+          <DraggableComboboxPanel title="Product Options" buttonText="Add Product Option"
+            data={linkedOptions} onChange={setLinkedOptions} options={optionChoices} showAmount />
+        </div>
       </div>
+
+      <TaskInformationDialog open={taskDialogOpen} setOpen={setTaskDialogOpen}
+        value={editingTaskIndex !== undefined ? taskItems[editingTaskIndex] : undefined}
+        onSave={handleTaskSave} />
     </div>
   )
 }

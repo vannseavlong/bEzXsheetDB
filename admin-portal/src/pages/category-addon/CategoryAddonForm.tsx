@@ -1,57 +1,31 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, X } from 'lucide-react'
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, arrayMove,
+} from '@dnd-kit/sortable'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { CustomHeader, MultiLanguageInput } from '@/components/shared'
-import { mockCategories } from '@/data/categories'
-import { mockCategoryAddons } from '@/data/categoryAddons'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CustomHeader } from '@/components/shared/CustomHeader'
+import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
+import NewCategoryAddonCard, { type AddonItemState } from '@/components/category/NewCategoryAddonCard'
+import { categoryAddonsApi } from '@/api/category-addons'
 
-interface MultiLangVal {
-  en: string
-  km: string
-  vi: string
-  tw: string
-  cn: string
-}
+type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
+function emptyLang(val = ''): MultiLangVal { return { en: val, km: '', vi: '', tw: '', cn: '' } }
 
-interface AddonItem {
-  id: string
-  nameEn: string
-  type: 'Fixed' | 'Per Item' | 'Per Hour'
-  price: number
-}
-
-function emptyLang(val = ''): MultiLangVal {
-  return { en: val, km: '', vi: '', tw: '', cn: '' }
-}
-
-function emptyItem(): AddonItem {
+function emptyItem(): AddonItemState {
   return {
-    id: `item-${Date.now()}-${Math.random()}`,
-    nameEn: '',
-    type: 'Fixed',
-    price: 0,
+    id: `tmp_${Date.now()}_${Math.random()}`,
+    imgUrl: '', nameEn: '', nameKm: '', nameVi: '', nameTw: '', nameCn: '',
+    amount: '', duration: '', status: true, type: 'SINGLE',
   }
 }
 
@@ -61,58 +35,91 @@ export default function CategoryAddonForm() {
   const isEdit = id !== 'new'
 
   const [name, setName] = useState<MultiLangVal>(emptyLang())
+  const [badge, setBadge] = useState<MultiLangVal>(emptyLang())
+  const [selectionType, setSelectionType] = useState<'SINGLE' | 'MULTIPLE'>('SINGLE')
+  const [isRequired, setIsRequired] = useState(false)
   const [status, setStatus] = useState(true)
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [items, setItems] = useState<AddonItem[]>([emptyItem()])
-  const [saveMsg, setSaveMsg] = useState('')
+  const [items, setItems] = useState<AddonItemState[]>([emptyItem()])
+  const [saving, setSaving] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
 
   useEffect(() => {
-    if (isEdit && id) {
-      const addon = (mockCategoryAddons as any[]).find((a) => a.id === id)
-      if (addon) {
-        setName(emptyLang(addon.nameEn))
-        setStatus(addon.status)
-        setSelectedCategories(addon.categories ?? [])
-        if (addon.items && addon.items.length > 0) {
-          setItems(addon.items)
-        }
-      }
-    }
+    if (!isEdit || !id) return
+    Promise.all([
+      categoryAddonsApi.get(id),
+      categoryAddonsApi.getItems(id),
+    ]).then(([addon, dbItems]) => {
+      setName(emptyLang(addon.name_en))
+      setBadge(emptyLang(addon.badge_en ?? ''))
+      setSelectionType(addon.selection_type)
+      setIsRequired(addon.is_required)
+      setStatus(addon.status)
+      setItems(dbItems.map(i => ({
+        id: i._id,
+        imgUrl: i.img_url ?? '',
+        nameEn: i.name_en, nameKm: i.name_km,
+        nameVi: '', nameTw: '', nameCn: '',
+        amount: String(i.amount),
+        duration: String(i.duration),
+        status: i.status,
+        type: i.type as 'SINGLE' | 'MULTIPLE',
+      })))
+    }).catch(console.error)
   }, [id, isEdit])
 
-  function updateItem(idx: number, field: keyof AddonItem, value: string | number) {
-    setItems((prev) =>
-      prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item))
-    )
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = items.findIndex(i => i.id === active.id)
+    const newIndex = items.findIndex(i => i.id === over.id)
+    if (oldIndex !== -1 && newIndex !== -1) setItems(arrayMove(items, oldIndex, newIndex))
   }
 
-  function removeItem(idx: number) {
-    setItems((prev) => prev.filter((_, i) => i !== idx))
+  function handleFieldChange(itemId: string, field: keyof AddonItemState, value: string | boolean) {
+    setItems(prev => prev.map(i => i.id === itemId ? { ...i, [field]: value } : i))
   }
 
-  function addItem() {
-    setItems((prev) => [...prev, emptyItem()])
-  }
+  async function handleSave() {
+    setSaving(true)
+    try {
+      const groupPayload = {
+        name_en: name.en, name_km: name.km,
+        badge_en: badge.en || undefined, badge_km: badge.km || undefined,
+        selection_type: selectionType, is_required: isRequired, status,
+      }
 
-  function toggleCategory(catName: string) {
-    setSelectedCategories((prev) =>
-      prev.includes(catName)
-        ? prev.filter((c) => c !== catName)
-        : [...prev, catName]
-    )
-  }
+      let addonId = id!
+      if (isEdit) {
+        await categoryAddonsApi.update(addonId, groupPayload)
+        // Replace items: delete all existing, then recreate
+        const existing = await categoryAddonsApi.getItems(addonId)
+        await Promise.all(existing.map(e => categoryAddonsApi.removeItem(e._id)))
+      } else {
+        const created = await categoryAddonsApi.create(groupPayload)
+        addonId = created._id
+      }
 
-  function handleSave() {
-    const payload = {
-      id: isEdit ? id : undefined,
-      name,
-      status,
-      categories: selectedCategories,
-      items,
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        await categoryAddonsApi.createItem(addonId, {
+          name_en: item.nameEn, name_km: item.nameKm,
+          type: item.type, img_url: item.imgUrl || undefined,
+          amount: parseFloat(item.amount) || 0,
+          duration: parseFloat(item.duration) || 0,
+          status: item.status, sort: i,
+        })
+      }
+
+      navigate('/category-addon')
+    } catch (err) {
+      console.error('Save failed:', err)
+    } finally {
+      setSaving(false)
     }
-    console.log('Save category addon:', payload)
-    setSaveMsg('Saved successfully!')
-    setTimeout(() => setSaveMsg(''), 3000)
   }
 
   return (
@@ -121,144 +128,80 @@ export default function CategoryAddonForm() {
         title={isEdit ? 'Edit Category Add-On' : 'New Category Add-On'}
         onBack={() => navigate(-1)}
         onSave={handleSave}
-      >
-        {saveMsg && (
-          <span className="text-sm text-green-600 font-medium">{saveMsg}</span>
-        )}
-      </CustomHeader>
+        isLoading={saving}
+      />
 
-      <div className="p-6 overflow-auto space-y-4 max-w-4xl">
+      <div className="flex-1 overflow-auto p-6 space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {/* Name */}
-            <MultiLanguageInput
-              label="Name"
-              required
-              values={name}
-              onChange={setName}
-            />
+          <CardHeader><CardTitle className="text-base">Group</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <MultiLanguageInput label="Name" required values={name} onChange={setName} />
+              <MultiLanguageInput label="Badge" values={badge} onChange={setBadge} />
 
-            {/* Status */}
-            <div className="flex items-center gap-3">
-              <Switch checked={status} onCheckedChange={setStatus} id="status" />
-              <Label htmlFor="status" className="cursor-pointer font-medium">
-                {status ? 'Active' : 'Inactive'}
-              </Label>
-            </div>
+              <div className="space-y-1.5">
+                <Label>Selection Type</Label>
+                <Select value={selectionType} onValueChange={v => setSelectionType(v as 'SINGLE' | 'MULTIPLE')}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SINGLE">Single</SelectItem>
+                    <SelectItem value="MULTIPLE">Multiple</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Associated Categories */}
-            <div className="space-y-2">
-              <Label>Associated Categories</Label>
-              <ScrollArea className="h-48 rounded-md border p-3">
-                <div className="grid grid-cols-2 gap-2">
-                  {(mockCategories as any[]).map((cat) => (
-                    <label
-                      key={cat.id}
-                      className="flex items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={selectedCategories.includes(cat.nameEn)}
-                        onCheckedChange={() => toggleCategory(cat.nameEn)}
-                      />
-                      <span className="text-sm">{cat.nameEn}</span>
-                    </label>
-                  ))}
-                </div>
-              </ScrollArea>
+              <div className="space-y-1.5">
+                <Label>Status</Label>
+                <Select value={status ? 'true' : 'false'} onValueChange={v => setStatus(v === 'true')}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Active</SelectItem>
+                    <SelectItem value="false">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <Switch checked={isRequired} onCheckedChange={setIsRequired} id="is-required" />
+                <Label htmlFor="is-required" className="cursor-pointer">Is Required</Label>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Add-On Items Table */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Add-On Items</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="rounded-md border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead>Name</TableHead>
-                    <TableHead className="w-40">Type</TableHead>
-                    <TableHead className="w-36">Price ($)</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item, idx) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <Input
-                          value={item.nameEn}
-                          onChange={(e) => updateItem(idx, 'nameEn', e.target.value)}
-                          placeholder="Item name"
-                          className="h-8"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={item.type}
-                          onValueChange={(v) =>
-                            updateItem(idx, 'type', v as AddonItem['type'])
-                          }
-                        >
-                          <SelectTrigger className="h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Fixed">Fixed</SelectItem>
-                            <SelectItem value="Per Item">Per Item</SelectItem>
-                            <SelectItem value="Per Hour">Per Hour</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <div className="relative">
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                            $
-                          </span>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.price}
-                            onChange={(e) =>
-                              updateItem(idx, 'price', parseFloat(e.target.value) || 0)
-                            }
-                            className="h-8 pl-6"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-gray-400 hover:text-red-500"
-                          onClick={() => removeItem(idx)}
-                          disabled={items.length === 1}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Add-on Items</CardTitle>
+              {items.length > 0 && (
+                <Button variant="link" className="text-destructive pr-0! pt-0!"
+                  type="button" onClick={() => setItems([])}>Clear All</Button>
+              )}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-blue-600 hover:text-blue-700 gap-1.5 px-0"
-              onClick={addItem}
-            >
-              <Plus className="h-4 w-4" />
-              Add Item
+          </CardHeader>
+          {items.length > 0 && (
+            <CardContent>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                  <div className="flex flex-col divide-y divide-accent gap-0">
+                    {items.map((item, index) => (
+                      <div key={item.id} className="py-6 first:pt-0">
+                        <NewCategoryAddonCard item={item} index={index}
+                          onFieldChange={handleFieldChange}
+                          onDelete={() => setItems(prev => prev.filter(i => i.id !== item.id))} />
+                      </div>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </CardContent>
+          )}
+          <CardFooter className="justify-end">
+            <Button type="button" variant="link" className="pr-0! pb-0! gap-1"
+              onClick={() => setItems(prev => [...prev, emptyItem()])}>
+              <Plus className="h-4 w-4" />Add Another Item
             </Button>
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
     </div>

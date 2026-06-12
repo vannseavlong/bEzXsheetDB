@@ -7,19 +7,34 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { categoryAddonColumns } from '@/components/data-table/columns/CategoryAddonColumns'
 import { CategoryAddonHeader } from '@/components/headers/CategoryAddonHeader'
-import { mockCategoryAddons } from '@/data/categoryAddons'
+import { categoryAddonsApi } from '@/api/category-addons'
 import type { CategoryAddon } from '@/types'
 
 export default function CategoryAddonList() {
   const tableState = useTableState()
   const { statusFilter, setStatusFilter } = tableState
 
-  const [data, setData] = useState<CategoryAddon[]>(() => [...mockCategoryAddons] as CategoryAddon[])
+  const [data, setData] = useState<CategoryAddon[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const columns = useMemo(
-    () => categoryAddonColumns({ onDelete: (id) => setData((prev) => prev.filter((i) => i.id !== id)) }),
-    []
-  )
+  useEffect(() => {
+    categoryAddonsApi.list()
+      .then(rows => setData(rows.map(r => ({
+        id: r._id, nameEn: r.name_en, categories: [], status: r.status,
+        itemCount: 0, items: [],
+      }))))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleDelete = async (id: string) => {
+    try {
+      await categoryAddonsApi.remove(id)
+      setData(prev => prev.filter(i => i.id !== id))
+    } catch (err) { console.error('Delete failed:', err) }
+  }
+
+  const columns = useMemo(() => categoryAddonColumns({ onDelete: handleDelete }), [])
 
   const table = useDataTableConfig(data, columns, tableState)
 
@@ -28,6 +43,8 @@ export default function CategoryAddonList() {
     if (!col) return
     col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
   }, [statusFilter, table])
+
+  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">

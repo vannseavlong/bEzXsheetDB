@@ -1,0 +1,17 @@
+import { Router } from 'express'
+import type { SheetAdapter } from 'longcelot-sheet-db'
+import { createAuthRoutes } from './auth/index'
+import { createAdminRouter } from './admin/index'
+import { createAppRouter } from './app/index'
+
+export function createRouter(adapter: SheetAdapter) {
+  const router = Router()
+
+  router.get('/health', (_req, res) => res.json({ ok: true, ts: new Date().toISOString() }))
+
+  router.use('/auth', createAuthRoutes(adapter))
+  router.use('/admin', createAdminRouter(adapter))
+  router.use('/app', createAppRouter(adapter))
+
+  return router
+}

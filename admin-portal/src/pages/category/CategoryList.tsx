@@ -10,35 +10,49 @@ import { DraggableContext } from '@/components/data-table/DraggableContext'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { categoryColumns } from '@/components/data-table/columns/CategoryColumns'
 import { CategoryTableHeader } from '@/components/headers/CategoryTableHeader'
-import { mockCategories } from '@/data/categories'
+import { categoriesApi } from '@/api/categories'
 import type { Category } from '@/types'
 
 export default function CategoryList() {
   const tableState = useTableState()
   const { statusFilter, setStatusFilter } = tableState
 
-  const [data, setData] = useState<Category[]>(() => [...mockCategories] as Category[])
+  const [data, setData] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const columns = useMemo(
-    () => categoryColumns({ onDelete: (id) => setData((prev) => prev.filter((i) => i.id !== id)) }),
-    []
-  )
+  useEffect(() => {
+    categoriesApi.list()
+      .then(rows => setData(rows.map(r => ({
+        id: r._id, nameEn: r.name_en, nameKm: r.name_km,
+        thumbnailUrl: r.thumbnail_url ?? null, status: r.status, sort: r.sort,
+        products: [], taskInformation: [], categoryAddOns: [],
+      }))))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleDelete = async (id: string) => {
+    try {
+      await categoriesApi.remove(id)
+      setData(prev => prev.filter(i => i.id !== id))
+    } catch (err) { console.error('Delete failed:', err) }
+  }
+
+  const columns = useMemo(() => categoryColumns({ onDelete: handleDelete }), [])
 
   const table = useDataTableConfig(data, columns, tableState)
 
   useEffect(() => {
     const col = table.getColumn('status')
     if (!col) return
-    if (statusFilter === 'all') {
-      col.setFilterValue(undefined)
-    } else {
-      col.setFilterValue(statusFilter === 'active')
-    }
+    col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
   }, [statusFilter, table])
 
   const handleReorder = (id: UniqueIdentifier, newIndex: number) => {
     console.log('Reorder:', id, '→ index', newIndex)
   }
+
+  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">

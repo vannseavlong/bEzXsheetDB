@@ -8,7 +8,10 @@ export default defineTable({
   columns: {
     name_en: string().required(),
     name_km: string().required(),
-    category_ids: string(), // JSON-serialized array of category _ids
+    badge_en: string(),
+    badge_km: string(),
+    selection_type: string().enum(['SINGLE', 'MULTIPLE']).default('SINGLE'),
+    is_required: boolean().default(false),
     status: boolean().default(true),
   },
 });

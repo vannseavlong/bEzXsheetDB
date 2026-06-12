@@ -8,7 +8,6 @@ export default defineTable({
   columns: {
     name_en: string().required(),
     name_km: string().required(),
-    category_id: string().required().ref('categories._id'),
     image_url: string(),
     status: boolean().default(true),
     display_order: number().default(0),

@@ -2,8 +2,14 @@ import { useRef, useState } from "react";
 import { Camera, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function ProfilePicker({ imageUrl, onChange, className }) {
-  const inputRef = useRef(null);
+type ProfilePickerProps = {
+  imageUrl?: string
+  onChange?: (file: File, url: string) => void
+  className?: string
+}
+
+export function ProfilePicker({ imageUrl, onChange, className }: ProfilePickerProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState(imageUrl ?? null);
 
   function handleFileChange(e) {

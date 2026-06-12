@@ -7,19 +7,34 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { popularServiceColumns } from '@/components/data-table/columns/PopularServiceColumns'
 import { PopularServiceHeader } from '@/components/headers/PopularServiceHeader'
-import { mockPopularServices } from '@/data/popularServices'
+import { popularServicesApi } from '@/api/popular-services'
 import type { PopularService } from '@/types'
 
 export default function PopularServiceList() {
   const tableState = useTableState()
   const { statusFilter, setStatusFilter } = tableState
 
-  const [data, setData] = useState<PopularService[]>(() => [...mockPopularServices] as PopularService[])
+  const [data, setData] = useState<PopularService[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const columns = useMemo(
-    () => popularServiceColumns({ onDelete: (id) => setData((prev) => prev.filter((i) => i.id !== id)) }),
-    []
-  )
+  useEffect(() => {
+    popularServicesApi.list()
+      .then(rows => setData(rows.map(r => ({
+        id: r._id, nameEn: r.name_en, status: r.status,
+        displayOrder: r.display_order, imageUrl: r.image_url ?? null, categoryId: '',
+      }))))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleDelete = async (id: string) => {
+    try {
+      await popularServicesApi.remove(id)
+      setData(prev => prev.filter(i => i.id !== id))
+    } catch (err) { console.error('Delete failed:', err) }
+  }
+
+  const columns = useMemo(() => popularServiceColumns({ onDelete: handleDelete }), [])
 
   const table = useDataTableConfig(data, columns, tableState)
 
@@ -28,6 +43,8 @@ export default function PopularServiceList() {
     if (!col) return
     col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
   }, [statusFilter, table])
+
+  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">

@@ -23,7 +23,7 @@ export default function Layout() {
     <div className="h-screen flex">
       <SidebarProvider>
         <AppSidebar />
-        <main className="flex flex-1 flex-col bg-background overflow-hidden">
+        <main className={`flex flex-1 flex-col overflow-hidden ${isForm ? 'bg-muted/40' : 'bg-background'}`}>
           {!isForm && (
             <div className="shrink-0">
               <Topbar />
