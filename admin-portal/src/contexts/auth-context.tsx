@@ -22,7 +22,7 @@ interface AuthContextValue extends AuthState {
   /**
    * Starts the Google OAuth2 flow.
    * Saves the intended destination so the user lands back after login.
-   * Then redirects the browser to the backend's /api/auth/google endpoint.
+   * Then redirects the browser to the backend's /api/admin/auth/google endpoint.
    */
   loginWithGoogle: (returnTo?: string) => void
   /**
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Persist the destination so AuthCallbackPage can redirect there after login
     sessionStorage.setItem(RETURN_TO_KEY, returnTo)
     // Full-page redirect — backend handles the OAuth dance with Google
-    window.location.href = '/auth/google'
+    window.location.href = '/api/admin/auth/google'
   }
 
   function handleAuthCallback(incomingUser: AdminUser, incomingToken: string) {

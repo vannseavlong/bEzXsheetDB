@@ -1,16 +1,15 @@
-import { Router } from 'express'
+import { Router, type RequestHandler } from 'express'
 import { createAuthRouter, comparePassword } from 'longcelot-sheet-db'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { env } from '../../config/env'
 import { signJwt } from '../../utils/jwt'
 
-export function createAuthRoutes(adapter: SheetAdapter) {
-  const router = Router()
-
-  // ── Google OAuth ───────────────────────────────────────────────────────────
-  // GET /api/auth/google  →  GET /api/auth/callback
+// GET /api/admin/auth/google  →  GET /api/admin/auth/callback
+// Must be mounted on the root app (not inside a sub-router) so req.path is not stripped.
+export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHandler {
   const googleAuth = createAuthRouter({
     adapter,
+    basePath: '/api/admin',
     jwtSecret: env.JWT_SECRET,
     frontendUrl: `${env.FRONTEND_URL}/auth/callback`,
     registrationPolicy: 'open',
@@ -28,8 +27,11 @@ export function createAuthRoutes(adapter: SheetAdapter) {
       }
     },
   })
+  return googleAuth.handler as RequestHandler
+}
 
-  router.use(googleAuth.handler)
+export function createAuthRoutes(adapter: SheetAdapter) {
+  const router = Router()
 
   // ── Email + password login ─────────────────────────────────────────────────
   // POST /api/auth/login

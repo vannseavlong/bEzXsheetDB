@@ -9,7 +9,7 @@ export function createRouter(adapter: SheetAdapter) {
 
   router.get('/health', (_req, res) => res.json({ ok: true, ts: new Date().toISOString() }))
 
-  router.use('/auth', createAuthRoutes(adapter))
+  router.use('/admin/auth', createAuthRoutes(adapter))
   router.use('/admin', createAdminRouter(adapter))
   router.use('/app', createAppRouter(adapter))
 
