@@ -12,7 +12,7 @@ export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHand
     basePath: '/api/admin',
     jwtSecret: env.JWT_SECRET,
     frontendUrl: `${env.FRONTEND_URL}/auth/callback`,
-    registrationPolicy: 'open',
+    registrationPolicy: 'login-only',
     async onUser(profile, adapter) {
       const ctx = adapter.withContext({ userId: 'auth', role: 'admin', actorSheetId: '' })
       const user = await ctx.table('users').findOne({ where: { email: profile.email } }) as any

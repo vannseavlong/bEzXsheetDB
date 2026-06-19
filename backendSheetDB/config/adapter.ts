@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { createSheetAdapter } from 'longcelot-sheet-db'
+import { createSheetAdapter, DriveStorageAdapter } from 'longcelot-sheet-db'
 import { env } from './env'
 
 // Admin schemas
@@ -30,6 +30,17 @@ export function createAdapter() {
     },
     tokens,
     onSchemaMismatch: env.ON_SCHEMA_MISMATCH,
+    driveFolder: {
+      root: 'bEasy',
+      subfolders: {
+        admin:     'Admin',
+        operation: 'Operation',
+        finance:   'Finance',
+        marketing: 'Marketing',
+        user:      'Users',
+      },
+    },
+    storage: new DriveStorageAdapter({ folder: 'uploads' }),
   })
 
   // ── Schema registry ────────────────────────────────────────────────────────

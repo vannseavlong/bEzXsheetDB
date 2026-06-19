@@ -15,5 +15,6 @@ export const env = {
   GOOGLE_CLIENT_SECRET: get('GOOGLE_CLIENT_SECRET'),
   GOOGLE_REDIRECT_URI: get('GOOGLE_REDIRECT_URI'),
   ADMIN_SHEET_ID: get('ADMIN_SHEET_ID'),
+  SUPER_ADMIN_EMAIL: get('SUPER_ADMIN_EMAIL'),
   ON_SCHEMA_MISMATCH: get('ON_SCHEMA_MISMATCH', 'warn') as 'warn' | 'error' | 'auto-sync',
 }

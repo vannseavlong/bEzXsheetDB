@@ -18,7 +18,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "longcelot-sheet-db": "^0.1.17"
+    "longcelot-sheet-db": "^0.1.20"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
