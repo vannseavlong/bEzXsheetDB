@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
-import { requireAuth } from '../../middleware/auth'
+import { requireAuth, requirePermission } from '../../middleware/auth'
 import { createUsersRouter } from './users'
+import { createRbacRouter } from './rbac'
 import { createCategoriesRouter } from './categories'
 import { createProductsRouter } from './products'
 import { createCategoryAddonsRouter } from './category-addons'
@@ -9,6 +10,8 @@ import { createProductOptionsRouter } from './product-options'
 import { createPopularServicesRouter } from './popular-services'
 import { createTaskInfoRouter } from './task-info'
 import { createCategoryAddonItemsRouter } from './category-addon-items'
+import { createItemsRouter } from './items'
+import { createBlockedSchedulesRouter } from './blocked-schedules'
 
 /**
  * All /api/admin/* routes.
@@ -20,7 +23,8 @@ export function createAdminRouter(adapter: SheetAdapter) {
 
   router.use(requireAuth)
 
-  router.use('/users', createUsersRouter(adapter))
+  router.use('/users', requirePermission('ADMIN_USERS', 'VIEW'), createUsersRouter(adapter))
+  router.use('/rbac', requirePermission('RBAC', 'VIEW'), createRbacRouter(adapter))
   router.use('/categories', createCategoriesRouter(adapter))
   router.use('/products', createProductsRouter(adapter))
   router.use('/category-addons', createCategoryAddonsRouter(adapter))
@@ -28,6 +32,8 @@ export function createAdminRouter(adapter: SheetAdapter) {
   router.use('/popular-services', createPopularServicesRouter(adapter))
   router.use('/task-info', createTaskInfoRouter(adapter))
   router.use('/category-addon-items', createCategoryAddonItemsRouter(adapter))
+  router.use('/items', createItemsRouter(adapter))
+  router.use('/blocked-schedules', createBlockedSchedulesRouter(adapter))
 
   return router
 }

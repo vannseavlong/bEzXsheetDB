@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { usePermission } from '@/hooks/use-permission';
 
 function SidebarLogoutDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { logout } = useAuth();
@@ -47,8 +48,11 @@ export function AppSidebar() {
   const location = useLocation();
   const { setOpenMobile } = useSidebar();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const { hasPermission } = usePermission();
 
   const closeMobile = () => setOpenMobile(false);
+
+  const canView = (module?: string) => !module || hasPermission(module, 'VIEW');
 
   return (
     <>
@@ -57,37 +61,52 @@ export function AppSidebar() {
           <div className="flex flex-col gap-4">
             <SidebarBrand />
 
-            {navSections.map((section) => (
-              <NavSection key={section.label} label={section.label}>
-                {section.items.map((item) => {
+            {navSections.map((section) => {
+              const visibleItems = section.items
+                .map((item) => {
                   if (item.items) {
+                    const visibleSubs = item.items.filter((sub) => canView(sub.module));
+                    if (visibleSubs.length === 0) return null;
+                    return { ...item, items: visibleSubs };
+                  }
+                  return canView(item.module) ? item : null;
+                })
+                .filter(Boolean) as typeof section.items;
+
+              if (visibleItems.length === 0) return null;
+
+              return (
+                <NavSection key={section.label} label={section.label}>
+                  {visibleItems.map((item) => {
+                    if (item.items) {
+                      return (
+                        <NavDropdown
+                          key={item.title}
+                          title={item.title}
+                          icon={item.icon}
+                          isDisabled={item.disabled}
+                          items={item.items}
+                          onClick={closeMobile}
+                        />
+                      );
+                    }
+
                     return (
-                      <NavDropdown
+                      <NavItem
                         key={item.title}
                         title={item.title}
+                        url={item.url!}
                         icon={item.icon}
+                        isActive={getBasePath(location.pathname) === item.url}
+                        badge={item.badge}
                         isDisabled={item.disabled}
-                        items={item.items}
                         onClick={closeMobile}
                       />
                     );
-                  }
-
-                  return (
-                    <NavItem
-                      key={item.title}
-                      title={item.title}
-                      url={item.url!}
-                      icon={item.icon}
-                      isActive={getBasePath(location.pathname) === item.url}
-                      badge={item.badge}
-                      isDisabled={item.disabled}
-                      onClick={closeMobile}
-                    />
-                  );
-                })}
-              </NavSection>
-            ))}
+                  })}
+                </NavSection>
+              );
+            })}
           </div>
         </SidebarContent>
 

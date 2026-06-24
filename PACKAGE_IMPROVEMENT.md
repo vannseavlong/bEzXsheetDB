@@ -1,6 +1,6 @@
 # longcelot-sheet-db — Improvement Tracking
 
-Discovered while building the bEasy admin portal.
+Discovered while building the bEasy admin portal (used as the integration test bed for this package).
 
 ---
 
@@ -29,6 +29,8 @@ Discovered while building the bEasy admin portal.
 
 ## ✅ Fixed in v0.1.20
 
+All 5 items from the "Drive Architecture & File Upload" feature request were implemented.
+
 | # | Item |
 |---|---|
 | 1 | Actor-owned sheets — `createUserSheet` accepts `{ actorTokens }` to create the sheet in the actor's own Drive, then shares with admin |
@@ -41,6 +43,21 @@ Discovered while building the bEasy admin portal.
 
 ---
 
+## ✅ Fixed in v0.1.21
+
+All 6 items from the "CLI, Migration & RBAC Architecture" feedback (submitted 2026-06-21) were addressed.
+
+| # | Item |
+|---|---|
+| 1 | `migrate` CLI renamed — `sheet-db export-data` now ships; `sheet-db migrate` is deprecated with an explanatory note |
+| 2 | README and API.md aligned — README now documents `export --prisma` and `export --sql` as real, available commands |
+| 3 | Schema-only vs schema+data export paths — "Which export command do I need?" decision table added to Migration Path section |
+| 4 | `export-data --all-users` shipped — iterates all registered user sheets; `--dry-run` flag included |
+| 5 | Actor vs Role conceptual explanation — "Actors vs Application Roles" table added to Core Concepts |
+| 6 | Dev/prod parity gap documented — "Dev vs Production data model" section added with tip to use `mock-users` |
+
+---
+
 ## 🗺️ Owner Roadmap (not yet shipped)
 
 | Item | Priority |
@@ -50,198 +67,163 @@ Discovered while building the bEasy admin portal.
 | `invite-only` registration policy (user must exist with `status: 'invited'`) | Future |
 | CLI `--env` flag to pass individual env vars to dynamic seed files | Future |
 | `adapter.join()` — query across multiple actor sheets in memory | Medium |
+| `createSQLAdapter` — production DB adapter (mentioned in README, no details yet) | High |
+| `export --prisma` / `export --sql` — schema export to production formats | High |
+| `migrate --all-users` — data migration across all registered user sheets | High |
 
 ---
 
-## 🐛 Open Bugs (discovered during testing)
+## 🐛 Open Bugs
+
+_(none currently)_
 
 ---
 
-## 📬 Feature Request — Drive Architecture & File Upload (submitted 2026-06-19)
+## 📬 Feature Request / Feedback — CLI, Migration & RBAC Architecture (submitted 2026-06-21)
 
-Discovered while building bEasy (admin portal + mini-app). These are architectural gaps that affect every project using the package, not just ours.
+Discovered while wiring the bEasy RBAC system end-to-end and evaluating the migration story for going to production.
 
 ---
 
-### 1. Actor-owned sheets — sheets should live in the actor's Drive, not the admin's
+### 1. `migrate` CLI is misnamed — industry standard says "migrate" means schema only
 
 **Current behaviour:**
-`createUserSheet()` calls `spreadsheets.create` using the admin's OAuth tokens (loaded from `.sheet-db-tokens.json`). This means every user sheet is physically created inside the **admin's Google Drive**, then shared with the user via `shareWithUser`. The admin account owns and stores all sheets.
+`sheet-db migrate` generates a script that **reads data out of Google Sheets** and calls a stub `insertRow()` function the caller fills in. It moves actual row data, not just table structure.
 
 **Problem:**
-- Admin's 15 GB Drive quota is consumed by every user's sheet, not the user's own quota.
-- One admin account becomes a single point of failure for all user data.
-- Unmanageable at scale — 500 registered users = 500 spreadsheets in one Drive root.
+In the industry, "database migration" universally means **schema changes only** — `CREATE TABLE`, `ALTER TABLE`, `ADD COLUMN`. This is what Prisma Migrate, Rails migrations, Flyway, and Liquibase all do. A developer coming from any of those tools will expect `sheet-db migrate` to output DDL, not a data copy script.
 
-**Requested behaviour:**
-When a new actor registers via Google OAuth, use **their OAuth tokens** (returned from the login flow) to create the spreadsheet in **their own Drive**, then call `shareWithUser` to grant the admin account editor access. The user bears their own storage cost; admin only holds a reference (`actor_sheet_id`).
+Moving actual row data from one DB to another is called a **data migration**, **ETL** (Extract, Transform, Load), or **data export/import** — never just "migrate".
 
-**Technical requirement for the package owner:**
-This requires per-actor token storage. The suggested API change:
+**Requested change:**
+Rename the command to something that reflects what it actually does:
 
-```ts
-// Current
-await adapter.createUserSheet(userId, role, email)
+| Current | Suggested | What it does |
+|---|---|---|
+| `sheet-db migrate` | `sheet-db export-data` or `sheet-db etl` | Generates a script that reads row data from Sheets and stubs an insert for the target DB |
+| `sheet-db export --prisma/--sql` | Keep as-is | Exports table structure (DDL / Prisma schema) — the real "migration" |
 
-// Proposed — pass the actor's own tokens obtained during their Google login
-await adapter.createUserSheet(userId, role, email, {
-  actorTokens: { access_token, refresh_token, expiry_date },
-  extraFields: { ... },
-})
-```
-
-The package would use `actorTokens` to create the sheet via the actor's auth client, then use the admin tokens to share it back. Callers are responsible for persisting and passing the actor's refresh token — the package should not store tokens internally.
+Both capabilities are valuable and should exist. The naming just needs to reflect the distinction.
 
 ---
 
-### 2. Folder and subfolder organisation for Drive
+### 2. README and API.md contradict each other on `export --prisma/--sql`
 
 **Current behaviour:**
-`createSpreadsheet` calls `sheets.spreadsheets.create` with no `parents` field. Every sheet created by the package lands at the **root of the owning Drive** with no grouping.
+- `README.md` (Migration Path section) marks `export --prisma` and `export --sql` as **"coming soon"**
+- `API.md` documents them as real, available commands with full usage examples
 
 **Problem:**
-With even 20 users across multiple roles (admin, seller, cleaner), the Drive root becomes an unorganised dump. No way to distinguish actor sheets from other Drive files visually.
+A developer reading the README thinks this feature doesn't exist yet and looks for a workaround. A developer reading the API docs thinks it's fully shipped. One of these is wrong.
 
-**Requested behaviour:**
-Allow an optional `folderConfig` in `SheetAdapterConfig` (or `sheet-db.config.ts`) that specifies a named folder structure. The package creates the folder if it doesn't exist, then passes its ID as `parents` when creating sheets.
-
-**Suggested API:**
-
-```ts
-// sheet-db.config.ts
-export default {
-  actors: [...],
-  driveFolder: {
-    root: 'bEasy Staging',        // created at Drive root if missing
-    subfolders: {
-      admin:     'Admin Data',
-      seller:    'Sellers',
-      cleaner:   'Cleaners',
-    },
-  },
-}
-```
-
-Result in Drive:
-```
-My Drive/
-└── bEasy Staging/
-    ├── Admin Data/
-    │   └── admin-sheet (central)
-    ├── Sellers/
-    │   ├── seller-user123
-    │   └── seller-user456
-    └── Cleaners/
-        └── cleaner-user789
-```
-
-`sheet-db sync` and `sheet-db mock-users` should respect `driveFolder` so dev sheets are also organised.
+**Requested fix:**
+Align the two documents. If the commands are implemented, remove "coming soon" from the README. If they're not fully implemented, remove them from API.md or mark them clearly as `[planned]`.
 
 ---
 
-### 3. File upload support — pluggable storage adapter
+### 3. Package should clearly support both "schema only" and "schema + data" export paths
+
+**Context:**
+Projects use this package in two different ways when going to production:
+
+- **Internal tools / apps with real staging data** — want to copy everything: schema + all staging data → production. The data they accumulated in Sheets IS the production data.
+- **Products starting fresh in production** — only need schema structure. Production will have real user-generated data from day one; staging data is test data and should be left behind.
+
+**Current gap:**
+The docs don't distinguish these two paths or tell the developer which command covers which scenario. The "Migration Path" section in the README mixes both under one heading.
+
+**Requested change:**
+Add a clear table or decision tree in the README:
+
+| Goal | Command |
+|---|---|
+| Copy table structure only (schema) | `sheet-db export --prisma` or `--sql` |
+| Copy structure + all staging data | `sheet-db export-data` (or `etl`) |
+| Copy structure + data for all user sheets | `sheet-db export-data --all-users` ← missing, see item 4 |
+
+---
+
+### 4. `export-data --all-users` is missing — blocks full data migration for multi-user deployments
 
 **Current behaviour:**
-The package has no file upload concept. There is no way to store binary files (images, documents, PDFs) through the SDK.
+`sheet-db migrate` (the data export script generator) only covers the **admin sheet**. There is no `--all-users` equivalent for data migration, only for schema sync (`sync --all-users`).
 
 **Problem:**
-Real apps need to store images (product photos, avatars, banners). Without a built-in pattern, every project invents its own upload layer independently and stores raw URLs in `string()` columns with no consistency.
+In the per-user-sheet model (each registered user has their own `actor_sheet_id`), staging data is spread across potentially hundreds of individual sheets. To fully migrate to a production SQL DB you would need to:
 
-**Requested behaviour — Option A (Drive upload, simplest):**
-Add a `adapter.upload(file, options)` method that uploads to Google Drive using the admin's (or actor's) tokens and returns a publicly accessible URL. Files should be placed in the `driveFolder.root` configured above, inside an `uploads/` subfolder, optionally partitioned by actor role or table name.
+1. Query the `users` table to get all `actor_sheet_id` values
+2. For each user, read their sheet's tables
+3. Insert rows into SQL with the correct user FK
 
-```ts
-const url = await adapter.upload(buffer, {
-  filename: 'product-image.jpg',
-  mimeType: 'image/jpeg',
-  folder: 'uploads/products',   // relative to driveFolder.root
-  public: true,                  // sets Drive permission type: 'anyone', role: 'reader'
-})
-// returns: https://drive.google.com/uc?id=FILE_ID
+None of this is automated. The caller has to write this loop manually, defeating the purpose of a migration CLI.
+
+**Requested change:**
+Add `--all-users` to the data export command (whatever it gets renamed to):
+
+```bash
+# Migrate admin sheet only
+sheet-db export-data
+
+# Migrate admin sheet + all registered user sheets
+sheet-db export-data --all-users
+
+# Preview without running
+sheet-db export-data --all-users --dry-run
 ```
 
-**Requested behaviour — Option B (pluggable storage, recommended for production path):**
-Expose a `StorageAdapter` interface so callers can plug in any provider. The package ships a built-in `DriveStorageAdapter`; callers can swap to S3, GCS, or Cloudinary without changing any other code.
-
-```ts
-interface StorageAdapter {
-  upload(file: Buffer, options: UploadOptions): Promise<string>  // returns public URL
-  delete(url: string): Promise<void>
-}
-
-// Built-in
-import { DriveStorageAdapter } from 'longcelot-sheet-db'
-const adapter = createSheetAdapter({
-  ...,
-  storage: new DriveStorageAdapter({ folder: 'uploads' }),
-})
-
-// Or swap to any provider — zero other changes
-import { S3StorageAdapter } from 'longcelot-sheet-db/storage/s3'
-const adapter = createSheetAdapter({
-  ...,
-  storage: new S3StorageAdapter({ bucket: 'my-bucket', region: 'ap-southeast-1' }),
-})
-```
-
-This aligns with the package's own migration philosophy: swap the adapter, keep all other code.
-
-The URL stored in the `string()` column should be **provider-agnostic** (just a URL) so migrating providers requires only re-uploading files and updating URLs in the sheet — the schema never changes.
+The generated script should aggregate all user data under their respective `user_id` foreign key so the target DB rows can be properly associated.
 
 ---
 
-### 4. Per-actor token lifecycle management
+### 5. Actor vs Role conflation — the docs need a clear conceptual separation
 
-**Current behaviour:**
-The package reads tokens from a single `.sheet-db-tokens.json` file at startup. There is no per-user token concept — all Drive and Sheets API calls use one shared credential regardless of which actor triggered the request.
+**Observation:**
+While building the RBAC system for bEasy, it became apparent that the package's `actor` concept and an application-level `role` (RBAC) are two fundamentally different things, but the docs use `role:` as the actor identifier, which creates confusion:
+
+```ts
+adapter.withContext({ role: 'operation', ... })  // "role" here = actor/data-domain, not RBAC role
+```
+
+**The distinction:**
+
+| Concept | What it controls | Dynamic? |
+|---|---|---|
+| **Actor** | WHERE data is stored (which Google Sheet, which table schemas) | No — defined in `sheet-db.config.ts` at deploy time |
+| **Application RBAC Role** | WHAT a user is allowed to do (read orders, edit products, etc.) | Yes — managed in `roles` + `role_permissions` tables at runtime |
+
+Because the package uses `role:` for the actor concept, developers naturally reach for the package's `role` field when building RBAC and expect it to be dynamic — but it isn't, which is only discovered after building around it.
+
+**Requested change:**
+- Consider renaming the `withContext({ role })` field to `withContext({ actor })` to match the package's own "Actors" terminology in the README
+- Add a "Actors vs Application Roles" section to the docs that explains:
+  - Actor = static data domain, defined in config, maps to a Sheet
+  - Application RBAC = dynamic, build it yourself on top using `roles` + `role_permissions` tables in the admin sheet
+  - The package intentionally doesn't build RBAC — that belongs in the caller's app layer
+
+---
+
+### 6. Dev/prod parity gap — one shared dev sheet vs one sheet per user in production
+
+**Observation:**
+In `sheet-db.config.ts`, each actor type maps to a single env var (`DEV_OPERATION_SHEET_ID`). This means all operation users in dev share one sheet. But `createUserSheet()` creates individual sheets per user — in production, each registered user gets their own isolated sheet.
 
 **Problem:**
-- Tokens expire. If the single token file expires and no refresh happens, **the entire backend goes down**.
-- Makes actor-owned sheets (item 1 above) impossible without a per-actor token store.
-- No separation between "admin backend token" (for CLI sync, schema ops) and "request-scoped actor token" (for user-initiated data operations).
+You test with shared-sheet behaviour in dev, but run with per-user-sheet behaviour in production. Bugs that only appear with isolated sheets (e.g., one user's data leaking into another's, schema version per user) won't be caught in dev.
 
-**Requested behaviour:**
-Introduce a `TokenStore` interface that the caller implements, allowing tokens to be loaded/saved per actor:
+**Requested change:**
+Add a `mock-users` (already exists) enhancement or a `--multi-sheet` dev mode flag to `sync` that creates N separate actor sheets (like production) instead of reusing one. This closes the dev/prod parity gap.
 
-```ts
-interface TokenStore {
-  get(actorId: string): Promise<OAuthTokens | null>
-  set(actorId: string, tokens: OAuthTokens): Promise<void>
-}
-
-const adapter = createSheetAdapter({
-  ...,
-  tokenStore: myDatabaseTokenStore,  // caller provides — could be Redis, DB, file per actor
-})
-```
-
-The admin backend token remains the default fallback for CLI operations. Per-actor tokens are passed at `withContext()` time or looked up via `TokenStore` by `userId`.
-
----
-
-### 5. Shared Drive (Google Workspace) support
-
-**Current behaviour:**
-The package only works with personal Google Drive accounts (`My Drive`). `spreadsheets.create` with no `supportsAllDrives` flag fails silently or errors on Shared Drives.
-
-**Requested behaviour:**
-Add a `sharedDriveId` option in `SheetAdapterConfig`. When set, all sheet creation and file operations pass `supportsAllDrives: true` and `driveId: sharedDriveId`. This allows teams using Google Workspace to put all staging data in a centrally managed Shared Drive, avoiding the personal-account storage problem entirely.
-
-```ts
-const adapter = createSheetAdapter({
-  ...,
-  sharedDriveId: process.env.SHARED_DRIVE_ID,  // optional; falls back to My Drive
-})
-```
+Alternatively, document this gap explicitly with a "Dev vs Production data model" section so developers know what they're testing.
 
 ---
 
 ### Summary table
 
-| # | Request | Impact | Complexity |
-|---|---------|--------|------------|
-| 1 | Actor-owned sheets (actor's Drive, not admin's) | High — fixes storage quota and isolation | High — needs per-actor token flow |
-| 2 | Folder/subfolder organisation in Drive | Medium — quality of life, manageability | Low — add `parents` to `spreadsheets.create` |
-| 3 | Pluggable file upload (Drive or external provider) | High — enables real app use cases | Medium — new interface + built-in Drive impl |
-| 4 | Per-actor token lifecycle / TokenStore interface | High — required for item 1, resilience | Medium — interface + withContext wiring |
-| 5 | Shared Drive (Google Workspace) support | Medium — unblocks team/enterprise use | Low — `supportsAllDrives` flag + config |
+| # | Issue | Type | Impact |
+|---|---|---|---|
+| 1 | `migrate` is misnamed — should be `export-data` or `etl` | Naming / UX | High — developer confusion on first use |
+| 2 | README and API.md contradict on `export --prisma/--sql` availability | Docs bug | Medium — wastes developer time |
+| 3 | No clear distinction between schema-only vs schema+data export paths | Docs / UX | High — every project hitting production needs this |
+| 4 | `export-data --all-users` missing — can't migrate multi-user deployments | Missing feature | High — blocks production migration for per-user-sheet projects |
+| 5 | Actor vs Role conceptual conflation in docs and API | Docs / API naming | High — causes wrong architecture decisions |
+| 6 | Dev/prod parity gap: one shared dev sheet vs per-user prod sheets | Architecture / DX | Medium — hides production-only bugs in dev |

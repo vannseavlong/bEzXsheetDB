@@ -17,6 +17,8 @@ import {
 export type NavSubItem = {
   title: string;
   url: string;
+  /** Permission module required for VIEW. Omit to always show. */
+  module?: string;
 };
 
 export type NavItem = {
@@ -25,6 +27,8 @@ export type NavItem = {
   icon: ElementType;
   badge?: number;
   disabled?: boolean;
+  /** Permission module required for VIEW. Omit to always show. */
+  module?: string;
   items?: NavSubItem[];
 };
 
@@ -39,16 +43,16 @@ export const navSections: NavSection[] = [
   {
     label: 'Overview',
     items: [
-      { title: 'Dashboard', url: '/', icon: DashboardSquare01Icon },
+      { title: 'Dashboard', url: '/', icon: DashboardSquare01Icon, module: 'DASHBOARD' },
       { title: 'Calendar', url: '/calendar', icon: Calendar03Icon },
-      { title: 'Chat', url: '/chat', icon: BubbleChatIcon },
+      { title: 'Chat', url: '/chat', icon: BubbleChatIcon, module: 'CHAT' },
     ],
   },
   {
     label: 'Operations',
     items: [
-      { title: 'Order', url: '/order', icon: ShoppingCart01Icon },
-      { title: 'Cleaners', url: '/cleaner', icon: UserMultipleIcon },
+      { title: 'Order', url: '/order', icon: ShoppingCart01Icon, module: 'ORDER' },
+      { title: 'Cleaners', url: '/cleaner', icon: UserMultipleIcon, module: 'CLEANER' },
     ],
   },
   {
@@ -58,10 +62,10 @@ export const navSections: NavSection[] = [
         title: 'Partners',
         icon: UserGroupIcon,
         items: [
-          { title: 'Partners', url: '/partner' },
-          { title: 'Onboarding', url: '/partner/onboarding' },
-          { title: 'Tracking', url: '/partner/tracking' },
-          { title: 'Payout', url: '/partner/payout' },
+          { title: 'Partners', url: '/partner', module: 'PARTNER' },
+          { title: 'Onboarding', url: '/partner/onboarding', module: 'PARTNER-ONBOARDING' },
+          { title: 'Tracking', url: '/partner/tracking', module: 'PARTNER-TRACKING' },
+          { title: 'Payout', url: '/partner/payout', module: 'PARTNER-PAYOUT' },
         ],
       },
     ],
@@ -73,24 +77,24 @@ export const navSections: NavSection[] = [
         title: 'Marketing',
         icon: PromotionIcon,
         items: [
-          { title: 'Overview', url: '/overview' },
-          { title: 'Coupon', url: '/coupon' },
-          { title: 'Payment Link', url: '/payment-link' },
-          { title: 'OTP', url: '/otp' },
-          { title: 'Banner', url: '/banner' },
-          { title: 'Push Notification', url: '/push-notification' },
+          { title: 'Overview', url: '/overview', module: 'MARKETING-OVERVIEW' },
+          { title: 'Coupon', url: '/coupon', module: 'MARKETING-COUPON' },
+          { title: 'Payment Link', url: '/payment-link', module: 'MARKETING-PAYMENT_LINK' },
+          { title: 'OTP', url: '/otp', module: 'MARKETING-OTP' },
+          { title: 'Banner', url: '/banner', module: 'MARKETING-BANNER' },
+          { title: 'Push Notification', url: '/push-notification', module: 'MARKETING-NOTIFICATION' },
         ],
       },
       {
         title: 'Finance',
         icon: SaveMoneyDollarIcon,
         items: [
-          { title: 'Orders', url: '/finance-orders' },
-          { title: 'Top Up', url: '/top-up' },
-          { title: 'B-Combos', url: '/b-combos' },
-          { title: 'Direct Sales', url: '/direct-sales' },
-          { title: 'All User', url: '/all-user' },
-          { title: 'Coupons', url: '/coupons' },
+          { title: 'Orders', url: '/finance-orders', module: 'FINANCE-ORDER' },
+          { title: 'Top Up', url: '/top-up', module: 'FINANCE-TOPUP' },
+          { title: 'B-Combos', url: '/b-combos', module: 'FINANCE-BCOMBO' },
+          { title: 'Direct Sales', url: '/direct-sales', module: 'FINANCE-DIRECT_SALES' },
+          { title: 'All User', url: '/all-user', module: 'MARKETING_ALL_USER' },
+          { title: 'Coupons', url: '/coupons', module: 'MARKETING-COUPON' },
         ],
       },
     ],
@@ -102,11 +106,11 @@ export const navSections: NavSection[] = [
         title: 'Customer Service',
         icon: CustomerSupportIcon,
         items: [
-          { title: 'Overview', url: '/customer-overview' },
-          { title: 'Customer', url: '/customer' },
-          { title: 'Direct Sales', url: '/direct-sale-customer' },
-          { title: 'Registered Customers', url: '/registered-customer' },
-          { title: 'Tickets', url: '/tickets' },
+          { title: 'Overview', url: '/customer-overview', module: 'CUSTOMER_OVERVIEW' },
+          { title: 'Customer', url: '/customer', module: 'CUSTOMER_REGISTERED' },
+          { title: 'Direct Sales', url: '/direct-sale-customer', module: 'CUSTOMER_DIRECT_SALE' },
+          { title: 'Registered Customers', url: '/registered-customer', module: 'CUSTOMER_REGISTERED' },
+          { title: 'Tickets', url: '/tickets', module: 'CUSTOMER_TICKETS' },
         ],
       },
     ],
@@ -118,15 +122,16 @@ export const navSections: NavSection[] = [
         title: 'Setup',
         icon: Settings01Icon,
         items: [
-          { title: 'Category', url: '/category' },
-          { title: 'Category Addon', url: '/category-addon' },
-          { title: 'Popular Service', url: '/popular-service' },
-          { title: 'Product', url: '/product' },
-          { title: 'Product Option', url: '/product-option' },
-          { title: 'Items', url: '/item' },
-          { title: 'Blocked Schedule', url: '/blocked-schedule' },
-          { title: 'Roles & Permissions', url: '/roles' },
-          { title: 'Activity Log', url: '/activity-log' },
+          { title: 'Category', url: '/category', module: 'SETUP-ITEM' },
+          { title: 'Category Addon', url: '/category-addon', module: 'SETUP-ITEM' },
+          { title: 'Popular Service', url: '/popular-service', module: 'SETUP-ITEM' },
+          { title: 'Product', url: '/product', module: 'SETUP-ITEM' },
+          { title: 'Product Option', url: '/product-option', module: 'SETUP-ITEM' },
+          { title: 'Items', url: '/item', module: 'SETUP-ITEM' },
+          { title: 'Blocked Schedule', url: '/blocked-schedule', module: 'SETUP-SCHEDULE' },
+          { title: 'Roles & Permissions', url: '/roles', module: 'RBAC' },
+          { title: 'Users', url: '/admin-users', module: 'ADMIN_USERS' },
+          { title: 'Activity Log', url: '/activity-log', module: 'ACTIVITY_LOG' },
         ],
       },
     ],

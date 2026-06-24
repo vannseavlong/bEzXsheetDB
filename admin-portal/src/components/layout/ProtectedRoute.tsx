@@ -1,8 +1,12 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
 
-export default function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth()
+type Props = {
+  requiredRole?: string
+}
+
+export default function ProtectedRoute({ requiredRole }: Props) {
+  const { isAuthenticated, isLoading, user } = useAuth()
   const location = useLocation()
 
   if (isLoading) {
@@ -15,6 +19,10 @@ export default function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />
+  }
+
+  if (requiredRole && user?.role !== requiredRole) {
+    return <Navigate to="/not-authorised" replace />
   }
 
   return <Outlet />

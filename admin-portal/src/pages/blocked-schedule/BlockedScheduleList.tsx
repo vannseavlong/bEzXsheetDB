@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Table, TableBody } from '@/components/ui/table'
 import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
@@ -7,21 +7,38 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { blockedScheduleColumns } from '@/components/data-table/columns/BlockedScheduleColumns'
 import { BlockedScheduleHeader } from '@/components/headers/BlockedScheduleHeader'
-import { mockBlockedSchedules } from '@/data/blockedSchedule'
+import { blockedSchedulesApi } from '@/api/blocked-schedules'
 import type { BlockedSchedule } from '@/types'
+
+function dbToSchedule(db: import('@/api/blocked-schedules').DbBlockedSchedule): BlockedSchedule {
+  const cleanerIds: string[] = db.cleaner_ids ? JSON.parse(db.cleaner_ids) : []
+  return {
+    id: String(db._id),
+    name: db.name,
+    blockedDate: db.blocked_date,
+    startTime: db.start_time,
+    endTime: db.end_time,
+    cleanerDetails: cleanerIds,
+    associatedAddress: db.associated_address,
+  }
+}
 
 export default function BlockedScheduleList() {
   const tableState = useTableState()
 
-  const [data, setData] = useState<BlockedSchedule[]>(
-    () => [...mockBlockedSchedules] as BlockedSchedule[]
-  )
+  const [data, setData] = useState<BlockedSchedule[]>([])
+
+  useEffect(() => {
+    blockedSchedulesApi.list().then(res => setData(res.map(dbToSchedule)))
+  }, [])
+
+  async function handleDelete(id: string) {
+    await blockedSchedulesApi.delete(id)
+    setData(prev => prev.filter(i => i.id !== id))
+  }
 
   const columns = useMemo(
-    () =>
-      blockedScheduleColumns({
-        onDelete: (id) => setData((prev) => prev.filter((i) => i.id !== id)),
-      }),
+    () => blockedScheduleColumns({ onDelete: handleDelete }),
     []
   )
 

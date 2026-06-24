@@ -7,6 +7,7 @@ export default defineTable({
   softDelete: true,
   columns: {
     name: string().required().unique(),
+    code: string().required().unique(),
     description: string(),
     status: string().enum(['active', 'inactive']).default('active'),
     created_by: string().required(),

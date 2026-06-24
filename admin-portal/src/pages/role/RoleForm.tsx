@@ -1,43 +1,50 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { MultiLanguageInput } from '@/components/shared'
-import { rolesData } from '@/data/roles'
-
-interface MultiLangVal {
-  en: string
-  km: string
-  vi: string
-  tw: string
-  cn: string
-}
-
-function emptyLang(val = ''): MultiLangVal {
-  return { en: val, km: '', vi: '', tw: '', cn: '' }
-}
+import { rbacApi } from '@/api/rbac'
 
 export default function RoleForm() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const isEdit = !!id && id !== 'new'
-  const existing = isEdit ? rolesData.find((r) => r.id === id) : null
+  const isNew = !id || id === 'new'
 
-  const [name, setName] = useState<MultiLangVal>(emptyLang(existing?.role ?? ''))
-  const [status, setStatus] = useState(existing?.status ?? 'Active')
+  const [name, setName] = useState('')
+  const [code, setCode] = useState('')
+  const [description, setDescription] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const handleSave = () => {
-    console.log('Save role:', { name, status })
-    navigate('/roles')
+  useEffect(() => {
+    if (!isNew && id) {
+      rbacApi.listRoles().then(res => {
+        const role = res.find(r => String(r.id) === id)
+        if (role) {
+          setName(role.name)
+          setCode(role.code)
+          setDescription(role.description ?? '')
+        }
+      })
+    }
+  }, [id, isNew])
+
+  const handleSave = async () => {
+    if (!name.trim() || !code.trim()) return
+    setSaving(true)
+    try {
+      if (isNew) {
+        await rbacApi.createRole({ name: name.trim(), code: code.trim().toUpperCase(), description: description.trim() })
+      } else {
+        await rbacApi.updateRole(id!, { name: name.trim(), description: description.trim() })
+      }
+      navigate('/roles')
+    } catch (err) {
+      console.error('Save failed:', err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -47,41 +54,45 @@ export default function RoleForm() {
           <Button variant="ghost" size="icon" onClick={() => navigate('/roles')}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-base font-semibold">{isEdit ? 'Edit Role' : 'New Role'}</h1>
+          <h1 className="text-base font-semibold">{isNew ? 'New Role' : 'Edit Role'}</h1>
         </div>
-        <Button size="sm" onClick={handleSave}>
+        <Button size="sm" onClick={handleSave} disabled={!name.trim() || !code.trim() || saving}>
           <Save className="h-4 w-4 mr-1" />
-          Save
+          {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>
 
       <div className="p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Details</CardTitle>
+              <CardTitle className="text-base">Role Details</CardTitle>
             </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-5">
-                <MultiLanguageInput
-                  label="Role Name"
-                  values={name}
-                  onChange={setName}
+            <CardContent className="space-y-5 pb-6">
+              <div className="space-y-1.5">
+                <Label>Name</Label>
+                <Input
+                  placeholder="e.g. Ops Manager"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
                 />
-
-                <div className="flex flex-col gap-1.5">
-                  <Label>Status</Label>
-                  <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
-                    <SelectTrigger className="h-10">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
-                      <SelectItem value="Pending">Pending</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Code <span className="text-xs text-muted-foreground">(unique identifier)</span></Label>
+                <Input
+                  placeholder="e.g. OPS_MANAGER"
+                  value={code}
+                  onChange={e => setCode(e.target.value.toUpperCase())}
+                  disabled={!isNew}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Description <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Input
+                  placeholder="Short description of the role"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                />
               </div>
             </CardContent>
           </Card>

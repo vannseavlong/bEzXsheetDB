@@ -12,11 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { CustomHeader, MultiLanguageInput } from '@/components/shared'
-import { mockItems } from '@/data/items'
-import type { Item, MultiLangValue } from '@/types'
-
-const allItems = mockItems as Item[]
-const CATEGORIES = Array.from(new Set(allItems.map((i) => i.category)))
+import { itemsApi } from '@/api/items'
+import type { MultiLangValue } from '@/types'
 
 interface FormState {
   name: MultiLangValue
@@ -25,34 +22,70 @@ interface FormState {
   sortOrder: number
 }
 
+const EMPTY_FORM: FormState = {
+  name: { en: '', km: '', vi: '', tw: '', cn: '' },
+  category: '',
+  status: true,
+  sortOrder: 1,
+}
+
 export default function ItemForm() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const isNew = id === 'new'
 
-  const [form, setForm] = useState<FormState>({
-    name: { en: '', km: '', vi: '', tw: '', cn: '' },
-    category: CATEGORIES[0] ?? '',
-    status: true,
-    sortOrder: 1,
-  })
+  const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [categories, setCategories] = useState<string[]>([])
+  const [saving, setSaving] = useState(false)
 
+  // Load category list from live data
+  useEffect(() => {
+    itemsApi.list().then(res => {
+      const unique = Array.from(new Set(res.map(i => i.category))).sort()
+      setCategories(unique)
+      if (isNew && unique.length > 0) {
+        setForm(prev => ({ ...prev, category: unique[0] }))
+      }
+    })
+  }, [isNew])
+
+  // Load existing item for edit
   useEffect(() => {
     if (!isNew && id) {
-      const found = allItems.find((i) => i.id === id)
-      if (found) {
+      itemsApi.get(id).then(res => {
+        const item = res
         setForm({
-          name: { en: found.nameEn, km: '', vi: '', tw: '', cn: '' },
-          category: found.category,
-          status: found.status,
-          sortOrder: found.sortOrder,
+          name: { en: item.name_en, km: item.name_km, vi: '', tw: '', cn: '' },
+          category: item.category,
+          status: item.status,
+          sortOrder: item.sort_order,
         })
-      }
+      })
     }
   }, [id, isNew])
 
-  function handleSave() {
-    console.log('ItemForm save:', form)
+  async function handleSave() {
+    if (!form.name.en.trim() || !form.name.km.trim() || !form.category) return
+    setSaving(true)
+    try {
+      const payload = {
+        name_en: form.name.en.trim(),
+        name_km: form.name.km.trim(),
+        category: form.category,
+        status: form.status,
+        sort_order: form.sortOrder,
+      }
+      if (isNew) {
+        await itemsApi.create(payload)
+      } else {
+        await itemsApi.update(id!, payload)
+      }
+      navigate('/item')
+    } catch (err) {
+      console.error('ItemForm save failed:', err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -61,13 +94,12 @@ export default function ItemForm() {
         title={isNew ? 'New Item' : 'Edit Item'}
         onBack={() => navigate('/item')}
         onSave={handleSave}
-        saveLabel="Save"
+        saveLabel={saving ? 'Saving…' : 'Save'}
       />
 
       <div className="flex-1 overflow-auto px-6 py-6">
         <Card className="max-w-2xl mx-auto">
           <CardContent className="pt-6 space-y-6">
-            {/* Name */}
             <MultiLanguageInput
               label="Name"
               values={form.name}
@@ -76,7 +108,6 @@ export default function ItemForm() {
               type="input"
             />
 
-            {/* Category */}
             <div className="space-y-1.5">
               <Label>Category</Label>
               <Select
@@ -87,7 +118,7 @@ export default function ItemForm() {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
                     </SelectItem>
@@ -96,7 +127,6 @@ export default function ItemForm() {
               </Select>
             </div>
 
-            {/* Status */}
             <div className="flex items-center gap-3">
               <Switch
                 checked={form.status}
@@ -106,7 +136,6 @@ export default function ItemForm() {
               <Label htmlFor="status-switch">Active</Label>
             </div>
 
-            {/* Sort Order */}
             <div className="space-y-1.5">
               <Label htmlFor="sort-order">Sort Order</Label>
               <Input

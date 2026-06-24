@@ -14,6 +14,8 @@ import CleanerForm from '@/pages/cleaner/CleanerForm'
 
 import RoleList from '@/pages/role/RoleList'
 import RoleForm from '@/pages/role/RoleForm'
+import UserList from '@/pages/users/UserList'
+import NotAuthorised from '@/pages/NotAuthorised'
 
 import PartnerList from '@/pages/partner/PartnerList'
 import PartnerDetail from '@/pages/partner/PartnerDetail'
@@ -67,6 +69,7 @@ export default function App() {
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/not-authorised" element={<NotAuthorised />} />
 
       {/* Full-screen authenticated routes */}
       <Route element={<ProtectedRoute />}>
@@ -85,10 +88,13 @@ export default function App() {
         <Route path="/cleaner/new" element={<CleanerForm />} />
         <Route path="/cleaner/:id" element={<CleanerForm />} />
 
-        {/* Roles / RBAC */}
-        <Route path="/roles" element={<RoleList />} />
-        <Route path="/roles/new" element={<RoleForm />} />
-        <Route path="/roles/:id" element={<RoleForm />} />
+        {/* Roles / RBAC — super_admin only */}
+        <Route element={<ProtectedRoute requiredRole="super_admin" />}>
+          <Route path="/roles" element={<RoleList />} />
+          <Route path="/roles/new" element={<RoleForm />} />
+          <Route path="/roles/:id" element={<RoleForm />} />
+          <Route path="/admin-users" element={<UserList />} />
+        </Route>
 
         {/* Partners */}
         <Route path="/partner" element={<PartnerList />} />

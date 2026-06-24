@@ -28,3 +28,15 @@ export function requireRole(...roles: string[]) {
     next()
   }
 }
+
+export function requirePermission(module: string, action: string) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    const user = req.user
+    if (user?.role === 'super_admin') return next()
+    const permissions = (user?.permissions as string[]) ?? []
+    if (!permissions.includes(`${module}:${action}`)) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+    next()
+  }
+}

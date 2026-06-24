@@ -7,18 +7,37 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { itemColumns } from '@/components/data-table/columns/ItemColumns'
 import { ItemHeader } from '@/components/headers/ItemHeader'
-import { mockItems } from '@/data/items'
+import { itemsApi } from '@/api/items'
 import type { Item } from '@/types'
+
+function dbToItem(db: import('@/api/items').DbItem): Item {
+  return {
+    id: String(db._id),
+    nameEn: db.name_en,
+    category: db.category,
+    status: db.status,
+    sortOrder: db.sort_order,
+  }
+}
 
 export default function ItemList() {
   const tableState = useTableState()
   const { statusFilter, setStatusFilter } = tableState
 
   const [categoryFilter, setCategoryFilter] = useState('all')
-  const [data, setData] = useState<Item[]>(() => [...mockItems] as Item[])
+  const [data, setData] = useState<Item[]>([])
+
+  useEffect(() => {
+    itemsApi.list().then(res => setData(res.map(dbToItem)))
+  }, [])
+
+  async function handleDelete(id: string) {
+    await itemsApi.delete(id)
+    setData(prev => prev.filter(i => i.id !== id))
+  }
 
   const columns = useMemo(
-    () => itemColumns({ onDelete: (id) => setData((prev) => prev.filter((i) => i.id !== id)) }),
+    () => itemColumns({ onDelete: handleDelete }),
     []
   )
 

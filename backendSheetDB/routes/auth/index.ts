@@ -4,6 +4,17 @@ import type { SheetAdapter } from 'longcelot-sheet-db'
 import { env } from '../../config/env'
 import { signJwt } from '../../utils/jwt'
 
+async function buildPermissions(adapter: SheetAdapter, userRole: string): Promise<string[]> {
+  if (userRole === 'super_admin') return []
+  const ctx = adapter.withContext({ userId: 'auth', role: 'admin', actorSheetId: '' })
+  const role = await ctx.table('roles').findOne({ where: { code: userRole } }) as any
+  if (!role) return []
+  const all = await ctx.table('role_permissions').findMany({}) as any[]
+  return all
+    .filter((rp: any) => String(rp.role_id) === String(role._id))
+    .map((rp: any) => `${rp.module}:${rp.action}`)
+}
+
 // GET /api/admin/auth/google  →  GET /api/admin/auth/callback
 // Must be mounted on the root app (not inside a sub-router) so req.path is not stripped.
 export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHandler {
@@ -17,12 +28,13 @@ export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHand
       const ctx = adapter.withContext({ userId: 'auth', role: 'admin', actorSheetId: '' })
       const user = await ctx.table('users').findOne({ where: { email: profile.email } }) as any
       if (!user || user.status !== 'active') return null
+      const permissions = await buildPermissions(adapter, user.role)
       return {
         id: user._id,
         email: user.email,
         name: profile.name,
         role: user.role,
-        permissions: [],
+        permissions,
         profileUrl: profile.picture ?? user.profile_url ?? null,
       }
     },
@@ -33,7 +45,6 @@ export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHand
 export function createAuthRoutes(adapter: SheetAdapter) {
   const router = Router()
 
-  // ── Email + password login ─────────────────────────────────────────────────
   // POST /api/auth/login
   router.post('/login', async (req, res, next) => {
     try {
@@ -59,12 +70,13 @@ export function createAuthRoutes(adapter: SheetAdapter) {
       const valid = await comparePassword(password, user.password_hash)
       if (!valid) return res.status(401).json({ message: 'Invalid email or password' })
 
+      const permissions = await buildPermissions(adapter, user.role)
       const payload = {
         id: user._id,
         email: user.email,
         name: user.name,
         role: user.role,
-        permissions: [],
+        permissions,
         profileUrl: user.profile_url ?? null,
       }
 

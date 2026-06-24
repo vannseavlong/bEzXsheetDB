@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-table'
 import type { TableStateReturn } from './use-table-state'
 
-export function useDataTableConfig<TData extends { id: string }>(
+export function useDataTableConfig<TData>(
   data: TData[],
   columns: ColumnDef<TData>[],
   tableState: TableStateReturn

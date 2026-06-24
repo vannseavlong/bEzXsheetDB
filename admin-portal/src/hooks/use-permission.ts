@@ -1,10 +1,12 @@
-import { MODULE_ACTIONS } from '@/lib/permission'
+import { useAuth } from '@/contexts/auth-context'
 
-// Stub: in production, pull permissions from auth store.
-// Returns all actions for a module as "granted" by default (mock-friendly).
 export function usePermission() {
+  const { user } = useAuth()
+
   const hasPermission = (module: string, action: string): boolean => {
-    return MODULE_ACTIONS[module]?.includes(action) ?? false
+    if (!user) return false
+    if (user.role === 'super_admin') return true
+    return user.permissions.includes(`${module}:${action}`)
   }
 
   return { hasPermission }

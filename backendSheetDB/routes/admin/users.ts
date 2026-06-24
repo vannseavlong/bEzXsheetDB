@@ -16,8 +16,8 @@ export function createUsersRouter(adapter: SheetAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', role: 'admin', actorSheetId: '' })
 
-  // GET /api/admin/users  — list all
-  router.get('/', requireRole('super_admin'), async (_req, res, next) => {
+  // GET /api/admin/users  — list all (auth only; RBAC gates the frontend page)
+  router.get('/', async (_req, res, next) => {
     try {
       const users = await ctx().table('users').findMany({})
       const safe = (users as any[]).map(({ password_hash: _ph, ...u }) => u)
@@ -26,7 +26,7 @@ export function createUsersRouter(adapter: SheetAdapter) {
   })
 
   // GET /api/admin/users/:id
-  router.get('/:id', requireRole('super_admin'), async (req, res, next) => {
+  router.get('/:id', async (req, res, next) => {
     try {
       const user = await ctx().table('users').findOne({ where: { _id: req.params.id } }) as any
       if (!user) return res.status(404).json({ message: 'Not found' })

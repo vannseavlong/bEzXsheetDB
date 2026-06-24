@@ -5,14 +5,10 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CustomHeader } from '@/components/shared'
-import { mockBlockedSchedules } from '@/data/blockedSchedule'
-import { mockCleaners } from '@/data/cleaners'
-import type { BlockedSchedule, Cleaner } from '@/types'
+import { blockedSchedulesApi } from '@/api/blocked-schedules'
+import type { DbCleaner } from '@/api/blocked-schedules'
 
-const allSchedules = mockBlockedSchedules as BlockedSchedule[]
-const allCleaners = mockCleaners as Cleaner[]
-
-const ALL_CLEANERS_VALUE = 'All Cleaners'
+const ALL_CLEANERS_VALUE = '__all__'
 
 interface FormState {
   name: string
@@ -20,7 +16,16 @@ interface FormState {
   startTime: string
   endTime: string
   address: string
-  selectedCleaners: string[]
+  selectedIds: string[]
+}
+
+const EMPTY_FORM: FormState = {
+  name: '',
+  date: '',
+  startTime: '00:00',
+  endTime: '23:59',
+  address: '',
+  selectedIds: [],
 }
 
 export default function BlockedScheduleForm() {
@@ -28,64 +33,74 @@ export default function BlockedScheduleForm() {
   const navigate = useNavigate()
   const isNew = id === 'new'
 
-  const [form, setForm] = useState<FormState>({
-    name: '',
-    date: '',
-    startTime: '00:00',
-    endTime: '23:59',
-    address: '',
-    selectedCleaners: [],
-  })
+  const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [cleaners, setCleaners] = useState<DbCleaner[]>([])
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    blockedSchedulesApi.listCleaners().then(res => setCleaners(res))
+  }, [])
 
   useEffect(() => {
     if (!isNew && id) {
-      const found = allSchedules.find((s) => s.id === id)
-      if (found) {
+      blockedSchedulesApi.get(id).then(res => {
+        const s = res
+        const ids: string[] = s.cleaner_ids ? JSON.parse(s.cleaner_ids) : []
         setForm({
-          name: found.name,
-          date: found.blockedDate,
-          startTime: found.startTime,
-          endTime: found.endTime,
-          address: found.associatedAddress ?? '',
-          selectedCleaners: found.cleanerDetails ?? [],
+          name: s.name,
+          date: s.blocked_date.slice(0, 10),
+          startTime: s.start_time,
+          endTime: s.end_time,
+          address: s.associated_address ?? '',
+          selectedIds: ids,
         })
-      }
+      })
     }
   }, [id, isNew])
 
-  function handleSave() {
-    console.log('BlockedScheduleForm save:', form)
+  function isAllSelected(): boolean {
+    return cleaners.length > 0 && cleaners.every(c => form.selectedIds.includes(String(c._id)))
   }
 
-  function isAllCleanersSelected(): boolean {
-    return form.selectedCleaners.includes(ALL_CLEANERS_VALUE)
+  function handleAllToggle(checked: boolean) {
+    setForm(prev => ({
+      ...prev,
+      selectedIds: checked ? cleaners.map(c => String(c._id)) : [],
+    }))
   }
 
-  function handleAllCleanersToggle(checked: boolean) {
-    if (checked) {
-      setForm((prev) => ({
-        ...prev,
-        selectedCleaners: [ALL_CLEANERS_VALUE, ...allCleaners.map((c) => c.name)],
-      }))
-    } else {
-      setForm((prev) => ({ ...prev, selectedCleaners: [] }))
-    }
+  function handleCleanerToggle(cleanerId: string, checked: boolean) {
+    setForm(prev => ({
+      ...prev,
+      selectedIds: checked
+        ? [...prev.selectedIds, cleanerId]
+        : prev.selectedIds.filter(id => id !== cleanerId),
+    }))
   }
 
-  function handleCleanerToggle(cleanerName: string, checked: boolean) {
-    setForm((prev) => {
-      let updated = checked
-        ? [...prev.selectedCleaners, cleanerName]
-        : prev.selectedCleaners.filter((n) => n !== cleanerName && n !== ALL_CLEANERS_VALUE)
-
-      // If all individual cleaners are now selected, also add "All Cleaners"
-      const allIndividualSelected = allCleaners.every((c) => updated.includes(c.name))
-      if (allIndividualSelected && !updated.includes(ALL_CLEANERS_VALUE)) {
-        updated = [ALL_CLEANERS_VALUE, ...updated]
+  async function handleSave() {
+    if (!form.name.trim() || !form.date) return
+    setSaving(true)
+    try {
+      const payload = {
+        name: form.name.trim(),
+        blocked_date: form.date,
+        start_time: form.startTime,
+        end_time: form.endTime,
+        cleaner_ids: JSON.stringify(form.selectedIds),
+        associated_address: form.address.trim() || undefined,
       }
-
-      return { ...prev, selectedCleaners: updated }
-    })
+      if (isNew) {
+        await blockedSchedulesApi.create(payload)
+      } else {
+        await blockedSchedulesApi.update(id!, payload)
+      }
+      navigate('/blocked-schedule')
+    } catch (err) {
+      console.error('BlockedScheduleForm save failed:', err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -94,7 +109,7 @@ export default function BlockedScheduleForm() {
         title={isNew ? 'New Blocked Schedule' : 'Edit Blocked Schedule'}
         onBack={() => navigate('/blocked-schedule')}
         onSave={handleSave}
-        saveLabel="Save"
+        saveLabel={saving ? 'Saving…' : 'Save'}
       />
 
       <div className="flex-1 overflow-auto px-6 py-6">
@@ -103,7 +118,6 @@ export default function BlockedScheduleForm() {
             <CardTitle className="text-base">Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Name */}
             <div className="space-y-1.5">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -114,7 +128,6 @@ export default function BlockedScheduleForm() {
               />
             </div>
 
-            {/* Date */}
             <div className="space-y-1.5">
               <Label htmlFor="date">Date</Label>
               <Input
@@ -125,7 +138,6 @@ export default function BlockedScheduleForm() {
               />
             </div>
 
-            {/* Start Time */}
             <div className="space-y-1.5">
               <Label htmlFor="start-time">Start Time</Label>
               <Input
@@ -136,7 +148,6 @@ export default function BlockedScheduleForm() {
               />
             </div>
 
-            {/* End Time */}
             <div className="space-y-1.5">
               <Label htmlFor="end-time">End Time</Label>
               <Input
@@ -147,7 +158,6 @@ export default function BlockedScheduleForm() {
               />
             </div>
 
-            {/* Address */}
             <div className="space-y-1.5">
               <Label htmlFor="address">Address (optional)</Label>
               <Input
@@ -158,37 +168,37 @@ export default function BlockedScheduleForm() {
               />
             </div>
 
-            {/* Cleaners */}
             <div className="space-y-2">
               <Label>Cleaners</Label>
               <div className="max-h-48 overflow-y-auto rounded-md border p-3 space-y-2">
-                {/* All Cleaners option */}
                 <div className="flex items-center gap-2">
                   <Checkbox
-                    id="all-cleaners"
-                    checked={isAllCleanersSelected()}
-                    onCheckedChange={(checked) => handleAllCleanersToggle(checked === true)}
+                    id={ALL_CLEANERS_VALUE}
+                    checked={isAllSelected()}
+                    onCheckedChange={(checked) => handleAllToggle(checked === true)}
                   />
-                  <Label htmlFor="all-cleaners" className="font-medium cursor-pointer">
+                  <Label htmlFor={ALL_CLEANERS_VALUE} className="font-medium cursor-pointer">
                     All Cleaners
                   </Label>
                 </div>
-
                 <div className="border-t pt-2 space-y-2">
-                  {allCleaners.map((cleaner) => (
-                    <div key={cleaner.id} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`cleaner-${cleaner.id}`}
-                        checked={form.selectedCleaners.includes(cleaner.name)}
-                        onCheckedChange={(checked) =>
-                          handleCleanerToggle(cleaner.name, checked === true)
-                        }
-                      />
-                      <Label htmlFor={`cleaner-${cleaner.id}`} className="cursor-pointer font-normal">
-                        {cleaner.name}
-                      </Label>
-                    </div>
-                  ))}
+                  {cleaners.map((cleaner) => {
+                    const cid = String(cleaner._id)
+                    return (
+                      <div key={cid} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`cleaner-${cid}`}
+                          checked={form.selectedIds.includes(cid)}
+                          onCheckedChange={(checked) =>
+                            handleCleanerToggle(cid, checked === true)
+                          }
+                        />
+                        <Label htmlFor={`cleaner-${cid}`} className="cursor-pointer font-normal">
+                          {cleaner.name}
+                        </Label>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>

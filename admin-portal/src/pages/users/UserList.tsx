@@ -1,0 +1,258 @@
+import { useState, useMemo, useEffect } from 'react'
+import { Plus } from 'lucide-react'
+import { Table, TableBody } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { SearchBar } from '@/components/shared/SearchBar'
+import { DataTableHeader } from '@/components/data-table/DataTableHeader'
+import { TableRows } from '@/components/data-table/TableRows'
+import { DataTablePagination } from '@/components/data-table/DataTablePagination'
+import { useTableState } from '@/hooks/use-table-state'
+import { useDataTableConfig } from '@/hooks/use-data-table-config'
+import { userColumns } from '@/components/data-table/columns/UserColumns'
+import { usersApi, type DbAdminUser } from '@/api/users'
+
+const ROLES = [
+  { value: 'super_admin', label: 'Super Admin' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'operation', label: 'Operation' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'marketing', label: 'Marketing' },
+]
+
+type EditForm = { name: string; role: string; status: string }
+type CreateForm = { name: string; email: string; password: string; role: string }
+
+export default function UserList() {
+  const tableState = useTableState()
+  const { statusFilter, setStatusFilter } = tableState
+
+  const [allData, setAllData] = useState<DbAdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [roleFilter, setRoleFilter] = useState('all')
+
+  // Create dialog
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createForm, setCreateForm] = useState<CreateForm>({ name: '', email: '', password: '', role: 'admin' })
+  const [creating, setCreating] = useState(false)
+
+  // Edit dialog
+  const [editTarget, setEditTarget] = useState<DbAdminUser | null>(null)
+  const [editForm, setEditForm] = useState<EditForm>({ name: '', role: '', status: '' })
+  const [editing, setEditing] = useState(false)
+
+  useEffect(() => {
+    usersApi.list()
+      .then(rows => setAllData(rows))
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleCreate = async () => {
+    if (!createForm.name || !createForm.email || !createForm.password) return
+    setCreating(true)
+    try {
+      const user = await usersApi.create(createForm)
+      setAllData(prev => [...prev, user])
+      setCreateOpen(false)
+      setCreateForm({ name: '', email: '', password: '', role: 'admin' })
+    } catch (err) { console.error('Create failed:', err) }
+    finally { setCreating(false) }
+  }
+
+  const handleEdit = async () => {
+    if (!editTarget) return
+    setEditing(true)
+    try {
+      const updated = await usersApi.update(editTarget._id, editForm)
+      setAllData(prev => prev.map(u => String(u._id) === String(updated._id) ? updated : u))
+      setEditTarget(null)
+    } catch (err) { console.error('Update failed:', err) }
+    finally { setEditing(false) }
+  }
+
+  const handleToggleStatus = async (user: DbAdminUser) => {
+    try {
+      if (user.status === 'active') {
+        await usersApi.deactivate(user._id)
+        setAllData(prev => prev.map(u =>
+          String(u._id) === String(user._id) ? { ...u, status: 'inactive' as const } : u
+        ))
+      } else {
+        const updated = await usersApi.update(user._id, { status: 'active' })
+        setAllData(prev => prev.map(u => String(u._id) === String(updated._id) ? updated : u))
+      }
+    } catch (err) { console.error('Toggle failed:', err) }
+  }
+
+  // Pre-filter by role before giving to TanStack Table
+  const roleFiltered = useMemo(
+    () => roleFilter === 'all' ? allData : allData.filter(u => u.role === roleFilter),
+    [allData, roleFilter]
+  )
+
+  const columns = useMemo(() => userColumns({
+    onEdit: user => { setEditTarget(user); setEditForm({ name: user.name, role: user.role, status: user.status }) },
+    onToggleStatus: handleToggleStatus,
+  }), [])
+
+  const table = useDataTableConfig(roleFiltered, columns, tableState)
+
+  // Sync status filter to TanStack column filter
+  useEffect(() => {
+    const col = table.getColumn('status')
+    if (!col) return
+    col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
+  }, [statusFilter, table])
+
+  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">
+      <div className="rounded-md border flex flex-col flex-1 min-h-0">
+        {/* Header / filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
+          <SearchBar
+            placeholder="Search by name or email…"
+            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+            onChange={val => table.getColumn('name')?.setFilterValue(val)}
+          />
+          <div className="flex items-center gap-3">
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="All Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                {ROLES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" /> New User
+            </Button>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto">
+          <Table className="min-w-full">
+            <DataTableHeader table={table} />
+            <TableBody>
+              <TableRows table={table} columns={columns} />
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      <DataTablePagination table={table} />
+
+      {/* Create Dialog */}
+      <Dialog open={createOpen} onOpenChange={v => !v && setCreateOpen(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>New User</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Name</Label>
+              <Input placeholder="Full name" value={createForm.name}
+                onChange={e => setCreateForm(p => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Email</Label>
+              <Input type="email" placeholder="user@example.com" value={createForm.email}
+                onChange={e => setCreateForm(p => ({ ...p, email: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Password</Label>
+              <Input type="password" placeholder="Min 8 chars, uppercase, number, symbol"
+                value={createForm.password}
+                onChange={e => setCreateForm(p => ({ ...p, password: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Role</Label>
+              <Select value={createForm.role} onValueChange={v => setCreateForm(p => ({ ...p, role: v }))}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ROLES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleCreate}
+              disabled={!createForm.name || !createForm.email || !createForm.password || creating}
+            >
+              {creating ? 'Creating…' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editTarget} onOpenChange={v => !v && setEditTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Edit User</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Name</Label>
+              <Input placeholder="Full name" value={editForm.name}
+                onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Role</Label>
+              <Select value={editForm.role} onValueChange={v => setEditForm(p => ({ ...p, role: v }))}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ROLES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select value={editForm.status} onValueChange={v => setEditForm(p => ({ ...p, status: v }))}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
+            <Button onClick={handleEdit} disabled={!editForm.name || editing}>
+              {editing ? 'Saving…' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
