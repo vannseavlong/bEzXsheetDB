@@ -25,8 +25,11 @@ import blockedSchedulesSchema from '../schemas/operation/blocked_schedules'
 import ordersSchema from '../schemas/operation/orders'
 
 export function createAdapter() {
+  // Render (and other ephemeral-filesystem hosts) can't see the gitignored
+  // token file, so allow passing it as a JSON env var in those environments.
   const tokens = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), '.sheet-db-tokens.json'), 'utf-8')
+    env.SHEET_DB_TOKENS ??
+      fs.readFileSync(path.join(process.cwd(), '.sheet-db-tokens.json'), 'utf-8')
   )
 
   const adapter = createSheetAdapter({

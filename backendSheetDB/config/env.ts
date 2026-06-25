@@ -16,5 +16,6 @@ export const env = {
   GOOGLE_REDIRECT_URI: get('GOOGLE_REDIRECT_URI'),
   ADMIN_SHEET_ID: get('ADMIN_SHEET_ID'),
   SUPER_ADMIN_EMAIL: get('SUPER_ADMIN_EMAIL'),
+  SHEET_DB_TOKENS: process.env.SHEET_DB_TOKENS,
   ON_SCHEMA_MISMATCH: get('ON_SCHEMA_MISMATCH', 'warn') as 'warn' | 'error' | 'auto-sync',
 }
