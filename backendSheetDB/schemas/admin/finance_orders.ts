@@ -2,7 +2,7 @@ import { defineTable, string, number, date } from 'longcelot-sheet-db';
 
 export default defineTable({
   name: 'finance_orders',
-  actor: 'finance',
+  actor: 'admin',
   timestamps: true,
   columns: {
     order_id: string().required().ref('orders._id'),

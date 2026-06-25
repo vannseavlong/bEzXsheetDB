@@ -2,7 +2,7 @@ import { defineTable, string, date } from 'longcelot-sheet-db';
 
 export default defineTable({
   name: 'blocked_schedules',
-  actor: 'operation',
+  actor: 'admin',
   timestamps: true,
   softDelete: true,
   columns: {

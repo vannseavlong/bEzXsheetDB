@@ -45,6 +45,25 @@ All open issues are filed in `PACKAGE_IMPROVEMENT.md` (submitted 2026-06-21).
 - [x] `sheet-db validate` — all 27 schemas valid
 - [x] `sheet-db sync` — 20 tables synced (admin + operation); finance/marketing skipped (env vars not set, expected)
 
+### A4 — Collapse to 2 actors (admin, user) + upgrade to v0.1.22 (2026-06-25)
+- [x] Diagnosed actor/RBAC-role conflation in our own schemas — `operation`/`finance`/`marketing` had
+  been modeled as 3 separate actors (separate Sheets) instead of RBAC roles inside `admin`, exactly
+  the anti-pattern documented in `PACKAGE_IMPROVEMENT.md` item 5
+- [x] Collapsed `sheet-db.config.ts` to 2 actors (`admin`, `user`); moved all 10 operation/finance/marketing
+  schema files into `schemas/admin/` with `actor: 'admin'`
+- [x] Closed `requirePermission` gaps on `/categories`, `/products`, `/category-addons`,
+  `/product-options`, `/popular-services`, `/task-info`, `/category-addon-items`, `/items`,
+  `/blocked-schedules` — previously only `/users` and `/rbac` were gated
+- [x] Filed follow-up feedback (`ActorConfig.role` → `name`, sheet auto-formatting) — owner shipped
+  both in v0.1.22 same day
+- [x] Upgraded `longcelot-sheet-db` 0.1.20 → 0.1.22; adopted `ActorConfig.name` and `UserContext.actor`
+  everywhere, replacing deprecated `role`
+- [x] `sheet-db validate`/`status`/`sync` — 24 tables, 2 actors (`admin`/`user`), no deprecation warnings
+- [ ] New auto-formatting (header color/freeze/dropdowns) only applies on new tabs or new columns —
+  our 24 pre-existing tables won't get it until a real schema change forces a header rewrite, or we
+  deliberately recreate the tabs (see `PACKAGE_IMPROVEMENT.md` v0.1.22 caveat) — not done yet, needs
+  a decision on whether to force it
+
 ---
 
 ## Phase B — Admin Portal: RBAC Enforcement

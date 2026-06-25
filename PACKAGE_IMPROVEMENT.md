@@ -56,6 +56,36 @@ All 6 items from the "CLI, Migration & RBAC Architecture" feedback (submitted 20
 | 5 | Actor vs Role conceptual explanation — "Actors vs Application Roles" table added to Core Concepts |
 | 6 | Dev/prod parity gap documented — "Dev vs Production data model" section added with tip to use `mock-users` |
 
+**Note on item 5 — docs-only fix, problem resurfaced in practice:** the explanation was added to
+the docs, but the API itself still calls the field `role` (`ActorConfig.role`, `UserContext.role`
+in `withContext()`). While auditing our own `backendSheetDB` schemas (2026-06-25) we found we'd
+built exactly the anti-pattern the docs now warn against — three RBAC sub-roles (`operation`,
+`finance`, `marketing`) had been modeled as three separate actors/Sheets, discovered only because
+`sheet-db.config.ts` and `withContext()` both read `role: 'operation'`, which reads identically to
+an RBAC role. The docs fix didn't prevent this. See the new feedback below.
+
+---
+
+## ✅ Fixed in v0.1.22
+
+All 4 items from both 2026-06-25 feedback submissions (Actor Config Field Naming, items 7-10) were
+addressed.
+
+| # | Item |
+|---|---|
+| 7 | `ActorConfig.name` shipped — replaces `role` in `sheet-db.config.ts` entries. `UserContext.actor` (Phase 9) extended with `UserContext.targetActor`, replacing `targetRole`. Old fields still accepted with a `console.warn` deprecation notice. |
+| 8 | Auto-fit column width — `syncSchema()`/`createUserSheet()` now call `autoResizeDimensions` whenever headers are written |
+| 9 | Header fill color + frozen header row — new `sheetStyle: { headerColor, freezeHeader, freezeFirstColumn }` option on `createSheetAdapter()`; built-in default `#E8F0FE`, `freezeHeader: true` |
+| 10 | `boolean()`/`enum()` columns now get native Sheets data-validation dropdowns automatically — `BOOLEAN`/`ONE_OF_LIST` rules applied via `setDataValidation` |
+
+**Caveat found during our own upgrade (2026-06-25):** formatting/dropdowns are only applied when a
+tab is created fresh or gets new columns appended (`rows.length === 0` or `missingHeaders.length >
+0` in `syncSchema()`). Tables that were already fully synced before upgrading do **not** get
+reformatted retroactively by a plain `sync` — confirmed against our own `backendSheetDB` (24
+tables, all pre-existing, zero formatting calls on re-sync after upgrading to v0.1.22). Worth a
+docs note and/or a `sync --reformat` flag that forces `_applySheetFormatting()` regardless of
+header diff, for projects upgrading an already-synced project rather than starting fresh.
+
 ---
 
 ## 🗺️ Owner Roadmap (not yet shipped)
@@ -227,3 +257,127 @@ Alternatively, document this gap explicitly with a "Dev vs Production data model
 | 4 | `export-data --all-users` missing — can't migrate multi-user deployments | Missing feature | High — blocks production migration for per-user-sheet projects |
 | 5 | Actor vs Role conceptual conflation in docs and API | Docs / API naming | High — causes wrong architecture decisions |
 | 6 | Dev/prod parity gap: one shared dev sheet vs per-user prod sheets | Architecture / DX | Medium — hides production-only bugs in dev |
+
+---
+
+## 📬 Feature Request / Feedback — Actor Config Field Naming (submitted 2026-06-25)
+
+Follow-up to item 5 above. The v0.1.21 docs fix explained the Actor vs RBAC Role distinction, but
+didn't change the field name that causes the confusion in the first place — and we just proved the
+docs alone aren't enough.
+
+### Current behaviour
+
+```ts
+// sheet-db.config.ts
+actors: [
+  { role: 'admin', sheetIdEnv: 'ADMIN_SHEET_ID' },
+  { role: 'user',  sheetIdEnv: 'DEV_USER_SHEET_ID' },
+],
+
+// at call sites
+adapter.withContext({ userId, role: 'admin', actorSheetId })
+```
+
+`ActorConfig.role` and `UserContext.role` are both still named `role`, identical to the
+application-level RBAC role a developer is also juggling in the same file.
+
+### What happened to us
+
+Building bEasy's admin portal, we modeled three RBAC sub-roles (`operation`, `finance`,
+`marketing`) as three separate actors — each got its own `DEV_*_SHEET_ID` and its own
+`sheet-db.config.ts` entry — instead of as rows in our own `roles`/`role_permissions` tables inside
+the single `admin` actor. The reason: every actor-config entry and every `withContext()` call
+*reads* `role: 'operation'`, so it looks exactly like an RBAC role assignment. We had read the new
+"Actors vs Application Roles" docs section before writing this code and made the mistake anyway —
+the field name overrides what the prose says, because that's what autocomplete and type hints show
+at the moment of writing the code.
+
+### Requested change
+
+Rename the field so it can't be mistaken for an RBAC role:
+
+| Location | Current | Suggested |
+|---|---|---|
+| `ActorConfig` (`sheet-db.config.ts` entries) | `role: string` | `name: string` — reads naturally nested under `actors: [...]`, e.g. `{ name: 'admin', sheetIdEnv: ... }` |
+| `UserContext` / `withContext()` | `role: string` | `actor: string` — no surrounding `actors:` key to disambiguate at the call site, so the bare noun is clearer than `name` here |
+| `UserContext` / `withContext()` cross-actor fields | `targetRole?: string` | `targetActor?: string` — for consistency with the above |
+
+This closes out item 5's original ask (renaming `withContext({ role })` → `withContext({ actor })`)
+that the v0.1.21 docs-only fix didn't cover, plus extends the same fix to `ActorConfig`. We're happy
+to be a test bed for this change if it ships behind a deprecation-warning alias for `role` first.
+
+### Summary
+
+| # | Issue | Type | Impact |
+|---|---|---|---|
+| 7 | `ActorConfig.role` / `UserContext.role` still named `role` — confused with RBAC role in practice, even after docs fix | API naming | High — caused a real architecture bug in our own codebase |
+
+---
+
+## 📬 Feature Request / Feedback — Sheet Formatting & UX (submitted 2026-06-25)
+
+`writeHeader()` (`dist/adapter/sheetClient.js`) currently does a plain `values.update` write of the
+header row — no column sizing, no cell formatting, no data validation. For tables with 15-28
+columns (we have several — `orders` has 28, `finance_orders` has 24), the raw sheet is hard to use
+for manual inspection/debugging without a round of manual cleanup every time a tab is created.
+
+### 8. Auto-fit column width to content
+
+**Current behaviour:** New columns are created at Google Sheets' default width. Long values
+(emails, JSON-array columns like `expertises`/`weekly_offs`, long enum strings) get visually
+truncated — you have to manually drag every column border to see the data, every time `sync`
+creates a new tab or appends a new column.
+
+**Requested change:** After writing headers (and ideally after each `sync`/`seed` write), call the
+Sheets API's `autoResizeDimensions` batch request for the written column range so columns fit their
+content automatically. No new config needed — this should just be default behaviour.
+
+### 9. Header row: fill color + frozen row/column (default, dev-configurable)
+
+**Current behaviour:** The header row is plain text, not visually distinct from data rows, and
+nothing is frozen — scrolling a large table loses the header and the row immediately scrolls out of
+view, making it hard to tell which column is which while reviewing data.
+
+**Requested change:**
+- Apply a background fill (`repeatCell` + `userEnteredFormat.backgroundColor`) to row 1 on
+  `syncSchema`/tab creation, with a sensible built-in default (e.g. a light gray/blue).
+- Freeze the header row (`updateSheetProperties` → `gridProperties.frozenRowCount: 1`) and the
+  primary-key column if one exists.
+- Let both be overridden per-project, e.g.:
+  ```ts
+  createSheetAdapter({
+    ...,
+    sheetStyle: {
+      headerColor: '#E8F0FE',   // optional, falls back to package default
+      freezeHeader: true,       // default: true
+      freezeFirstColumn: true,  // default: false
+    },
+  })
+  ```
+
+### 10. Boolean and Enum columns: automatic dropdown in the cell
+
+**Current behaviour:** `boolean()` and `string().enum([...])` columns are validated on
+`create()`/`update()` calls through the SDK, but the raw Sheet cell accepts any free-text value. If
+anyone (or any other tool) edits a cell directly in Sheets, there's no in-cell guard — and there's
+no visual cue in the spreadsheet itself that a column is restricted to `true/false` or a fixed set
+of values.
+
+**Requested change:** When `syncSchema` creates/updates a column backed by a `boolean()` or
+`enum()` column definition, apply a Sheets data validation rule to that column's range:
+- `boolean()` → `setDataValidation` with condition type `BOOLEAN` (renders the native Sheets
+  checkbox/dropdown)
+- `string().enum([...])` → `setDataValidation` with condition type `ONE_OF_LIST` using the enum
+  values (renders the native Sheets dropdown arrow)
+
+This turns every enum/boolean column into a guided dropdown automatically, with zero schema changes
+required on our side — the enum values are already declared in `defineTable()`.
+
+### Summary
+
+| # | Issue | Type | Impact |
+|---|---|---|---|
+| 8 | No auto-fit column width — long values get visually truncated until manually resized | UX | Medium — manual cleanup needed on every new tab/column |
+| 9 | No header fill color / frozen header row — hard to track columns while scrolling | UX | Medium — affects anyone manually reviewing data in Sheets |
+| 10 | No data validation dropdown for `boolean()`/`enum()` columns | UX / data integrity | Medium — raw sheet accepts invalid values with no visual guard |

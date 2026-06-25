@@ -37,7 +37,7 @@ const SYSTEM_MODULE_ACTIONS: Record<string, string[]> = {
 
 export function createRbacRouter(adapter: SheetAdapter) {
   const router = Router()
-  const ctx = () => adapter.withContext({ userId: 'system', role: 'admin', actorSheetId: '' })
+  const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   function toRoleItem(r: any) {
     return {

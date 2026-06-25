@@ -3,23 +3,11 @@ export default {
   superAdminEmail: "seavlongvann55@gmail.com",
   actors: [
   {
-    "role": "admin",
+    "name": "admin",
     "sheetIdEnv": "ADMIN_SHEET_ID"
   },
   {
-    "role": "operation",
-    "sheetIdEnv": "DEV_OPERATION_SHEET_ID"
-  },
-  {
-    "role": "finance",
-    "sheetIdEnv": "DEV_FINANCE_SHEET_ID"
-  },
-  {
-    "role": "marketing",
-    "sheetIdEnv": "DEV_MARKETING_SHEET_ID"
-  },
-  {
-    "role": "user",
+    "name": "user",
     "sheetIdEnv": "DEV_USER_SHEET_ID"
   }
 ],

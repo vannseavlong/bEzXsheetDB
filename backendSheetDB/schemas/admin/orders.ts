@@ -2,7 +2,7 @@ import { defineTable, string, number, date } from 'longcelot-sheet-db';
 
 export default defineTable({
   name: 'orders',
-  actor: 'operation',
+  actor: 'admin',
   timestamps: true,
   columns: {
     bulk_order_id: string(),

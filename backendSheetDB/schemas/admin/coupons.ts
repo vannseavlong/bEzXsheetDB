@@ -2,7 +2,7 @@ import { defineTable, string, boolean, number, date } from 'longcelot-sheet-db';
 
 export default defineTable({
   name: 'coupons',
-  actor: 'marketing',
+  actor: 'admin',
   timestamps: true,
   softDelete: true,
   columns: {

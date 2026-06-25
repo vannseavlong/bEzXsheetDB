@@ -3,7 +3,7 @@ import type { SheetAdapter } from 'longcelot-sheet-db'
 
 export function createProductOptionsRouter(adapter: SheetAdapter) {
   const router = Router()
-  const ctx = () => adapter.withContext({ userId: 'system', role: 'admin', actorSheetId: '' })
+  const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   // GET /api/admin/product-options?product_id=xxx
   router.get('/', async (req, res, next) => {

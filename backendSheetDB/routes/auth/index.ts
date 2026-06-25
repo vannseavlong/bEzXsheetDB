@@ -6,7 +6,7 @@ import { signJwt } from '../../utils/jwt'
 
 async function buildPermissions(adapter: SheetAdapter, userRole: string): Promise<string[]> {
   if (userRole === 'super_admin') return []
-  const ctx = adapter.withContext({ userId: 'auth', role: 'admin', actorSheetId: '' })
+  const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
   const role = await ctx.table('roles').findOne({ where: { code: userRole } }) as any
   if (!role) return []
   const all = await ctx.table('role_permissions').findMany({}) as any[]
@@ -25,7 +25,7 @@ export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHand
     frontendUrl: `${env.FRONTEND_URL}/auth/callback`,
     registrationPolicy: 'login-only',
     async onUser(profile, adapter) {
-      const ctx = adapter.withContext({ userId: 'auth', role: 'admin', actorSheetId: '' })
+      const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
       const user = await ctx.table('users').findOne({ where: { email: profile.email } }) as any
       if (!user || user.status !== 'active') return null
       const permissions = await buildPermissions(adapter, user.role)
@@ -54,7 +54,7 @@ export function createAuthRoutes(adapter: SheetAdapter) {
         return res.status(400).json({ message: 'Email and password are required' })
       }
 
-      const ctx = adapter.withContext({ userId: 'auth', role: 'admin', actorSheetId: '' })
+      const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
       const user = await ctx.table('users').findOne({ where: { email } }) as any
 
       if (!user || user.status !== 'active') {

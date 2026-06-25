@@ -3,7 +3,7 @@ import type { SheetAdapter } from 'longcelot-sheet-db'
 
 export function createCategoryAddonItemsRouter(adapter: SheetAdapter) {
   const router = Router()
-  const ctx = () => adapter.withContext({ userId: 'system', role: 'admin', actorSheetId: '' })
+  const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   // GET /api/admin/category-addon-items/:id
   router.get('/:id', async (req, res, next) => {

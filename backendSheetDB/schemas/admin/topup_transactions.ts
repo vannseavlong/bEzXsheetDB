@@ -1,13 +1,13 @@
 import { defineTable, string, number, date } from 'longcelot-sheet-db';
 
 export default defineTable({
-  name: 'bcombo_transactions',
-  actor: 'finance',
+  name: 'topup_transactions',
+  actor: 'admin',
   timestamps: true,
   columns: {
     transaction_id: string().required().unique(),
     customer_name: string().required(),
-    bundle_name: string().required(),
+    customer_phone: string(),
     amount: number().min(0).required(),
     payment_method: string().required(),
     status: string().required().enum(['PENDING', 'COMPLETED', 'FAILED']).default('PENDING'),

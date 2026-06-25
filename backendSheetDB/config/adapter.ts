@@ -18,11 +18,9 @@ import categoryCategoryAddonsSchema from '../schemas/admin/category_category_add
 import popularServiceItemsSchema from '../schemas/admin/popular_service_items'
 import taskInfoSchema from '../schemas/admin/task_info'
 import itemsSchema from '../schemas/admin/items'
-
-// Operation schemas
-import cleanersSchema from '../schemas/operation/cleaners'
-import blockedSchedulesSchema from '../schemas/operation/blocked_schedules'
-import ordersSchema from '../schemas/operation/orders'
+import cleanersSchema from '../schemas/admin/cleaners'
+import blockedSchedulesSchema from '../schemas/admin/blocked_schedules'
+import ordersSchema from '../schemas/admin/orders'
 
 export function createAdapter() {
   // Render (and other ephemeral-filesystem hosts) can't see the gitignored
@@ -44,11 +42,8 @@ export function createAdapter() {
     driveFolder: {
       root: 'bEasy',
       subfolders: {
-        admin:     'Admin',
-        operation: 'Operation',
-        finance:   'Finance',
-        marketing: 'Marketing',
-        user:      'Users',
+        admin: 'Admin',
+        user:  'Users',
       },
     },
     storage: new DriveStorageAdapter({ folder: 'uploads' }),

@@ -25,15 +25,15 @@ export function createAdminRouter(adapter: SheetAdapter) {
 
   router.use('/users', requirePermission('ADMIN_USERS', 'VIEW'), createUsersRouter(adapter))
   router.use('/rbac', requirePermission('RBAC', 'VIEW'), createRbacRouter(adapter))
-  router.use('/categories', createCategoriesRouter(adapter))
-  router.use('/products', createProductsRouter(adapter))
-  router.use('/category-addons', createCategoryAddonsRouter(adapter))
-  router.use('/product-options', createProductOptionsRouter(adapter))
-  router.use('/popular-services', createPopularServicesRouter(adapter))
-  router.use('/task-info', createTaskInfoRouter(adapter))
-  router.use('/category-addon-items', createCategoryAddonItemsRouter(adapter))
-  router.use('/items', createItemsRouter(adapter))
-  router.use('/blocked-schedules', createBlockedSchedulesRouter(adapter))
+  router.use('/categories', requirePermission('SETUP-ITEM', 'VIEW'), createCategoriesRouter(adapter))
+  router.use('/products', requirePermission('SETUP-ITEM', 'VIEW'), createProductsRouter(adapter))
+  router.use('/category-addons', requirePermission('SETUP-ITEM', 'VIEW'), createCategoryAddonsRouter(adapter))
+  router.use('/product-options', requirePermission('SETUP-ITEM', 'VIEW'), createProductOptionsRouter(adapter))
+  router.use('/popular-services', requirePermission('SETUP-ITEM', 'VIEW'), createPopularServicesRouter(adapter))
+  router.use('/task-info', requirePermission('SETUP-ITEM', 'VIEW'), createTaskInfoRouter(adapter))
+  router.use('/category-addon-items', requirePermission('SETUP-ITEM', 'VIEW'), createCategoryAddonItemsRouter(adapter))
+  router.use('/items', requirePermission('SETUP-ITEM', 'VIEW'), createItemsRouter(adapter))
+  router.use('/blocked-schedules', requirePermission('SETUP-SCHEDULE', 'VIEW'), createBlockedSchedulesRouter(adapter))
 
   return router
 }

@@ -2,7 +2,7 @@ import { defineTable, string, date } from 'longcelot-sheet-db';
 
 export default defineTable({
   name: 'push_notifications',
-  actor: 'marketing',
+  actor: 'admin',
   timestamps: true,
   columns: {
     name: string().required(),

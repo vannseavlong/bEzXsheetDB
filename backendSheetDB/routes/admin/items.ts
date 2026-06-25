@@ -3,7 +3,7 @@ import type { SheetAdapter } from 'longcelot-sheet-db'
 
 export function createItemsRouter(adapter: SheetAdapter) {
   const router = Router()
-  const ctx = () => adapter.withContext({ userId: 'system', role: 'admin', actorSheetId: '' })
+  const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   // GET /api/admin/items
   router.get('/', async (_req, res, next) => {

@@ -2,7 +2,7 @@ import { defineTable, string, boolean, date } from 'longcelot-sheet-db';
 
 export default defineTable({
   name: 'cleaners',
-  actor: 'operation',
+  actor: 'admin',
   timestamps: true,
   softDelete: true,
   columns: {
