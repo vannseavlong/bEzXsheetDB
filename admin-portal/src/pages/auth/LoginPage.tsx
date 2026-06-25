@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth, type AdminUser } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -156,6 +156,18 @@ export default function LoginPage() {
           </Button>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
+            By continuing, you agree to our{' '}
+            <Link to="/terms-of-use" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+              Terms of Use
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+
+          <p className="mt-2 text-center text-xs text-muted-foreground">
             Access is restricted to authorised admin accounts only.
           </p>
         </div>

@@ -63,6 +63,9 @@ import DirectSaleCustomer from '@/pages/customer-service/DirectSaleCustomer'
 import RegisteredCustomer from '@/pages/customer-service/RegisteredCustomer'
 import Tickets from '@/pages/customer-service/Tickets'
 
+import TermsOfUse from '@/pages/legal/TermsOfUse'
+import PrivacyPolicy from '@/pages/legal/PrivacyPolicy'
+
 export default function App() {
   return (
     <Routes>
@@ -70,6 +73,8 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/not-authorised" element={<NotAuthorised />} />
+      <Route path="/terms-of-use" element={<TermsOfUse />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
       {/* Full-screen authenticated routes */}
       <Route element={<ProtectedRoute />}>

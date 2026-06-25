@@ -83,6 +83,13 @@
 }
 
 @layer utilities {
+  .text-beasy-gradient {
+    background: var(--bEasy-linear);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
   .scrollbar-thin {
     scrollbar-width: thin;
   }
