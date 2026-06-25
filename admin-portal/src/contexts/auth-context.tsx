@@ -65,7 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Persist the destination so AuthCallbackPage can redirect there after login
     sessionStorage.setItem(RETURN_TO_KEY, returnTo)
     // Full-page redirect — backend handles the OAuth dance with Google
-    window.location.href = '/api/admin/auth/google'
+    const base = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
+    window.location.href = `${base}/admin/auth/google`
   }
 
   function handleAuthCallback(incomingUser: AdminUser, incomingToken: string) {
