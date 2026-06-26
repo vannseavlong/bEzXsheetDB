@@ -12,6 +12,7 @@ import { createTaskInfoRouter } from './task-info'
 import { createCategoryAddonItemsRouter } from './category-addon-items'
 import { createItemsRouter } from './items'
 import { createBlockedSchedulesRouter } from './blocked-schedules'
+import { createUploadRouter } from './upload'
 
 /**
  * All /api/admin/* routes.
@@ -34,6 +35,7 @@ export function createAdminRouter(adapter: SheetAdapter) {
   router.use('/category-addon-items', requirePermission('SETUP-ITEM', 'VIEW'), createCategoryAddonItemsRouter(adapter))
   router.use('/items', requirePermission('SETUP-ITEM', 'VIEW'), createItemsRouter(adapter))
   router.use('/blocked-schedules', requirePermission('SETUP-SCHEDULE', 'VIEW'), createBlockedSchedulesRouter(adapter))
+  router.use('/upload', createUploadRouter(adapter))
 
   return router
 }

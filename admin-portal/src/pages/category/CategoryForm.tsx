@@ -13,6 +13,7 @@ import { TaskInformationDialog, emptyTaskData, type TaskData } from '@/component
 import DraggableComboboxPanel from '@/components/common/draggable/DraggableComboboxPanel'
 import type { ComboItem } from '@/components/common/draggable/SortableComboBox'
 import { categoriesApi } from '@/api/categories'
+import { uploadImage } from '@/api/upload'
 import { productsApi } from '@/api/products'
 import { categoryAddonsApi } from '@/api/category-addons'
 import { taskInfoApi } from '@/api/task-info'
@@ -136,7 +137,7 @@ export default function CategoryForm() {
           <Card>
             <CardHeader><CardTitle className="text-base">Details</CardTitle></CardHeader>
             <CardContent className="space-y-5">
-              <ProfilePicker imageUrl={imageUrl} onChange={(_, url) => setImageUrl(url)} />
+              <ProfilePicker imageUrl={imageUrl} onUpload={uploadImage} onChange={(_, url) => setImageUrl(url)} />
 
               <div className="grid grid-cols-2 gap-4">
                 <MultiLanguageInput label="Name" required values={name} onChange={setName} />

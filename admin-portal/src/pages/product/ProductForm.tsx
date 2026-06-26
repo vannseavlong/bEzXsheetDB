@@ -12,6 +12,7 @@ import { TaskInformationDialog, type TaskData } from '@/components/category/task
 import DraggableComboboxPanel from '@/components/common/draggable/DraggableComboboxPanel'
 import type { ComboItem } from '@/components/common/draggable/SortableComboBox'
 import { productsApi } from '@/api/products'
+import { uploadImage } from '@/api/upload'
 import { productOptionsApi } from '@/api/product-options'
 import { taskInfoApi } from '@/api/task-info'
 
@@ -113,7 +114,7 @@ export default function ProductForm() {
           <Card>
             <CardHeader><CardTitle className="text-base">Details</CardTitle></CardHeader>
             <CardContent className="space-y-5">
-              <ProfilePicker imageUrl={imageUrl} onChange={(_, url) => setImageUrl(url)} />
+              <ProfilePicker imageUrl={imageUrl} onUpload={uploadImage} onChange={(_, url) => setImageUrl(url)} />
 
               <MultiLanguageInput label="Name" required values={name} onChange={setName} />
 
