@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProfilePicker } from '@/components/shared/ProfilePicker'
 import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
+import { uploadImage } from '@/api/upload'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
@@ -66,6 +67,7 @@ export default function NewCategoryAddonCard({ item, index, onFieldChange, onDel
       <div className="grid grid-cols-1 xl:grid-cols-[96px_1fr] gap-6 items-start">
         <ProfilePicker
           imageUrl={item.imgUrl}
+          onUpload={uploadImage}
           onChange={(_, url) => onFieldChange(item.id, 'imgUrl', url)}
         />
 

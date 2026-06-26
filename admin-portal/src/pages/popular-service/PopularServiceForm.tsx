@@ -12,6 +12,7 @@ import { ProfilePicker } from '@/components/shared/ProfilePicker'
 import { categoriesApi } from '@/api/categories'
 import { productsApi } from '@/api/products'
 import { popularServicesApi } from '@/api/popular-services'
+import { uploadImage } from '@/api/upload'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
 function emptyLang(val = ''): MultiLangVal { return { en: val, km: '', vi: '', tw: '', cn: '' } }
@@ -111,7 +112,7 @@ export default function PopularServiceForm() {
           <Card>
             <CardHeader><CardTitle className="text-base">Details</CardTitle></CardHeader>
             <CardContent className="space-y-5">
-              <ProfilePicker imageUrl={imageUrl} onChange={(_, url) => setImageUrl(url)} />
+              <ProfilePicker imageUrl={imageUrl} onUpload={uploadImage} onChange={(_, url) => setImageUrl(url)} />
               <MultiLanguageInput label="Name" required values={name} onChange={setName} />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
