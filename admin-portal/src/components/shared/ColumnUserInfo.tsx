@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toEmbeddableImageUrl } from "@/lib/drive-image";
 
 function getInitials(name) {
   if (!name) return "??";
@@ -15,7 +16,7 @@ export function ColumnUserInfo({ name, subtitle, imageUrl, initials }) {
   return (
     <div className="flex items-center gap-3">
       <Avatar className="h-8 w-8 shrink-0">
-        {imageUrl && <AvatarImage src={imageUrl} alt={name ?? "user"} />}
+        {imageUrl && <AvatarImage src={toEmbeddableImageUrl(imageUrl)} alt={name ?? "user"} />}
         <AvatarFallback className="text-xs font-medium">
           {fallback}
         </AvatarFallback>

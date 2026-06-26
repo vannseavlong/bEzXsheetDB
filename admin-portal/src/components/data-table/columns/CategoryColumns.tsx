@@ -3,6 +3,7 @@ import { MoreHorizontal } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { toEmbeddableImageUrl } from '@/lib/drive-image'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +26,7 @@ export const categoryColumns = ({
     cell: ({ row }) => (
       <Avatar className="h-9 w-9 rounded-md">
         {row.original.thumbnailUrl ? (
-          <AvatarImage src={row.original.thumbnailUrl} alt={row.original.nameEn} />
+          <AvatarImage src={toEmbeddableImageUrl(row.original.thumbnailUrl)} alt={row.original.nameEn} />
         ) : null}
         <AvatarFallback className="rounded-md text-xs">-</AvatarFallback>
       </Avatar>

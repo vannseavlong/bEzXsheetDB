@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toEmbeddableImageUrl } from "@/lib/drive-image";
 
 type ProfilePickerProps = {
   imageUrl?: string
@@ -11,12 +12,15 @@ type ProfilePickerProps = {
 
 export function ProfilePicker({ imageUrl, onChange, onUpload, className }: ProfilePickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState(imageUrl ?? null);
+  const [preview, setPreview] = useState(imageUrl ? toEmbeddableImageUrl(imageUrl) : null);
   const [uploading, setUploading] = useState(false);
+  // URL we just produced via our own upload — re-receiving it as a prop shouldn't
+  // clobber the still-good local blob preview with a Drive link that may not load yet.
+  const lastUploadedUrl = useRef<string | null>(null);
 
   // Sync preview when imageUrl prop changes (e.g. edit page finishes loading)
   useEffect(() => {
-    if (imageUrl) setPreview(imageUrl);
+    if (imageUrl && imageUrl !== lastUploadedUrl.current) setPreview(toEmbeddableImageUrl(imageUrl));
   }, [imageUrl]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -32,6 +36,7 @@ export function ProfilePicker({ imageUrl, onChange, onUpload, className }: Profi
       setUploading(true);
       try {
         const remoteUrl = await onUpload(file);
+        lastUploadedUrl.current = remoteUrl;
         onChange?.(file, remoteUrl);
       } finally {
         setUploading(false);
