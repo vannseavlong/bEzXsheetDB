@@ -45,6 +45,13 @@ export const categoryAddonColumns = ({
       ),
     },
     {
+      accessorKey: 'selection_type',
+      header: 'Selection Type',
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">{row.original.selection_type}</span>
+      ),
+    },
+    {
       accessorKey: 'status',
       header: 'Status',
       filterFn: (row, id, value) => row.getValue(id) === value,

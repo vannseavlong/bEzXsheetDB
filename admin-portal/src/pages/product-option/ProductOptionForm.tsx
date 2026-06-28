@@ -34,7 +34,7 @@ export default function ProductOptionForm() {
 
   const { data: productsResult } = useProducts()
   const productItems = useMemo(
-    () => (productsResult?.data ?? []).map(r => ({ label: r.name_en, value: r._id })),
+    () => (productsResult?.data ?? []).map(r => ({ label: r.nameEn, value: r.id })),
     [productsResult]
   )
 

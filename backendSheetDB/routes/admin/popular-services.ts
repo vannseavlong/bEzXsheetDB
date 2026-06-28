@@ -1,6 +1,18 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
+import { countBy } from '../../utils/group-by'
+
+function toPopularServiceDto(r: Record<string, unknown>, itemCount: number) {
+  return {
+    id: r._id,
+    nameEn: r.name_en,
+    status: r.status,
+    displayOrder: r.display_order,
+    imageUrl: r.image_url ?? null,
+    itemCount,
+  }
+}
 
 export function createPopularServicesRouter(adapter: SheetAdapter) {
   const router = Router()
@@ -16,7 +28,14 @@ export function createPopularServicesRouter(adapter: SheetAdapter) {
         defaultOrderBy: 'display_order',
         defaultOrder: 'asc',
       })
-      res.json(result)
+
+      const items = (await ctx().table('popular_service_items').findMany({})) as any[]
+      const itemCountByService = countBy(items, 'popular_service_id')
+
+      res.json({
+        ...result,
+        data: result.data.map((r) => toPopularServiceDto(r, itemCountByService[String(r._id)] ?? 0)),
+      })
     } catch (err) { next(err) }
   })
 

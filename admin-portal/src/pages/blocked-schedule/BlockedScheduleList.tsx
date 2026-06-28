@@ -7,21 +7,7 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { blockedScheduleColumns } from '@/components/data-table/columns/BlockedScheduleColumns'
 import { BlockedScheduleHeader } from '@/components/headers/BlockedScheduleHeader'
-import { useBlockedSchedules, useRemoveBlockedSchedule, type DbBlockedSchedule } from '@/api/blocked-schedules'
-import type { BlockedSchedule } from '@/types'
-
-function dbToSchedule(db: DbBlockedSchedule): BlockedSchedule {
-  const cleanerIds: string[] = db.cleaner_ids ? JSON.parse(db.cleaner_ids) : []
-  return {
-    id: String(db._id),
-    name: db.name,
-    blockedDate: db.blocked_date,
-    startTime: db.start_time,
-    endTime: db.end_time,
-    cleanerDetails: cleanerIds,
-    associatedAddress: db.associated_address,
-  }
-}
+import { useBlockedSchedules, useRemoveBlockedSchedule } from '@/api/blocked-schedules'
 
 export default function BlockedScheduleList() {
   const tableState = useTableState()
@@ -32,7 +18,7 @@ export default function BlockedScheduleList() {
     limit: pagination.pageSize,
     search,
   })
-  const data = useMemo(() => (result?.data ?? []).map(dbToSchedule), [result])
+  const data = useMemo(() => result?.data ?? [], [result])
 
   const removeBlockedSchedule = useRemoveBlockedSchedule()
   async function handleDelete(id: string) {

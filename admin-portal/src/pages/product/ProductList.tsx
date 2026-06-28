@@ -8,7 +8,6 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { productColumns } from '@/components/data-table/columns/ProductColumns'
 import { ProductHeader } from '@/components/headers/ProductHeader'
 import { useProducts, useRemoveProduct } from '@/api/products'
-import type { Product } from '@/types'
 
 export default function ProductList() {
   const tableState = useTableState()
@@ -21,14 +20,7 @@ export default function ProductList() {
     status: statusFilter === 'all' ? undefined : statusFilter === 'active',
   })
 
-  const data: Product[] = useMemo(
-    () => (result?.data ?? []).map((r) => ({
-      id: r._id, nameEn: r.name_en, nameKm: r.name_km,
-      categoryId: '', basePrice: r.base_price, duration: r.duration,
-      status: r.status, sort: r.sort,
-    })),
-    [result]
-  )
+  const data = useMemo(() => result?.data ?? [], [result])
 
   const removeProduct = useRemoveProduct()
   const handleDelete = async (id: string) => {

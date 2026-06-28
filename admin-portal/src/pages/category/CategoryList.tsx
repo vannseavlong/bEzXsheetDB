@@ -10,18 +10,9 @@ import { DraggableContext } from '@/components/data-table/DraggableContext'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { categoryColumns } from '@/components/data-table/columns/CategoryColumns'
 import { CategoryTableHeader } from '@/components/headers/CategoryTableHeader'
-import { useCategories, useRemoveCategory, useReorderCategories, type DbCategory } from '@/api/categories'
+import { useCategories, useRemoveCategory, useReorderCategories } from '@/api/categories'
 import { usePlatforms } from '@/api/platforms'
 import type { Category } from '@/types'
-
-function toCategory(r: DbCategory): Category {
-  return {
-    id: r._id, nameEn: r.name_en, nameKm: r.name_km,
-    thumbnailUrl: r.thumbnail_url ?? null, status: r.status, sort: r.sort,
-    platform: r.platform ?? [],
-    products: [], taskInformation: [], categoryAddOns: [],
-  }
-}
 
 export default function CategoryList() {
   const tableState = useTableState()
@@ -39,7 +30,7 @@ export default function CategoryList() {
 
   const [data, setData] = useState<Category[]>([])
   useEffect(() => {
-    setData((result?.data ?? []).map(toCategory))
+    setData(result?.data ?? [])
   }, [result])
 
   const platformLabels = useMemo(

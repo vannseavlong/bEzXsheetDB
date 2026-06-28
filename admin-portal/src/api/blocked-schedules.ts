@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import type { BlockedSchedule } from '@/types'
 
 export type DbBlockedSchedule = {
   _id: string | number
@@ -28,7 +29,7 @@ export type BlockedScheduleInput = {
 }
 
 const BASE = '/admin/blocked-schedules'
-const resource = createResourceHooks<DbBlockedSchedule, BlockedScheduleInput>('blocked-schedules', BASE)
+const resource = createResourceHooks<DbBlockedSchedule, BlockedScheduleInput, BlockedSchedule>('blocked-schedules', BASE)
 
 export const useBlockedSchedules = (params?: ListParams) => resource.useList(params)
 export const useBlockedSchedule = (id: string | undefined) => resource.useGet(id)

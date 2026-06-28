@@ -8,7 +8,6 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { categoryAddonColumns } from '@/components/data-table/columns/CategoryAddonColumns'
 import { CategoryAddonHeader } from '@/components/headers/CategoryAddonHeader'
 import { useCategoryAddonsList, useRemoveCategoryAddon } from '@/api/category-addons'
-import type { CategoryAddon } from '@/types'
 
 export default function CategoryAddonList() {
   const tableState = useTableState()
@@ -21,13 +20,7 @@ export default function CategoryAddonList() {
     status: statusFilter === 'all' ? undefined : statusFilter === 'active',
   })
 
-  const data: CategoryAddon[] = useMemo(
-    () => (result?.data ?? []).map((r) => ({
-      id: r._id, nameEn: r.name_en, categories: [], status: r.status,
-      itemCount: 0, items: [], badge_en: r.badge_en ?? '',
-    })),
-    [result]
-  )
+  const data = useMemo(() => result?.data ?? [], [result])
 
   const removeCategoryAddon = useRemoveCategoryAddon()
   const handleDelete = async (id: string) => {

@@ -8,7 +8,6 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { popularServiceColumns } from '@/components/data-table/columns/PopularServiceColumns'
 import { PopularServiceHeader } from '@/components/headers/PopularServiceHeader'
 import { usePopularServices, useRemovePopularService } from '@/api/popular-services'
-import type { PopularService } from '@/types'
 
 export default function PopularServiceList() {
   const tableState = useTableState()
@@ -21,13 +20,7 @@ export default function PopularServiceList() {
     status: statusFilter === 'all' ? undefined : statusFilter === 'active',
   })
 
-  const data: PopularService[] = useMemo(
-    () => (result?.data ?? []).map((r) => ({
-      id: r._id, nameEn: r.name_en, status: r.status,
-      displayOrder: r.display_order, imageUrl: r.image_url ?? null, categoryId: '',
-    })),
-    [result]
-  )
+  const data = useMemo(() => result?.data ?? [], [result])
 
   const removePopularService = useRemovePopularService()
   const handleDelete = async (id: string) => {

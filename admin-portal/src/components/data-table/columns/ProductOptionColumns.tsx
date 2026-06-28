@@ -51,10 +51,10 @@ export const productOptionColumns = ({
       },
     },
     {
-      accessorKey: 'itemCount',
-      header: 'Items',
+      accessorKey: 'productNameEn',
+      header: 'Product',
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.original.itemCount}</span>
+        <span className="text-sm text-muted-foreground">{row.original.productNameEn}</span>
       ),
     },
     {

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import type { PopularService } from '@/types'
 
 export type DbPopularService = {
   _id: string; name_en: string; name_km: string
@@ -22,7 +23,7 @@ export type ServiceItemInput = {
 }
 
 const BASE = '/admin/popular-services'
-const resource = createResourceHooks<DbPopularService, PopularServiceInput>('popular-services', BASE)
+const resource = createResourceHooks<DbPopularService, PopularServiceInput, PopularService>('popular-services', BASE)
 
 export const usePopularServices = (params?: ListParams) => resource.useList(params)
 export const usePopularService = (id: string | undefined) => resource.useGet(id)

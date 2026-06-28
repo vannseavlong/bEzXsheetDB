@@ -1,4 +1,5 @@
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import type { Product } from '@/types'
 
 export type DbProduct = {
   _id: string; name_en: string; name_km: string
@@ -10,7 +11,7 @@ export type ProductInput = {
   base_price: number; duration: number; status: boolean; sort: number
 }
 
-const resource = createResourceHooks<DbProduct, ProductInput>('products', '/admin/products')
+const resource = createResourceHooks<DbProduct, ProductInput, Product>('products', '/admin/products')
 
 export const useProducts = (params?: ListParams) => resource.useList(params)
 export const useProduct = (id: string | undefined) => resource.useGet(id)

@@ -42,7 +42,7 @@ export default function ProductForm() {
   const { data: allOptionsResult } = useProductOptions()
   useEffect(() => {
     if (!allOptionsResult) return
-    setOptionChoices(allOptionsResult.data.map(r => ({ label: r.name_en, value: r._id })))
+    setOptionChoices(allOptionsResult.data.map(r => ({ label: r.nameEn, value: r.id })))
   }, [allOptionsResult])
 
   // Load existing product on edit
@@ -58,7 +58,7 @@ export default function ProductForm() {
     setDuration(product.duration)
     setStatus(product.status ? 'active' : 'inactive')
     setSort(product.sort)
-    setLinkedOptions(linkedOptionsResult.data.map(o => ({ id: o._id, value: o._id })))
+    setLinkedOptions(linkedOptionsResult.data.map(o => ({ id: o.id, value: o.id })))
     setTaskItems(tasks.map(toTaskItem))
   }, [product, linkedOptionsResult, tasks])
 

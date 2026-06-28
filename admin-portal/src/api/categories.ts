@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import type { Category } from '@/types'
 
 export type DbCategory = {
   _id: string; name_en: string; name_km: string
@@ -19,7 +20,7 @@ export type DbCategoryLink = {
 }
 
 const BASE = '/admin/categories'
-const resource = createResourceHooks<DbCategory, CategoryInput>('categories', BASE)
+const resource = createResourceHooks<DbCategory, CategoryInput, Category>('categories', BASE)
 
 export const useCategories = (params?: ListParams) => resource.useList(params)
 export const useCategory = (id: string | undefined) => resource.useGet(id)

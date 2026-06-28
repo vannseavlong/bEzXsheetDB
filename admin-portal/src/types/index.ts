@@ -76,16 +76,6 @@ export interface Order {
 
 // ─── RBAC / Roles ────────────────────────────────────────────────────────────
 
-export type RoleStatus = 'Active' | 'Inactive' | 'Pending'
-
-export interface RolesProps {
-  id: string
-  role: string
-  status: RoleStatus
-  createdAt: Date
-  createdBy: string
-}
-
 // ─── Cleaner ─────────────────────────────────────────────────────────────────
 
 export interface Cleaner {
@@ -208,14 +198,6 @@ export interface Ticket {
 
 // ─── Category ─────────────────────────────────────────────────────────────────
 
-export interface TaskInformation {
-  id: string
-  titleEn: string
-  titleKm: string
-  descriptionEn: string[]
-  descriptionKm: string[]
-}
-
 export interface Category {
   id: string
   nameEn: string
@@ -225,7 +207,6 @@ export interface Category {
   sort: number
   platform: string[]
   products: string[]
-  taskInformation: TaskInformation[]
   categoryAddOns: string[]
 }
 
@@ -235,7 +216,7 @@ export interface Product {
   id: string
   nameEn: string
   nameKm: string
-  categoryId: string
+  categories: string[]
   basePrice: number
   duration: number
   status: boolean
@@ -248,26 +229,19 @@ export interface ProductOption {
   id: string
   nameEn: string
   type: string
-  itemCount: number
+  productNameEn: string
   status: boolean
 }
 
 // ─── Category Addon ───────────────────────────────────────────────────────────
 
-export interface CategoryAddonItem {
-  id: string
-  nameEn: string
-  type: string
-  price: number
-}
-
 export interface CategoryAddon {
   id: string
   nameEn: string
   categories: string[]
+  selection_type: string
   status: boolean
   itemCount: number
-  items: CategoryAddonItem[]
   badge_en: string
 }
 
@@ -279,7 +253,7 @@ export interface PopularService {
   status: boolean
   displayOrder: number
   imageUrl: string | null
-  categoryId: string
+  itemCount: number
 }
 
 // ─── Item ─────────────────────────────────────────────────────────────────────
@@ -362,16 +336,6 @@ export interface DirectSaleRecord {
   status: OrderStatus
   paymentMethod: string
   date: string
-}
-
-export interface AppUser {
-  id: string
-  userId: string
-  name: string
-  phone: string
-  registrationDate: string
-  loginType: LoginType
-  status: string
 }
 
 // ─── Activity Log ─────────────────────────────────────────────────────────────

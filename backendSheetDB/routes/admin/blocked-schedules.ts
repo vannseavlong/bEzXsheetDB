@@ -2,6 +2,18 @@ import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 
+function toBlockedScheduleDto(r: Record<string, unknown>) {
+  return {
+    id: String(r._id),
+    name: r.name,
+    blockedDate: r.blocked_date,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    cleanerDetails: r.cleaner_ids ? JSON.parse(String(r.cleaner_ids)) : [],
+    associatedAddress: r.associated_address ?? '',
+  }
+}
+
 export function createBlockedSchedulesRouter(adapter: SheetAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
@@ -22,7 +34,7 @@ export function createBlockedSchedulesRouter(adapter: SheetAdapter) {
         defaultOrderBy: 'blocked_date',
         defaultOrder: 'desc',
       })
-      res.json(result)
+      res.json({ ...result, data: result.data.map(toBlockedScheduleDto) })
     } catch (err) { next(err) }
   })
 

@@ -1,6 +1,20 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
+import { groupBy } from '../../utils/group-by'
+
+function toProductDto(r: Record<string, unknown>, categoryNames: string[]) {
+  return {
+    id: r._id,
+    nameEn: r.name_en,
+    nameKm: r.name_km,
+    categories: categoryNames,
+    basePrice: r.base_price,
+    duration: r.duration,
+    status: r.status,
+    sort: r.sort,
+  }
+}
 
 export function createProductsRouter(adapter: SheetAdapter) {
   const router = Router()
@@ -16,7 +30,18 @@ export function createProductsRouter(adapter: SheetAdapter) {
         defaultOrderBy: 'sort',
         defaultOrder: 'asc',
       })
-      res.json(result)
+
+      const [productLinks, categories] = await Promise.all([
+        ctx().table('category_products').findMany({}) as Promise<any[]>,
+        ctx().table('categories').findMany({}) as Promise<any[]>,
+      ])
+      const categoryNameById = Object.fromEntries(categories.map((c) => [c._id, c.name_en]))
+      const categoryNamesByProduct = groupBy(productLinks, 'product_id', (l) => categoryNameById[l.category_id])
+
+      res.json({
+        ...result,
+        data: result.data.map((r) => toProductDto(r, categoryNamesByProduct[String(r._id)] ?? [])),
+      })
     } catch (err) { next(err) }
   })
 

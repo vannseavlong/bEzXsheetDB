@@ -9,14 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { mockCategories } from '@/data/categories'
 import type { Product } from '@/types'
-
-// Build category lookup map
-const categoryMap: Record<string, string> = {}
-;(mockCategories as Array<{ id: string; nameEn: string }>).forEach((c) => {
-  categoryMap[c.id] = c.nameEn
-})
 
 interface ProductColumnsOptions {
   onDelete?: (id: string) => void
@@ -42,7 +35,7 @@ export const productColumns = ({
     header: 'Category',
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {categoryMap[row.original.categoryId] ?? row.original.categoryId}
+        {row.original.categories.length > 0 ? row.original.categories.join(', ') : '-'}
       </span>
     ),
   },

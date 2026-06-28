@@ -1,6 +1,19 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
+import { countBy, groupBy } from '../../utils/group-by'
+
+function toCategoryAddonDto(r: Record<string, unknown>, categoryNames: string[], itemCount: number) {
+  return {
+    id: r._id,
+    nameEn: r.name_en,
+    categories: categoryNames,
+    selection_type: r.selection_type,
+    status: r.status,
+    itemCount,
+    badge_en: r.badge_en ?? '',
+  }
+}
 
 export function createCategoryAddonsRouter(adapter: SheetAdapter) {
   const router = Router()
@@ -14,7 +27,22 @@ export function createCategoryAddonsRouter(adapter: SheetAdapter) {
         filterFields: ['status', 'selection_type'],
         booleanFields: ['status'],
       })
-      res.json(result)
+
+      const [addonLinks, categories, items] = await Promise.all([
+        ctx().table('category_category_addons').findMany({}) as Promise<any[]>,
+        ctx().table('categories').findMany({}) as Promise<any[]>,
+        ctx().table('category_addon_items').findMany({}) as Promise<any[]>,
+      ])
+      const categoryNameById = Object.fromEntries(categories.map((c) => [c._id, c.name_en]))
+      const categoryNamesByAddon = groupBy(addonLinks, 'addon_id', (l) => categoryNameById[l.category_id])
+      const itemCountByAddon = countBy(items, 'addon_id')
+
+      res.json({
+        ...result,
+        data: result.data.map((r) =>
+          toCategoryAddonDto(r, categoryNamesByAddon[String(r._id)] ?? [], itemCountByAddon[String(r._id)] ?? 0)
+        ),
+      })
     } catch (err) { next(err) }
   })
 

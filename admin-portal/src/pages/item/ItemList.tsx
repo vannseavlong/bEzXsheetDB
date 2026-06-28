@@ -7,18 +7,7 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { itemColumns } from '@/components/data-table/columns/ItemColumns'
 import { ItemHeader } from '@/components/headers/ItemHeader'
-import { useItems, useRemoveItem, type DbItem } from '@/api/items'
-import type { Item } from '@/types'
-
-function dbToItem(db: DbItem): Item {
-  return {
-    id: String(db._id),
-    nameEn: db.name_en,
-    category: db.category,
-    status: db.status,
-    sortOrder: db.sort_order,
-  }
-}
+import { useItems, useRemoveItem } from '@/api/items'
 
 export default function ItemList() {
   const tableState = useTableState()
@@ -34,7 +23,7 @@ export default function ItemList() {
     category: categoryFilter === 'all' ? undefined : categoryFilter,
   })
 
-  const data = useMemo(() => (result?.data ?? []).map(dbToItem), [result])
+  const data = useMemo(() => result?.data ?? [], [result])
 
   const removeItem = useRemoveItem()
   async function handleDelete(id: string) {

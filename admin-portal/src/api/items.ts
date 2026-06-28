@@ -1,4 +1,5 @@
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import type { Item } from '@/types'
 
 export type DbItem = {
   _id: string | number
@@ -17,7 +18,7 @@ export type ItemInput = {
   sort_order?: number
 }
 
-const resource = createResourceHooks<DbItem, ItemInput>('items', '/admin/items')
+const resource = createResourceHooks<DbItem, ItemInput, Item>('items', '/admin/items')
 
 export const useItems = (params?: ListParams) => resource.useList(params)
 export const useItem = (id: string | undefined) => resource.useGet(id)

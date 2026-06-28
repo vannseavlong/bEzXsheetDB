@@ -49,11 +49,11 @@ export default function CategoryForm() {
   const { data: platformsResult } = usePlatforms()
 
   const productOptions = useMemo(
-    () => (productsResult?.data ?? []).map((r) => ({ label: r.name_en, value: r._id })),
+    () => (productsResult?.data ?? []).map((r) => ({ label: r.nameEn, value: r.id })),
     [productsResult]
   )
   const addonOptions = useMemo(
-    () => (addonsResult?.data ?? []).map((r) => ({ label: r.name_en, value: r._id })),
+    () => (addonsResult?.data ?? []).map((r) => ({ label: r.nameEn, value: r.id })),
     [addonsResult]
   )
   const platformOptions = useMemo(

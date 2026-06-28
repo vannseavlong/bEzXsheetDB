@@ -2,6 +2,16 @@ import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 
+function toItemDto(r: Record<string, unknown>) {
+  return {
+    id: String(r._id),
+    nameEn: r.name_en,
+    category: r.category,
+    status: r.status,
+    sortOrder: r.sort_order,
+  }
+}
+
 export function createItemsRouter(adapter: SheetAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
@@ -16,7 +26,7 @@ export function createItemsRouter(adapter: SheetAdapter) {
         defaultOrderBy: 'sort_order',
         defaultOrder: 'asc',
       })
-      res.json(result)
+      res.json({ ...result, data: result.data.map(toItemDto) })
     } catch (err) { next(err) }
   })
 

@@ -25,14 +25,14 @@ export interface ListResponse<T> {
  * resource. Resource modules in src/api/ call this once and add any
  * resource-specific endpoints (reorder, nested items, etc.) on top.
  */
-export function createResourceHooks<TDb, TInput = Partial<TDb>>(resource: string, basePath: string) {
+export function createResourceHooks<TDb, TInput = Partial<TDb>, TList = TDb>(resource: string, basePath: string) {
   const listKey = (params: ListParams) => [resource, 'list', params] as const
   const detailKey = (id: string | undefined) => [resource, 'detail', id] as const
 
   function useList(params: ListParams = {}) {
     return useQuery({
       queryKey: listKey(params),
-      queryFn: () => apiClient.get<ListResponse<TDb>>(`${basePath}${buildQuery(params)}`),
+      queryFn: () => apiClient.get<ListResponse<TList>>(`${basePath}${buildQuery(params)}`),
       placeholderData: keepPreviousData,
     })
   }

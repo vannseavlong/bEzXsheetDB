@@ -38,11 +38,11 @@ export default function PopularServiceForm() {
   const { data: categoriesResult } = useCategories()
   const { data: productsResult } = useProducts()
   const categoryOptions = useMemo(
-    () => (categoriesResult?.data ?? []).map(r => ({ label: r.name_en, value: r._id })),
+    () => (categoriesResult?.data ?? []).map(r => ({ label: r.nameEn, value: r.id })),
     [categoriesResult]
   )
   const productOptions = useMemo(
-    () => (productsResult?.data ?? []).map(r => ({ label: r.name_en, value: r._id })),
+    () => (productsResult?.data ?? []).map(r => ({ label: r.nameEn, value: r.id })),
     [productsResult]
   )
 

@@ -1,6 +1,21 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
+import { groupBy } from '../../utils/group-by'
+
+function toCategoryDto(r: Record<string, unknown>, productNames: string[], addonNames: string[]) {
+  return {
+    id: r._id,
+    nameEn: r.name_en,
+    nameKm: r.name_km,
+    thumbnailUrl: r.thumbnail_url ?? null,
+    status: r.status,
+    sort: r.sort,
+    platform: r.platform ?? [],
+    products: productNames,
+    categoryAddOns: addonNames,
+  }
+}
 
 export function createCategoriesRouter(adapter: SheetAdapter) {
   const router = Router()
@@ -16,7 +31,24 @@ export function createCategoriesRouter(adapter: SheetAdapter) {
         defaultOrderBy: 'sort',
         defaultOrder: 'asc',
       })
-      res.json(result)
+
+      const [productLinks, products, addonLinks, addons] = await Promise.all([
+        ctx().table('category_products').findMany({}) as Promise<any[]>,
+        ctx().table('products').findMany({}) as Promise<any[]>,
+        ctx().table('category_category_addons').findMany({}) as Promise<any[]>,
+        ctx().table('category_addons').findMany({}) as Promise<any[]>,
+      ])
+      const productNameById = Object.fromEntries(products.map((p) => [p._id, p.name_en]))
+      const addonNameById = Object.fromEntries(addons.map((a) => [a._id, a.name_en]))
+      const productNamesByCategory = groupBy(productLinks, 'category_id', (l) => productNameById[l.product_id])
+      const addonNamesByCategory = groupBy(addonLinks, 'category_id', (l) => addonNameById[l.addon_id])
+
+      res.json({
+        ...result,
+        data: result.data.map((r) =>
+          toCategoryDto(r, productNamesByCategory[String(r._id)] ?? [], addonNamesByCategory[String(r._id)] ?? [])
+        ),
+      })
     } catch (err) { next(err) }
   })
 
