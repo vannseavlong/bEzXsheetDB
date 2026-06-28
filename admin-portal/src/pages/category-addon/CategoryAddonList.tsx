@@ -21,7 +21,7 @@ export default function CategoryAddonList() {
     categoryAddonsApi.list()
       .then(rows => setData(rows.map(r => ({
         id: r._id, nameEn: r.name_en, categories: [], status: r.status,
-        itemCount: 0, items: [],
+        itemCount: 0, items: [], badge_en: r.badge_en ?? '',
       }))))
       .catch(console.error)
       .finally(() => setLoading(false))

@@ -8,6 +8,7 @@
     "start": "tsx server.ts",
     "seed:super-admin": "sheet-db seed seeds/super-admin.ts --skip-existing",
     "seed:add-user": "sheet-db seed seeds/add-user.ts --skip-existing",
+    "seed:platforms": "sheet-db seed seeds/platforms.ts --skip-existing",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -18,7 +19,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "longcelot-sheet-db": "^0.1.22",
+    "longcelot-sheet-db": "^0.1.24",
     "multer": "^2.2.0"
   },
   "devDependencies": {

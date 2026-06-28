@@ -1,4 +1,4 @@
-import { defineTable, string, boolean, number } from 'longcelot-sheet-db';
+import { defineTable, string, boolean, number, json } from 'longcelot-sheet-db';
 
 export default defineTable({
   name: 'categories',
@@ -11,5 +11,6 @@ export default defineTable({
     thumbnail_url: string(),
     status: boolean().default(true),
     sort: number().default(0),
+    platform: json().default([]),
   },
 });

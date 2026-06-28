@@ -8,7 +8,7 @@ export function createCategoriesRouter(adapter: SheetAdapter) {
   // GET /api/admin/categories
   router.get('/', async (_req, res, next) => {
     try {
-      const data = await ctx().table('categories').findMany({})
+      const data = await ctx().table('categories').findMany({ orderBy: 'sort', order: 'asc' })
       res.json({ data })
     } catch (err) { next(err) }
   })
@@ -16,8 +16,21 @@ export function createCategoriesRouter(adapter: SheetAdapter) {
   // POST /api/admin/categories
   router.post('/', async (req, res, next) => {
     try {
-      const item = await ctx().table('categories').create(req.body)
+      const existing = await ctx().table('categories').findMany({})
+      const item = await ctx().table('categories').create({ ...req.body, sort: existing.length })
       res.status(201).json({ data: item })
+    } catch (err) { next(err) }
+  })
+
+  // PUT /api/admin/categories/sort — reorder, sort = index in `ids`
+  router.put('/sort', async (req, res, next) => {
+    try {
+      const { ids }: { ids: string[] } = req.body
+      await Promise.all(ids.map((id, sort) =>
+        ctx().table('categories').update({ where: { _id: id }, data: { sort } })
+      ))
+      const data = await ctx().table('categories').findMany({ orderBy: 'sort', order: 'asc' })
+      res.json({ data })
     } catch (err) { next(err) }
   })
 

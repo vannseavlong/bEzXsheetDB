@@ -223,6 +223,7 @@ export interface Category {
   thumbnailUrl: string | null
   status: boolean
   sort: number
+  platform: string[]
   products: string[]
   taskInformation: TaskInformation[]
   categoryAddOns: string[]
@@ -267,6 +268,7 @@ export interface CategoryAddon {
   status: boolean
   itemCount: number
   items: CategoryAddonItem[]
+  badge_en: string
 }
 
 // ─── Popular Service ──────────────────────────────────────────────────────────

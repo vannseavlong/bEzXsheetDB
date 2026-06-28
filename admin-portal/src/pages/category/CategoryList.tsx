@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import type { UniqueIdentifier } from '@dnd-kit/core'
 import { Table } from '@/components/ui/table'
 import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
@@ -10,23 +9,33 @@ import { DraggableContext } from '@/components/data-table/DraggableContext'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { categoryColumns } from '@/components/data-table/columns/CategoryColumns'
 import { CategoryTableHeader } from '@/components/headers/CategoryTableHeader'
-import { categoriesApi } from '@/api/categories'
+import { categoriesApi, type DbCategory } from '@/api/categories'
+import { platformsApi } from '@/api/platforms'
 import type { Category } from '@/types'
+
+function toCategory(r: DbCategory): Category {
+  return {
+    id: r._id, nameEn: r.name_en, nameKm: r.name_km,
+    thumbnailUrl: r.thumbnail_url ?? null, status: r.status, sort: r.sort,
+    platform: r.platform ?? [],
+    products: [], taskInformation: [], categoryAddOns: [],
+  }
+}
 
 export default function CategoryList() {
   const tableState = useTableState()
   const { statusFilter, setStatusFilter } = tableState
 
   const [data, setData] = useState<Category[]>([])
+  const [platformLabels, setPlatformLabels] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    categoriesApi.list()
-      .then(rows => setData(rows.map(r => ({
-        id: r._id, nameEn: r.name_en, nameKm: r.name_km,
-        thumbnailUrl: r.thumbnail_url ?? null, status: r.status, sort: r.sort,
-        products: [], taskInformation: [], categoryAddOns: [],
-      }))))
+    Promise.all([categoriesApi.list(), platformsApi.list()])
+      .then(([categories, platforms]) => {
+        setData(categories.map(toCategory))
+        setPlatformLabels(Object.fromEntries(platforms.map(p => [p._id, p.name_en])))
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
@@ -38,7 +47,10 @@ export default function CategoryList() {
     } catch (err) { console.error('Delete failed:', err) }
   }
 
-  const columns = useMemo(() => categoryColumns({ onDelete: handleDelete }), [])
+  const columns = useMemo(
+    () => categoryColumns({ onDelete: handleDelete, platformLabels }),
+    [platformLabels]
+  )
 
   const table = useDataTableConfig(data, columns, tableState)
 
@@ -48,8 +60,11 @@ export default function CategoryList() {
     col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
   }, [statusFilter, table])
 
-  const handleReorder = (id: UniqueIdentifier, newIndex: number) => {
-    console.log('Reorder:', id, '→ index', newIndex)
+  const handleReorder = async () => {
+    try {
+      const updated = await categoriesApi.reorder(data.map(c => c.id))
+      setData(updated.map(toCategory))
+    } catch (err) { console.error('Reorder failed:', err) }
   }
 
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>

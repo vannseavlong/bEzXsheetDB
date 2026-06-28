@@ -4,6 +4,7 @@ import { requireAuth, requirePermission } from '../../middleware/auth'
 import { createUsersRouter } from './users'
 import { createRbacRouter } from './rbac'
 import { createCategoriesRouter } from './categories'
+import { createPlatformsRouter } from './platforms'
 import { createProductsRouter } from './products'
 import { createCategoryAddonsRouter } from './category-addons'
 import { createProductOptionsRouter } from './product-options'
@@ -27,6 +28,7 @@ export function createAdminRouter(adapter: SheetAdapter) {
   router.use('/users', requirePermission('ADMIN_USERS', 'VIEW'), createUsersRouter(adapter))
   router.use('/rbac', requirePermission('RBAC', 'VIEW'), createRbacRouter(adapter))
   router.use('/categories', requirePermission('SETUP-ITEM', 'VIEW'), createCategoriesRouter(adapter))
+  router.use('/platforms', requirePermission('SETUP-ITEM', 'VIEW'), createPlatformsRouter(adapter))
   router.use('/products', requirePermission('SETUP-ITEM', 'VIEW'), createProductsRouter(adapter))
   router.use('/category-addons', requirePermission('SETUP-ITEM', 'VIEW'), createCategoryAddonsRouter(adapter))
   router.use('/product-options', requirePermission('SETUP-ITEM', 'VIEW'), createProductOptionsRouter(adapter))

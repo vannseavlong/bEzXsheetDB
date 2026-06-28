@@ -3,11 +3,13 @@ import { apiClient } from './client'
 export type DbCategory = {
   _id: string; name_en: string; name_km: string
   thumbnail_url?: string; status: boolean; sort: number
+  platform: string[] | null
 }
 
 export type CategoryInput = {
   name_en: string; name_km: string
-  thumbnail_url?: string; status: boolean; sort: number
+  thumbnail_url?: string; status: boolean
+  platform: string[]
 }
 
 export type DbCategoryLink = {
@@ -31,6 +33,9 @@ export const categoriesApi = {
 
   remove: (id: string) =>
     apiClient.del(`${BASE}/${id}`),
+
+  reorder: (ids: string[]) =>
+    apiClient.put<{ data: DbCategory[] }>(`${BASE}/sort`, { ids }).then(r => r.data),
 
   getProducts: (id: string) =>
     apiClient.get<{ data: DbCategoryLink[] }>(`${BASE}/${id}/products`).then(r => r.data),

@@ -88,10 +88,54 @@ header diff, for projects upgrading an already-synced project rather than starti
 
 ---
 
+## ✅ Fixed in v0.1.23
+
+All 3 items from the "Phantom Rows, Partial-Update Defaults & Soft-Delete" feedback (submitted
+2026-06-27) were addressed.
+
+| # | Item |
+|---|---|
+| 11 | Boolean/enum phantom rows — `setDataValidation` now bounded to `dataRowCount + 200` instead of unbounded; `findMany()`/`update()`/`count()`/`delete()` independently filter out any row with an empty `_id` before returning, protecting already-synced sheets without needing to re-sync |
+| 12 | `update()` no longer resets defaulted columns omitted from a partial patch — `validateAndApplyDefaults()` only applies `column.default` on `create()` now |
+| 13 | `findMany()`/`findOne()`/`count()` now honor `softDelete` by default, matching the docs; new `includeDeleted?: boolean` opt-in on `FindOptions` for callers that need soft-deleted rows |
+
+Also shipped: `ColumnBuilder.default()` now accepts arrays/objects (`JsonValue`), closing a
+`json()`-column DX gap found alongside item 11 (`json().default([])` previously failed to
+type-check despite working correctly at runtime).
+
+Verified directly against `backendSheetDB`: `GET /api/admin/platforms` went from 1001 rows (999
+null) to exactly 2 real rows after upgrading; a `PATCH` that omitted `sort`/`status` left both
+values untouched instead of reverting to schema defaults; a soft-deleted category stopped
+appearing in list results. All three repros confirmed fixed, local workarounds removed.
+
+---
+
+## ✅ Fixed in v0.1.24
+
+Both items from the "Validation Buffer Growth & Boolean Rendering" follow-up feedback (submitted
+2026-06-27, same day — found while verifying the v0.1.23 fix) were addressed.
+
+| # | Item |
+|---|---|
+| 14 | Validation buffer self-heals — `create()` now extends the validated range another 200 rows every 100 inserts (`SheetClient.extendValidation()`), instead of staying frozen at whatever it was when `sync` last ran. Skipped entirely for schemas with no `boolean()`/`enum()` columns; uses the row number already returned by the Sheets append response, no extra read needed. |
+| 15 | `boolean()` columns render as a configurable `ONE_OF_LIST` dropdown (`'TRUE'`/`'FALSE'` or `'1'`/`'0'`, via `SheetStyleConfig.booleanFormat` or a per-column `boolean({ format })` override) instead of a native checkbox — closes the actual root cause of item 11 for boolean columns specifically, the same way `enum()` was never susceptible to begin with |
+
+**Caveat found during our own verification (2026-06-27):** same shape as the v0.1.22 caveat above —
+reformatting (including the new boolean-dropdown rendering) only happens when `syncSchema()` has
+new headers to write. Confirmed: re-running plain `sync` with no schema change left a pre-existing
+`status` column as a native checkbox; adding one more column to that same table triggered a full
+reformat pass that picked up the new dropdown rendering for *every* boolean/enum column in the
+table, not just the new one — so the upgrade does eventually reach old columns, just only as a
+side effect of the next schema change, not from `sync` alone. The `sync --reformat` flag noted
+under v0.1.22 would close this gap directly; added to the roadmap below.
+
+---
+
 ## 🗺️ Owner Roadmap (not yet shipped)
 
 | Item | Priority |
 |---|---|
+| `sync --reformat` flag — force `_applySheetFormatting()` on every table regardless of header diff, for retroactively applying formatting/dropdown changes (e.g. v0.1.22's dropdowns, v0.1.24's boolean rendering) to tables a plain `sync` leaves untouched | Medium |
 | NestJS guard / middleware variant of `createAuthRouter` | Medium |
 | Service account alternative for CI (no tokens file needed) | Medium |
 | `invite-only` registration policy (user must exist with `status: 'invited'`) | Future |
@@ -381,3 +425,132 @@ required on our side — the enum values are already declared in `defineTable()`
 | 8 | No auto-fit column width — long values get visually truncated until manually resized | UX | Medium — manual cleanup needed on every new tab/column |
 | 9 | No header fill color / frozen header row — hard to track columns while scrolling | UX | Medium — affects anyone manually reviewing data in Sheets |
 | 10 | No data validation dropdown for `boolean()`/`enum()` columns | UX / data integrity | Medium — raw sheet accepts invalid values with no visual guard |
+
+---
+
+## 📬 Feature Request / Feedback — Phantom Rows, Partial-Update Defaults & Soft-Delete (submitted 2026-06-27)
+
+Discovered while wiring up a new `platforms` table + a `categories.platform` column for the bEasy
+admin portal — the same integration test bed as every section above. Item 10's checkbox/dropdown
+rollout (v0.1.22) turned out to have a sharp edge none of us caught at the time.
+
+### 11. Boolean/enum columns leak ~1000 phantom rows into every read
+
+**Current behaviour:**
+`formatSheet()` applies `setDataValidation` for `boolean()`/`enum()` columns with no `endRowIndex`
+in the range. Per the Sheets API, an unbounded `GridRange` extends to the sheet's current grid row
+count — 1000 by default for a freshly-created tab. So every `boolean()`/`enum()` column gets
+checkbox/dropdown formatting on all 1000 rows, not just the rows with real data. `getAllRows()`
+then reads `Sheet!A:ZZ` — and Sheets trims a `values.get` range to the last row with *any* content,
+where a cell with validation/formatting applied (even with no entered value) counts as content.
+
+**Problem:**
+`GET /api/admin/platforms` with 2 real seeded rows returned **1001 rows**, 999 of them entirely
+`null` (`_id: null`, every column `null`). Same shape on an existing 5-row `categories` table → 999
+phantom rows. Any caller that doesn't defensively filter null-`_id` rows renders/ships garbage, and
+every list payload balloons by orders of magnitude (291 KB of response for 2 real platform rows).
+Since `status: boolean()` is on nearly every table in a typical project, this affects every table,
+not just freshly-added ones.
+
+**Requested change:**
+Bound the validation range to actual data instead of leaving it unbounded, and/or have
+`findMany()`/`getAllRows()` filter out rows with an empty primary key before returning, so phantom
+rows from this (or any other cause — manual sheet edits, etc.) never reach a caller.
+
+### 12. `update()` silently resets defaulted columns omitted from the patch body
+
+**Current behaviour:**
+`validateAndApplyDefaults()` is shared between `create()` and `update()`. For any column with a
+`.default()` that's absent from the call's `data`, it unconditionally sets the column to its
+default — with no `mode === 'create'` guard, unlike the adjacent `required` check right below it,
+which correctly only fires on `create()`.
+
+**Problem:**
+A `PATCH`/`update()` that only sends `{ name_en: '...' }` against a row with `status: false,
+sort: 7` comes back with `status: true, sort: 0` — both silently reset to their schema defaults
+despite neither field being mentioned in the request. Any normal REST "send only the changed
+fields" `PATCH` stomps every other defaulted column on every call. This is silent data corruption,
+not just bloat — far more severe than item 11.
+
+**Requested change:**
+Only apply `column.default` when `mode === 'create'`. A field missing from an `update()` payload
+should mean "leave it alone," not "reset to default."
+
+### 13. `findMany()`/`findOne()` don't honor soft-delete, contradicting the docs
+
+**Current behaviour:**
+`delete()` on a `softDelete: true` table correctly sets `_deleted_at`, but `findMany()` has no
+`_deleted_at` filtering anywhere in its implementation — it deserializes every row, applies `where`
+if given, sorts/paginates, and returns. `findOne()` is implemented as `findMany({ ...options,
+limit: 1 })`, so it inherits the same gap.
+
+**Problem:**
+Directly contradicts `skills/schema/SKILL.md`: *"Use `table.findMany()` — soft-deleted rows are
+automatically excluded."* A category soft-deleted a week earlier (`_deleted_at` populated) still
+showed up in every `GET /api/admin/categories` call.
+
+**Requested change:**
+Filter out rows with `_deleted_at` set by default when `schema.softDelete` is true, with an
+explicit `includeDeleted?: boolean` opt-in on `FindOptions` for callers that need to see them.
+
+### Summary
+
+| # | Issue | Type | Impact |
+|---|---|---|---|
+| 11 | Boolean/enum columns leak ~1000 phantom rows into every read | Bug | High — every table with a `status` column inflates list payloads, risks rendering garbage rows |
+| 12 | `update()` resets any defaulted column omitted from a partial patch | Bug | High — silent data corruption on any "send only changed fields" PATCH |
+| 13 | `findMany()`/`findOne()` ignore soft-delete, contradicting the docs | Bug | High — "deleted" records never actually disappear from any list view |
+
+---
+
+## 📬 Feature Request / Feedback — Validation Buffer Growth & Boolean Rendering (submitted 2026-06-27)
+
+Follow-up found the same day, while verifying the fix for item 11 above by adding a new `enum()`
+column to a live table and tracing why boolean columns specifically were the ones leaking phantom
+rows.
+
+### 14. Validation buffer from item 11's fix doesn't grow on its own past 200 rows
+
+**Current behaviour:**
+The bounded range fixing item 11 (`dataRowCount + 200`) is computed once, at whatever moment
+`syncSchema()` last wrote new headers. `_applySheetFormatting()` has exactly three call sites — a
+brand-new tab, a schema with a new column on an existing tab, and the internal `schema_versions`
+bootstrap — none reachable from `create()`/`appendRow()`.
+
+**Problem:**
+A table fed purely through normal `create()` calls (no schema change) over two months goes from 5
+rows to 250 rows. Rows up to ~205 keep their checkbox/dropdown UI and enforcement; rows 206–250 get
+plain text cells with no dropdown and no validation, silently, with no error surfaced anywhere —
+discoverable only by opening the raw sheet and noticing the formatting stops.
+
+**Requested change:**
+Make `create()`/`appendRow()`/`createMany()` self-healing: when a new row lands within a small
+margin of the last-formatted boundary, extend the validated range by another fixed buffer chunk.
+Chunk-based rather than per-row to keep the extra Sheets API call rare instead of constant.
+
+### 15. `boolean()` should render as a configurable dropdown instead of a native checkbox
+
+**Current behaviour:**
+Google Sheets' native `BOOLEAN` data validation doesn't just draw a checkbox glyph over an
+otherwise-empty cell — applying it sets every blank cell in its range to an actual `FALSE` value.
+`ONE_OF_LIST` (what `enum()` already used) doesn't do this: an unselected dropdown cell stays
+genuinely empty.
+
+**Problem:**
+That asymmetry is the actual root cause of item 11, specifically for boolean columns: a row with
+nothing in it isn't "empty" to the Sheets API once `boolean()` formatting reaches it, because one
+cell in that row now holds a real `FALSE`. `enum()`-only columns were never susceptible to this on
+their own — item 11's bounded-range and `_id`-filter fixes treat the symptom for both column types,
+but the cause is specific to `boolean()`'s checkbox choice.
+
+**Requested change:**
+Have `boolean()` use the same `ONE_OF_LIST` mechanism `enum()` already uses, with the value pair
+configurable as either `['TRUE', 'FALSE']` or `['1', '0']` — project-wide via `SheetStyleConfig`,
+or per-column as an override for tables that need to match an external system's convention.
+
+### Summary
+
+| # | Issue | Type | Impact |
+|---|---|---|---|
+| 14 | Validation buffer doesn't grow past 200 rows without a manual `sync` | Feature gap | Medium — silent loss of UI/enforcement past the buffer, easy to miss |
+| 15 | `boolean()` uses a native checkbox instead of `enum()`'s safer `ONE_OF_LIST` | Architecture / root cause | High — directly caused item 11 for boolean columns specifically |

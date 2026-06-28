@@ -13,3 +13,4 @@ export { ProfilePicker } from "./ProfilePicker";
 export { MultiLanguageInput } from "./MultiLanguageInput";
 export { Uploader } from "./Uploader";
 export { NotificationDrawer } from "./NotificationDrawer";
+export { MultiSelect } from "./MultiSelect";

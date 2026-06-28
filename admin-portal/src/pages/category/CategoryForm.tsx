@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Uploader } from '@/components/shared/Uploader'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CustomHeader } from '@/components/shared/CustomHeader'
 import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
+import { MultiSelect } from '@/components/shared/MultiSelect'
 import { ProfilePicker } from '@/components/shared/ProfilePicker'
 import TaskInformationPanel, { type TaskItem } from '@/components/category/task-information/TaskInformationPanel'
 import { TaskInformationDialog, emptyTaskData, type TaskData } from '@/components/category/task-information/TaskInformationDialog'
@@ -16,6 +16,7 @@ import { categoriesApi } from '@/api/categories'
 import { uploadImage } from '@/api/upload'
 import { productsApi } from '@/api/products'
 import { categoryAddonsApi } from '@/api/category-addons'
+import { platformsApi } from '@/api/platforms'
 import { taskInfoApi } from '@/api/task-info'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
@@ -28,7 +29,7 @@ export default function CategoryForm() {
 
   const [name, setName] = useState<MultiLangVal>(emptyLang())
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
-  const [sort, setSort] = useState(0)
+  const [platform, setPlatform] = useState<string[]>([])
   const [imageUrl, setImageUrl] = useState('')
   const [equipmentFiles, setEquipmentFiles] = useState<File[]>([])
   const [taskItems, setTaskItems] = useState<TaskItem[]>([])
@@ -37,6 +38,7 @@ export default function CategoryForm() {
 
   const [productOptions, setProductOptions] = useState<{ label: string; value: string }[]>([])
   const [addonOptions, setAddonOptions] = useState<{ label: string; value: string }[]>([])
+  const [platformOptions, setPlatformOptions] = useState<{ label: string; value: string }[]>([])
 
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
   const [editingTaskIndex, setEditingTaskIndex] = useState<number | undefined>()
@@ -51,6 +53,10 @@ export default function CategoryForm() {
     categoryAddonsApi.list().then(rows =>
       setAddonOptions(rows.map(r => ({ label: r.name_en, value: r._id })))
     ).catch(console.error)
+
+    platformsApi.list().then(rows =>
+      setPlatformOptions(rows.map(r => ({ label: r.name_en, value: r._id })))
+    ).catch(console.error)
   }, [])
 
   // Load existing category on edit
@@ -64,7 +70,7 @@ export default function CategoryForm() {
     ]).then(([cat, linkedProducts, linkedAddons, tasks]) => {
       setName(emptyLang(cat.name_en))
       setStatus(cat.status ? 'active' : 'inactive')
-      setSort(cat.sort)
+      setPlatform(cat.platform ?? [])
       setImageUrl(cat.thumbnail_url ?? '')
       setProducts(linkedProducts
         .sort((a, b) => a.sort - b.sort)
@@ -86,7 +92,7 @@ export default function CategoryForm() {
         name_km: name.km,
         thumbnail_url: imageUrl || undefined,
         status: status === 'active',
-        sort,
+        platform,
       }
 
       let categoryId = id!
@@ -154,9 +160,13 @@ export default function CategoryForm() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>Sort Order</Label>
-                  <Input type="number" min="0" value={sort}
-                    onChange={e => setSort(parseInt(e.target.value) || 0)} />
+                  <Label>Platform</Label>
+                  <MultiSelect
+                    options={platformOptions}
+                    value={platform}
+                    onChange={setPlatform}
+                    placeholder="Select platform…"
+                  />
                 </div>
               </div>
 

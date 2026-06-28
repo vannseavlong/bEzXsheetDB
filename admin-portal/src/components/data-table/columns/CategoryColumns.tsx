@@ -15,10 +15,12 @@ import type { Category } from '@/types'
 
 interface CategoryColumnsOptions {
   onDelete?: (id: string) => void
+  platformLabels?: Record<string, string>
 }
 
 export const categoryColumns = ({
   onDelete,
+  platformLabels,
 }: CategoryColumnsOptions = {}): ColumnDef<Category>[] => [
   {
     accessorKey: 'thumbnailUrl',
@@ -45,26 +47,22 @@ export const categoryColumns = ({
     ),
   },
   {
-    id: 'platforms',
-    header: 'Platforms',
-    cell: () => (
-      <span className="text-sm text-muted-foreground">App, Mini App</span>
-    ),
+    id: 'platform',
+    header: 'Platform',
+    cell: ({ row }) => {
+      const labels = row.original.platform.map(id => platformLabels?.[id] ?? id)
+      return (
+        <span className="text-sm text-muted-foreground">
+          {labels.length > 0 ? labels.join(', ') : '-'}
+        </span>
+      )
+    },
   },
   {
     accessorKey: 'status',
     header: 'Status',
     filterFn: (row, id, value) => row.getValue(id) === value,
     cell: ({ row }) => <StatusBadge status={row.original.status} />,
-  },
-  {
-    id: 'date',
-    header: 'Date',
-    cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground">
-        Sort #{row.original.sort}
-      </span>
-    ),
   },
   {
     id: 'actions',

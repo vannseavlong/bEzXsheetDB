@@ -8,6 +8,7 @@ import usersSchema from '../schemas/admin/users'
 import rolesSchema from '../schemas/admin/roles'
 import rolePermissionsSchema from '../schemas/admin/role_permissions'
 import categoriesSchema from '../schemas/admin/categories'
+import platformsSchema from '../schemas/admin/platforms'
 import productsSchema from '../schemas/admin/products'
 import categoryAddonsSchema from '../schemas/admin/category_addons'
 import categoryAddonItemsSchema from '../schemas/admin/category_addon_items'
@@ -55,6 +56,7 @@ export function createAdapter() {
   adapter.registerSchema(rolesSchema)
   adapter.registerSchema(rolePermissionsSchema)
   adapter.registerSchema(categoriesSchema)
+  adapter.registerSchema(platformsSchema)
   adapter.registerSchema(productsSchema)
   adapter.registerSchema(categoryAddonsSchema)
   adapter.registerSchema(categoryAddonItemsSchema)
