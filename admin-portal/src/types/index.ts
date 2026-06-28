@@ -241,6 +241,7 @@ export interface CategoryAddon {
   categories: string[]
   selection_type: string
   status: boolean
+  isRequired: boolean
   itemCount: number
   badge_en: string
 }

@@ -58,6 +58,14 @@ export const categoryAddonColumns = ({
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
+      accessorKey: 'isRequired',
+      header: 'Required',
+      filterFn: (row, id, value) => row.getValue(id) === value,
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.isRequired} label={row.original.isRequired ? 'Yes' : 'No'} />
+      ),
+    },
+    {
       accessorKey: 'badge_en',
       header: 'Badge',
       cell: ({ row }) => (

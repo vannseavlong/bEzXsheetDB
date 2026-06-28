@@ -34,12 +34,12 @@ export const userColumns = ({ onEdit, onToggleStatus }: UserColumnsOptions = {})
         row.original.email.toLowerCase().includes(q)
       )
     },
-    cell: ({ row }) => (
-      <div>
-        <p className="font-medium text-sm">{row.original.name}</p>
-        <p className="text-xs text-muted-foreground">{row.original.email}</p>
-      </div>
-    ),
+    cell: ({ row }) => <p className="font-medium text-sm">{row.original.name}</p>,
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
+    cell: ({ row }) => <p className="text-sm text-muted-foreground">{row.original.email}</p>,
   },
   {
     accessorKey: 'role',

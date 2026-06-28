@@ -10,6 +10,7 @@ function toCategoryAddonDto(r: Record<string, unknown>, categoryNames: string[],
     categories: categoryNames,
     selection_type: r.selection_type,
     status: r.status,
+    isRequired: r.is_required,
     itemCount,
     badge_en: r.badge_en ?? '',
   }
