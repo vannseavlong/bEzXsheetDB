@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -7,8 +7,8 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CustomHeader } from '@/components/shared/CustomHeader'
 import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
-import { productsApi } from '@/api/products'
-import { productOptionsApi } from '@/api/product-options'
+import { useProducts } from '@/api/products'
+import { useProductOption, useCreateProductOption, useUpdateProductOption } from '@/api/product-options'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
 function emptyLang(val = ''): MultiLangVal { return { en: val, km: '', vi: '', tw: '', cn: '' } }
@@ -30,26 +30,27 @@ export default function ProductOptionForm() {
   const [amount, setAmount] = useState(0)
   const [status, setStatus] = useState(true)
   const [sort, setSort] = useState(0)
-  const [productItems, setProductItems] = useState<{ label: string; value: string }[]>([])
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    productsApi.list().then(rows =>
-      setProductItems(rows.map(r => ({ label: r.name_en, value: r._id })))
-    ).catch(console.error)
-  }, [])
+  const { data: productsResult } = useProducts()
+  const productItems = useMemo(
+    () => (productsResult?.data ?? []).map(r => ({ label: r.name_en, value: r._id })),
+    [productsResult]
+  )
 
+  const { data: option } = useProductOption(isNew ? undefined : id)
   useEffect(() => {
-    if (isNew || !id) return
-    productOptionsApi.get(id).then(opt => {
-      setName(emptyLang(opt.name_en))
-      setProductId(opt.product_id)
-      setType(opt.type)
-      setAmount(opt.amount)
-      setStatus(opt.status)
-      setSort(opt.sort)
-    }).catch(console.error)
-  }, [id, isNew])
+    if (!option) return
+    setName(emptyLang(option.name_en))
+    setProductId(option.product_id)
+    setType(option.type)
+    setAmount(option.amount)
+    setStatus(option.status)
+    setSort(option.sort)
+  }, [option])
+
+  const createProductOption = useCreateProductOption()
+  const updateProductOption = useUpdateProductOption()
 
   async function handleSave() {
     setSaving(true)
@@ -59,9 +60,9 @@ export default function ProductOptionForm() {
         type, amount, status, sort,
       }
       if (isNew) {
-        await productOptionsApi.create(payload)
+        await createProductOption.mutateAsync(payload)
       } else {
-        await productOptionsApi.update(id!, payload)
+        await updateProductOption.mutateAsync({ id: id!, data: payload })
       }
       navigate('/product-option')
     } catch (err) {

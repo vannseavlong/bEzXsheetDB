@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { createResourceHooks, type ListParams } from './createResourceHooks'
 
 export type DbPlatform = {
   _id: string; name_en: string; name_km: string
@@ -10,21 +10,10 @@ export type PlatformInput = {
   description?: string; status: boolean
 }
 
-const BASE = '/admin/platforms'
+const resource = createResourceHooks<DbPlatform, PlatformInput>('platforms', '/admin/platforms')
 
-export const platformsApi = {
-  list: () =>
-    apiClient.get<{ data: DbPlatform[] }>(BASE).then(r => r.data),
-
-  get: (id: string) =>
-    apiClient.get<{ data: DbPlatform }>(`${BASE}/${id}`).then(r => r.data),
-
-  create: (data: PlatformInput) =>
-    apiClient.post<{ data: DbPlatform }>(BASE, data).then(r => r.data),
-
-  update: (id: string, data: Partial<PlatformInput>) =>
-    apiClient.patch<{ data: DbPlatform }>(`${BASE}/${id}`, data).then(r => r.data),
-
-  remove: (id: string) =>
-    apiClient.del(`${BASE}/${id}`),
-}
+export const usePlatforms = (params?: ListParams) => resource.useList(params)
+export const usePlatform = (id: string | undefined) => resource.useGet(id)
+export const useCreatePlatform = resource.useCreate
+export const useUpdatePlatform = resource.useUpdate
+export const useRemovePlatform = resource.useRemove

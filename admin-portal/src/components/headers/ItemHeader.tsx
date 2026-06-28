@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 import { Plus } from 'lucide-react'
-import type { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from '@/components/shared/SearchBar'
 import {
@@ -16,20 +15,21 @@ import type { Item } from '@/types'
 const uniqueCategories = ['all', ...Array.from(new Set(mockItems.map((i: Item) => i.category)))]
 
 interface Props {
-  table: Table<Item>
+  search: string
+  setSearch: (v: string) => void
   statusFilter: string
   setStatusFilter: (v: string) => void
   categoryFilter: string
   setCategoryFilter: (v: string) => void
 }
 
-export function ItemHeader({ table, statusFilter, setStatusFilter, categoryFilter, setCategoryFilter }: Props) {
+export function ItemHeader({ search, setSearch, statusFilter, setStatusFilter, categoryFilter, setCategoryFilter }: Props) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
       <SearchBar
         placeholder="Search items..."
-        value={(table.getColumn('nameEn')?.getFilterValue() as string) ?? ''}
-        onChange={(val) => table.getColumn('nameEn')?.setFilterValue(val)}
+        value={search}
+        onChange={setSearch}
       />
       <div className="flex flex-row gap-3">
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>

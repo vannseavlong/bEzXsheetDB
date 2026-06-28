@@ -20,6 +20,8 @@ export interface TableStateReturn {
   setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>
   statusFilter: string
   setStatusFilter: React.Dispatch<React.SetStateAction<string>>
+  search: string
+  setSearch: React.Dispatch<React.SetStateAction<string>>
   dateRange: DateRange
   setDateRange: React.Dispatch<React.SetStateAction<DateRange>>
   isCalendarOpen: boolean
@@ -33,13 +35,25 @@ export function useTableState(): TableStateReturn {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilterRaw] = useState<string>('all')
+  const [search, setSearchRaw] = useState<string>('')
   const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null })
   const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false)
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 30,
+    pageSize: 15,
   })
+
+  // Changing a filter mid-pagination should jump back to page 1 — otherwise a
+  // narrower result set can leave the table on a page that no longer exists.
+  const setStatusFilter: TableStateReturn['setStatusFilter'] = (value) => {
+    setPagination((p) => ({ ...p, pageIndex: 0 }))
+    setStatusFilterRaw(value)
+  }
+  const setSearch: TableStateReturn['setSearch'] = (value) => {
+    setPagination((p) => ({ ...p, pageIndex: 0 }))
+    setSearchRaw(value)
+  }
 
   return {
     sorting,
@@ -52,6 +66,8 @@ export function useTableState(): TableStateReturn {
     setRowSelection,
     statusFilter,
     setStatusFilter,
+    search,
+    setSearch,
     dateRange,
     setDateRange,
     isCalendarOpen,

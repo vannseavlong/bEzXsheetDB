@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CustomHeader } from '@/components/shared'
-import { blockedSchedulesApi } from '@/api/blocked-schedules'
-import type { DbCleaner } from '@/api/blocked-schedules'
+import {
+  useCleaners, useBlockedSchedule, useCreateBlockedSchedule, useUpdateBlockedSchedule,
+} from '@/api/blocked-schedules'
 
 const ALL_CLEANERS_VALUE = '__all__'
 
@@ -34,29 +35,23 @@ export default function BlockedScheduleForm() {
   const isNew = id === 'new'
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
-  const [cleaners, setCleaners] = useState<DbCleaner[]>([])
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    blockedSchedulesApi.listCleaners().then(res => setCleaners(res))
-  }, [])
+  const { data: cleaners = [] } = useCleaners()
 
+  const { data: schedule } = useBlockedSchedule(isNew ? undefined : id)
   useEffect(() => {
-    if (!isNew && id) {
-      blockedSchedulesApi.get(id).then(res => {
-        const s = res
-        const ids: string[] = s.cleaner_ids ? JSON.parse(s.cleaner_ids) : []
-        setForm({
-          name: s.name,
-          date: s.blocked_date.slice(0, 10),
-          startTime: s.start_time,
-          endTime: s.end_time,
-          address: s.associated_address ?? '',
-          selectedIds: ids,
-        })
-      })
-    }
-  }, [id, isNew])
+    if (!schedule) return
+    const ids: string[] = schedule.cleaner_ids ? JSON.parse(schedule.cleaner_ids) : []
+    setForm({
+      name: schedule.name,
+      date: schedule.blocked_date.slice(0, 10),
+      startTime: schedule.start_time,
+      endTime: schedule.end_time,
+      address: schedule.associated_address ?? '',
+      selectedIds: ids,
+    })
+  }, [schedule])
 
   function isAllSelected(): boolean {
     return cleaners.length > 0 && cleaners.every(c => form.selectedIds.includes(String(c._id)))
@@ -78,6 +73,9 @@ export default function BlockedScheduleForm() {
     }))
   }
 
+  const createBlockedSchedule = useCreateBlockedSchedule()
+  const updateBlockedSchedule = useUpdateBlockedSchedule()
+
   async function handleSave() {
     if (!form.name.trim() || !form.date) return
     setSaving(true)
@@ -91,9 +89,9 @@ export default function BlockedScheduleForm() {
         associated_address: form.address.trim() || undefined,
       }
       if (isNew) {
-        await blockedSchedulesApi.create(payload)
+        await createBlockedSchedule.mutateAsync(payload)
       } else {
-        await blockedSchedulesApi.update(id!, payload)
+        await updateBlockedSchedule.mutateAsync({ id: id!, data: payload })
       }
       navigate('/blocked-schedule')
     } catch (err) {

@@ -18,8 +18,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
       longcelot-sheet-db:
-        specifier: ^0.1.24
-        version: 0.1.24(@types/node@25.9.1)
+        specifier: ^0.1.25
+        version: 0.1.25(@types/node@25.9.1)
       multer:
         specifier: ^2.2.0
         version: 2.2.0
@@ -649,8 +649,8 @@ packages:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
     engines: {node: '>=10'}
 
-  longcelot-sheet-db@0.1.24:
-    resolution: {integrity: sha512-rtkHY6LQpjREXIMPLuFvwjcqoc+p6LYxZpBiCxCm0/k4e1dTs9fR+ewi+TQKs9ZVNqy3jzPs3Sy1SZa5XvPErQ==}
+  longcelot-sheet-db@0.1.25:
+    resolution: {integrity: sha512-m5dx8zwbKrdN1RU/NcW9xmobW6xN7wAdHHpbGJJ5I4v456HT1FWSOoK7w+41FRtKGd+w0DF0wDVOT0IzZE/UmA==}
     engines: {node: '>=16.0.0'}
     hasBin: true
 
@@ -1599,7 +1599,7 @@ snapshots:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
 
-  longcelot-sheet-db@0.1.24(@types/node@25.9.1):
+  longcelot-sheet-db@0.1.25(@types/node@25.9.1):
     dependencies:
       bcryptjs: 3.0.3
       chalk: 4.1.2

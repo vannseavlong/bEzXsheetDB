@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { createResourceHooks, type ListParams } from './createResourceHooks'
 
 export type DbItem = {
   _id: string | number
@@ -17,21 +17,10 @@ export type ItemInput = {
   sort_order?: number
 }
 
-const BASE = '/admin/items'
+const resource = createResourceHooks<DbItem, ItemInput>('items', '/admin/items')
 
-export const itemsApi = {
-  list: () =>
-    apiClient.get<{ data: DbItem[] }>(BASE).then(r => r.data),
-
-  get: (id: string | number) =>
-    apiClient.get<{ data: DbItem }>(`${BASE}/${id}`).then(r => r.data),
-
-  create: (data: ItemInput) =>
-    apiClient.post<{ data: DbItem }>(BASE, data).then(r => r.data),
-
-  update: (id: string | number, data: Partial<ItemInput>) =>
-    apiClient.patch<{ data: DbItem }>(`${BASE}/${id}`, data).then(r => r.data),
-
-  delete: (id: string | number) =>
-    apiClient.del(`${BASE}/${id}`),
-}
+export const useItems = (params?: ListParams) => resource.useList(params)
+export const useItem = (id: string | undefined) => resource.useGet(id)
+export const useCreateItem = resource.useCreate
+export const useUpdateItem = resource.useUpdate
+export const useRemoveItem = resource.useRemove

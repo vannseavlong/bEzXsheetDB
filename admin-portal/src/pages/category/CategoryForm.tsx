@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -12,12 +12,15 @@ import TaskInformationPanel, { type TaskItem } from '@/components/category/task-
 import { TaskInformationDialog, emptyTaskData, type TaskData } from '@/components/category/task-information/TaskInformationDialog'
 import DraggableComboboxPanel from '@/components/common/draggable/DraggableComboboxPanel'
 import type { ComboItem } from '@/components/common/draggable/SortableComboBox'
-import { categoriesApi } from '@/api/categories'
+import {
+  useCategory, useCategoryAddons, useCategoryProducts,
+  useCreateCategory, useSetCategoryAddons, useSetCategoryProducts, useUpdateCategory,
+} from '@/api/categories'
 import { uploadImage } from '@/api/upload'
-import { productsApi } from '@/api/products'
-import { categoryAddonsApi } from '@/api/category-addons'
-import { platformsApi } from '@/api/platforms'
-import { taskInfoApi } from '@/api/task-info'
+import { useProducts } from '@/api/products'
+import { useCategoryAddonsList } from '@/api/category-addons'
+import { usePlatforms } from '@/api/platforms'
+import { useReplaceTaskInfoForCategory, useTaskInfoByCategory, toTaskItem } from '@/api/task-info'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
 function emptyLang(val = ''): MultiLangVal { return { en: val, km: '', vi: '', tw: '', cn: '' } }
@@ -36,53 +39,57 @@ export default function CategoryForm() {
   const [products, setProducts] = useState<ComboItem[]>([])
   const [addons, setAddons] = useState<ComboItem[]>([])
 
-  const [productOptions, setProductOptions] = useState<{ label: string; value: string }[]>([])
-  const [addonOptions, setAddonOptions] = useState<{ label: string; value: string }[]>([])
-  const [platformOptions, setPlatformOptions] = useState<{ label: string; value: string }[]>([])
-
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
   const [editingTaskIndex, setEditingTaskIndex] = useState<number | undefined>()
   const [saving, setSaving] = useState(false)
 
-  // Load reference lists (products + addons for dropdowns)
-  useEffect(() => {
-    productsApi.list().then(rows =>
-      setProductOptions(rows.map(r => ({ label: r.name_en, value: r._id })))
-    ).catch(console.error)
+  // Reference lists for the dropdowns/pickers
+  const { data: productsResult } = useProducts()
+  const { data: addonsResult } = useCategoryAddonsList()
+  const { data: platformsResult } = usePlatforms()
 
-    categoryAddonsApi.list().then(rows =>
-      setAddonOptions(rows.map(r => ({ label: r.name_en, value: r._id })))
-    ).catch(console.error)
-
-    platformsApi.list().then(rows =>
-      setPlatformOptions(rows.map(r => ({ label: r.name_en, value: r._id })))
-    ).catch(console.error)
-  }, [])
+  const productOptions = useMemo(
+    () => (productsResult?.data ?? []).map((r) => ({ label: r.name_en, value: r._id })),
+    [productsResult]
+  )
+  const addonOptions = useMemo(
+    () => (addonsResult?.data ?? []).map((r) => ({ label: r.name_en, value: r._id })),
+    [addonsResult]
+  )
+  const platformOptions = useMemo(
+    () => (platformsResult?.data ?? []).map((r) => ({ label: r.name_en, value: r._id })),
+    [platformsResult]
+  )
 
   // Load existing category on edit
+  const editId = isEdit ? id : undefined
+  const { data: category } = useCategory(editId)
+  const { data: linkedProducts } = useCategoryProducts(editId)
+  const { data: linkedAddons } = useCategoryAddons(editId)
+  const { data: tasks } = useTaskInfoByCategory(editId)
+
   useEffect(() => {
-    if (!isEdit || !id) return
-    Promise.all([
-      categoriesApi.get(id),
-      categoriesApi.getProducts(id),
-      categoriesApi.getAddons(id),
-      taskInfoApi.listByCategory(id),
-    ]).then(([cat, linkedProducts, linkedAddons, tasks]) => {
-      setName(emptyLang(cat.name_en))
-      setStatus(cat.status ? 'active' : 'inactive')
-      setPlatform(cat.platform ?? [])
-      setImageUrl(cat.thumbnail_url ?? '')
-      setProducts(linkedProducts
-        .sort((a, b) => a.sort - b.sort)
-        .map(l => ({ id: l._id, value: l.product_id! }))
-      )
-      setAddons(linkedAddons
-        .sort((a, b) => a.sort - b.sort)
-        .map(l => ({ id: l._id, value: l.addon_id! }))
-      )
-      setTaskItems(tasks.map(taskInfoApi.toTaskItem))
-    }).catch(console.error)
-  }, [id, isEdit])
+    if (!category || !linkedProducts || !linkedAddons || !tasks) return
+    setName(emptyLang(category.name_en))
+    setStatus(category.status ? 'active' : 'inactive')
+    setPlatform(category.platform ?? [])
+    setImageUrl(category.thumbnail_url ?? '')
+    setProducts(linkedProducts
+      .sort((a, b) => a.sort - b.sort)
+      .map(l => ({ id: l._id, value: l.product_id! }))
+    )
+    setAddons(linkedAddons
+      .sort((a, b) => a.sort - b.sort)
+      .map(l => ({ id: l._id, value: l.addon_id! }))
+    )
+    setTaskItems(tasks.map(toTaskItem))
+  }, [category, linkedProducts, linkedAddons, tasks])
+
+  const createCategory = useCreateCategory()
+  const updateCategory = useUpdateCategory()
+  const setCategoryProducts = useSetCategoryProducts()
+  const setCategoryAddons = useSetCategoryAddons()
+  const replaceTaskInfo = useReplaceTaskInfoForCategory()
 
   async function handleSave() {
     setSaving(true)
@@ -97,16 +104,16 @@ export default function CategoryForm() {
 
       let categoryId = id!
       if (isEdit) {
-        await categoriesApi.update(categoryId, payload)
+        await updateCategory.mutateAsync({ id: categoryId, data: payload })
       } else {
-        const created = await categoriesApi.create(payload)
+        const created = await createCategory.mutateAsync(payload)
         categoryId = created._id
       }
 
       await Promise.all([
-        categoriesApi.setProducts(categoryId, products.map(p => p.value)),
-        categoriesApi.setAddons(categoryId, addons.map(a => a.value)),
-        taskInfoApi.replaceForCategory(categoryId, taskItems),
+        setCategoryProducts.mutateAsync({ id: categoryId, productIds: products.map(p => p.value) }),
+        setCategoryAddons.mutateAsync({ id: categoryId, addonIds: addons.map(a => a.value) }),
+        replaceTaskInfo.mutateAsync({ categoryId, items: taskItems }),
       ])
 
       navigate('/category')

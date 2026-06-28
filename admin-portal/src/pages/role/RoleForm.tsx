@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { rbacApi } from '@/api/rbac'
+import { useRoles, useCreateRole, useUpdateRole } from '@/api/rbac'
 
 export default function RoleForm() {
   const { id } = useParams<{ id: string }>()
@@ -15,35 +15,33 @@ export default function RoleForm() {
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   const [description, setDescription] = useState('')
-  const [saving, setSaving] = useState(false)
 
+  const { data: rolesResult } = useRoles()
   useEffect(() => {
-    if (!isNew && id) {
-      rbacApi.listRoles().then(res => {
-        const role = res.find(r => String(r.id) === id)
-        if (role) {
-          setName(role.name)
-          setCode(role.code)
-          setDescription(role.description ?? '')
-        }
-      })
+    if (isNew || !id || !rolesResult) return
+    const role = rolesResult.data.find(r => String(r.id) === id)
+    if (role) {
+      setName(role.name)
+      setCode(role.code)
+      setDescription(role.description ?? '')
     }
-  }, [id, isNew])
+  }, [id, isNew, rolesResult])
+
+  const createRole = useCreateRole()
+  const updateRole = useUpdateRole()
+  const saving = createRole.isPending || updateRole.isPending
 
   const handleSave = async () => {
     if (!name.trim() || !code.trim()) return
-    setSaving(true)
     try {
       if (isNew) {
-        await rbacApi.createRole({ name: name.trim(), code: code.trim().toUpperCase(), description: description.trim() })
+        await createRole.mutateAsync({ name: name.trim(), code: code.trim().toUpperCase(), description: description.trim() })
       } else {
-        await rbacApi.updateRole(id!, { name: name.trim(), description: description.trim() })
+        await updateRole.mutateAsync({ id: id!, data: { name: name.trim(), description: description.trim() } })
       }
       navigate('/roles')
     } catch (err) {
       console.error('Save failed:', err)
-    } finally {
-      setSaving(false)
     }
   }
 

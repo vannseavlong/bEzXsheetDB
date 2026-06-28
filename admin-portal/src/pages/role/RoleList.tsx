@@ -14,7 +14,10 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { ACTIONS } from '@/lib/permission'
 import { MODULE_SECTIONS, PERMISSION_COLUMNS } from './_constants'
-import { rbacApi, type DbRole } from '@/api/rbac'
+import {
+  useRoles, useCreateRole, useDeleteRole, useRolePermissions, useSetRolePermissions,
+  type DbRole,
+} from '@/api/rbac'
 
 const ROLE_COLORS = [
   '#EF4444', '#3B82F6', '#10B981', '#F59E0B',
@@ -40,51 +43,41 @@ function NaCell() {
 }
 
 export default function RoleList() {
-  const [roles, setRoles] = React.useState<DbRole[]>([])
-  const [loading, setLoading] = React.useState(true)
+  const { data: rolesResult, isLoading: loading } = useRoles()
+  const roles = rolesResult?.data ?? []
+
   const [selectedCode, setSelectedCode] = React.useState<string | null>(null)
-  const [currentPermissions, setCurrentPermissions] = React.useState<Record<string, string[]>>({})
   const [draftPermissions, setDraftPermissions] = React.useState<Record<string, string[]>>({})
   const [editMode, setEditMode] = React.useState(false)
-  const [saving, setSaving] = React.useState(false)
-  const [permsLoading, setPermsLoading] = React.useState(false)
 
   // Create role dialog
   const [createOpen, setCreateOpen] = React.useState(false)
   const [createForm, setCreateForm] = React.useState({ name: '', code: '', description: '' })
-  const [creating, setCreating] = React.useState(false)
 
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = React.useState<DbRole | null>(null)
-  const [deleting, setDeleting] = React.useState(false)
 
-  // Load roles on mount
+  // Default-select the first role once the list loads
   React.useEffect(() => {
-    rbacApi.listRoles()
-      .then(rows => {
-        setRoles(rows)
-        if (rows.length > 0) setSelectedCode(rows[0].code)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+    if (!selectedCode && roles.length > 0) setSelectedCode(roles[0].code)
+  }, [roles, selectedCode])
 
-  // Load permissions when selected role changes
-  React.useEffect(() => {
-    if (!selectedCode) return
-    setPermsLoading(true)
-    rbacApi.getRolePermissions(selectedCode)
-      .then(perms => {
-        const map: Record<string, string[]> = {}
-        for (const { module, action } of perms) {
-          map[module] = map[module] ?? []
-          map[module].push(action)
-        }
-        setCurrentPermissions(map)
-      })
-      .catch(console.error)
-      .finally(() => setPermsLoading(false))
-  }, [selectedCode])
+  const { data: permsList, isLoading: permsLoading } = useRolePermissions(selectedCode ?? undefined)
+  const currentPermissions = React.useMemo(() => {
+    const map: Record<string, string[]> = {}
+    for (const { module, action } of permsList ?? []) {
+      map[module] = map[module] ?? []
+      map[module].push(action)
+    }
+    return map
+  }, [permsList])
+
+  const setRolePermissions = useSetRolePermissions()
+  const createRole = useCreateRole()
+  const deleteRole = useDeleteRole()
+  const saving = setRolePermissions.isPending
+  const creating = createRole.isPending
+  const deleting = deleteRole.isPending
 
   const selectedRole = roles.find(r => r.code === selectedCode)
   const selectedIdx = roles.findIndex(r => r.code === selectedCode)
@@ -102,18 +95,14 @@ export default function RoleList() {
 
   const handleSave = async () => {
     if (!selectedCode) return
-    setSaving(true)
     try {
       const permissions = Object.entries(draftPermissions).flatMap(([module, actions]) =>
         actions.map(action => ({ module, action }))
       )
-      await rbacApi.setRolePermissions(selectedCode, permissions)
-      setCurrentPermissions({ ...draftPermissions })
+      await setRolePermissions.mutateAsync({ code: selectedCode, permissions })
       setEditMode(false)
     } catch (err) {
       console.error('Save failed:', err)
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -139,39 +128,28 @@ export default function RoleList() {
 
   const handleCreateRole = async () => {
     if (!createForm.name.trim() || !createForm.code.trim()) return
-    setCreating(true)
     try {
-      const role = await rbacApi.createRole({
+      const role = await createRole.mutateAsync({
         name: createForm.name.trim(),
         code: createForm.code.trim().toUpperCase(),
         description: createForm.description.trim(),
       })
-      setRoles(prev => [...prev, role])
       setSelectedCode(role.code)
       setCreateOpen(false)
       setCreateForm({ name: '', code: '', description: '' })
     } catch (err) {
       console.error('Create failed:', err)
-    } finally {
-      setCreating(false)
     }
   }
 
   const handleDeleteRole = async () => {
     if (!deleteTarget) return
-    setDeleting(true)
     try {
-      await rbacApi.deleteRole(deleteTarget.id)
-      const updated = roles.filter(r => r.id !== deleteTarget.id)
-      setRoles(updated)
-      if (selectedCode === deleteTarget.code) {
-        setSelectedCode(updated[0]?.code ?? null)
-      }
+      await deleteRole.mutateAsync(deleteTarget.id)
+      if (selectedCode === deleteTarget.code) setSelectedCode(null)
       setDeleteTarget(null)
     } catch (err) {
       console.error('Delete failed:', err)
-    } finally {
-      setDeleting(false)
     }
   }
 

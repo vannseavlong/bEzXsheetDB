@@ -9,10 +9,16 @@ import {
 } from '@tanstack/react-table'
 import type { TableStateReturn } from './use-table-state'
 
+export interface ServerListOptions {
+  /** Total page count reported by the backend (`meta.totalPages`). Switches the table to manual pagination/filtering. */
+  pageCount: number
+}
+
 export function useDataTableConfig<TData>(
   data: TData[],
   columns: ColumnDef<TData>[],
-  tableState: TableStateReturn
+  tableState: TableStateReturn,
+  server?: ServerListOptions
 ) {
   const {
     sorting,
@@ -26,6 +32,8 @@ export function useDataTableConfig<TData>(
     pagination,
     setPagination,
   } = tableState
+
+  const isManual = !!server
 
   const options: TableOptions<TData> = {
     data,
@@ -43,11 +51,12 @@ export function useDataTableConfig<TData>(
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: isManual ? undefined : getFilteredRowModel(),
+    getPaginationRowModel: isManual ? undefined : getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    manualPagination: false,
-    pageCount: Math.ceil(data.length / pagination.pageSize),
+    manualPagination: isManual,
+    manualFiltering: isManual,
+    pageCount: isManual ? server.pageCount : Math.ceil(data.length / pagination.pageSize),
   }
 
   return useReactTable(options)

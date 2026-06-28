@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { createResourceHooks, type ListParams } from './createResourceHooks'
 
 export type DbProduct = {
   _id: string; name_en: string; name_km: string
@@ -10,21 +10,10 @@ export type ProductInput = {
   base_price: number; duration: number; status: boolean; sort: number
 }
 
-const BASE = '/admin/products'
+const resource = createResourceHooks<DbProduct, ProductInput>('products', '/admin/products')
 
-export const productsApi = {
-  list: () =>
-    apiClient.get<{ data: DbProduct[] }>(BASE).then(r => r.data),
-
-  get: (id: string) =>
-    apiClient.get<{ data: DbProduct }>(`${BASE}/${id}`).then(r => r.data),
-
-  create: (data: ProductInput) =>
-    apiClient.post<{ data: DbProduct }>(BASE, data).then(r => r.data),
-
-  update: (id: string, data: Partial<ProductInput>) =>
-    apiClient.patch<{ data: DbProduct }>(`${BASE}/${id}`, data).then(r => r.data),
-
-  remove: (id: string) =>
-    apiClient.del(`${BASE}/${id}`),
-}
+export const useProducts = (params?: ListParams) => resource.useList(params)
+export const useProduct = (id: string | undefined) => resource.useGet(id)
+export const useCreateProduct = resource.useCreate
+export const useUpdateProduct = resource.useUpdate
+export const useRemoveProduct = resource.useRemove

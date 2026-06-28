@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,9 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CustomHeader } from '@/components/shared/CustomHeader'
 import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
 import { ProfilePicker } from '@/components/shared/ProfilePicker'
-import { categoriesApi } from '@/api/categories'
-import { productsApi } from '@/api/products'
-import { popularServicesApi } from '@/api/popular-services'
+import { useCategories } from '@/api/categories'
+import { useProducts } from '@/api/products'
+import {
+  usePopularService, usePopularServiceItems,
+  useCreatePopularService, useUpdatePopularService, useSetPopularServiceItems,
+} from '@/api/popular-services'
 import { uploadImage } from '@/api/upload'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
@@ -30,33 +33,36 @@ export default function PopularServiceForm() {
   const [displayOrder, setDisplayOrder] = useState(1)
   const [imageUrl, setImageUrl] = useState('')
   const [items, setItems] = useState<ServiceItem[]>([])
-  const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([])
-  const [productOptions, setProductOptions] = useState<{ label: string; value: string }[]>([])
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    categoriesApi.list().then(rows => setCategoryOptions(rows.map(r => ({ label: r.name_en, value: r._id })))).catch(console.error)
-    productsApi.list().then(rows => setProductOptions(rows.map(r => ({ label: r.name_en, value: r._id })))).catch(console.error)
-  }, [])
+  const { data: categoriesResult } = useCategories()
+  const { data: productsResult } = useProducts()
+  const categoryOptions = useMemo(
+    () => (categoriesResult?.data ?? []).map(r => ({ label: r.name_en, value: r._id })),
+    [categoriesResult]
+  )
+  const productOptions = useMemo(
+    () => (productsResult?.data ?? []).map(r => ({ label: r.name_en, value: r._id })),
+    [productsResult]
+  )
+
+  const editId = isEdit ? id : undefined
+  const { data: service } = usePopularService(editId)
+  const { data: serviceItems } = usePopularServiceItems(editId)
 
   useEffect(() => {
-    if (!isEdit || !id) return
-    Promise.all([
-      popularServicesApi.get(id),
-      popularServicesApi.getItems(id),
-    ]).then(([svc, svcItems]) => {
-      setName(emptyLang(svc.name_en))
-      setStatus(svc.status ? 'active' : 'inactive')
-      setDisplayOrder(svc.display_order)
-      setImageUrl(svc.image_url ?? '')
-      setItems(svcItems.map(i => ({
-        id: i._id,
-        type: i.type,
-        refId: i.type === 'CATEGORY' ? (i.category_id ?? '') : (i.product_id ?? ''),
-        priority: i.priority,
-      })))
-    }).catch(console.error)
-  }, [id, isEdit])
+    if (!service || !serviceItems) return
+    setName(emptyLang(service.name_en))
+    setStatus(service.status ? 'active' : 'inactive')
+    setDisplayOrder(service.display_order)
+    setImageUrl(service.image_url ?? '')
+    setItems(serviceItems.map(i => ({
+      id: i._id,
+      type: i.type,
+      refId: i.type === 'CATEGORY' ? (i.category_id ?? '') : (i.product_id ?? ''),
+      priority: i.priority,
+    })))
+  }, [service, serviceItems])
 
   function addItem() {
     setItems(prev => [...prev, { id: `tmp_${Date.now()}`, type: 'CATEGORY', refId: '', priority: prev.length }])
@@ -67,6 +73,10 @@ export default function PopularServiceForm() {
       i.id === itemId ? { ...i, [field]: value, ...(field === 'type' ? { refId: '' } : {}) } : i
     ))
   }
+
+  const createPopularService = useCreatePopularService()
+  const updatePopularService = useUpdatePopularService()
+  const setPopularServiceItems = useSetPopularServiceItems()
 
   async function handleSave() {
     setSaving(true)
@@ -80,15 +90,16 @@ export default function PopularServiceForm() {
 
       let serviceId = id!
       if (isEdit) {
-        await popularServicesApi.update(serviceId, payload)
+        await updatePopularService.mutateAsync({ id: serviceId, data: payload })
       } else {
-        const created = await popularServicesApi.create(payload)
+        const created = await createPopularService.mutateAsync(payload)
         serviceId = created._id
       }
 
-      await popularServicesApi.setItems(serviceId, items.map(i => ({
-        type: i.type, ref_id: i.refId, priority: i.priority,
-      })))
+      await setPopularServiceItems.mutateAsync({
+        id: serviceId,
+        items: items.map(i => ({ type: i.type, ref_id: i.refId, priority: i.priority })),
+      })
 
       navigate('/popular-service')
     } catch (err) {

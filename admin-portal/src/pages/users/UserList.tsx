@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Plus } from 'lucide-react'
 import { Table, TableBody } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,7 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
 import { userColumns } from '@/components/data-table/columns/UserColumns'
-import { usersApi, type DbAdminUser } from '@/api/users'
+import { useUsers, useCreateUser, useUpdateUser, useDeactivateUser, type DbAdminUser } from '@/api/users'
 
 const ROLES = [
   { value: 'super_admin', label: 'Super Admin' },
@@ -40,87 +40,70 @@ type CreateForm = { name: string; email: string; password: string; role: string 
 
 export default function UserList() {
   const tableState = useTableState()
-  const { statusFilter, setStatusFilter } = tableState
+  const { statusFilter, setStatusFilter, search, setSearch, pagination } = tableState
 
-  const [allData, setAllData] = useState<DbAdminUser[]>([])
-  const [loading, setLoading] = useState(true)
   const [roleFilter, setRoleFilter] = useState('all')
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm, setCreateForm] = useState<CreateForm>({ name: '', email: '', password: '', role: 'admin' })
-  const [creating, setCreating] = useState(false)
 
   // Edit dialog
   const [editTarget, setEditTarget] = useState<DbAdminUser | null>(null)
   const [editForm, setEditForm] = useState<EditForm>({ name: '', role: '', status: '' })
-  const [editing, setEditing] = useState(false)
 
-  useEffect(() => {
-    usersApi.list()
-      .then(rows => setAllData(rows))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: result, isLoading: loading } = useUsers({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    search,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+    role: roleFilter === 'all' ? undefined : roleFilter,
+  })
+  const data = result?.data ?? []
+
+  const createUser = useCreateUser()
+  const updateUser = useUpdateUser()
+  const deactivateUser = useDeactivateUser()
+  const creating = createUser.isPending
+  const editing = updateUser.isPending
 
   const handleCreate = async () => {
     if (!createForm.name || !createForm.email || !createForm.password) return
-    setCreating(true)
     try {
-      const user = await usersApi.create(createForm)
-      setAllData(prev => [...prev, user])
+      await createUser.mutateAsync(createForm)
       setCreateOpen(false)
       setCreateForm({ name: '', email: '', password: '', role: 'admin' })
     } catch (err) { console.error('Create failed:', err) }
-    finally { setCreating(false) }
   }
 
   const handleEdit = async () => {
     if (!editTarget) return
-    setEditing(true)
     try {
-      const updated = await usersApi.update(editTarget._id, editForm)
-      setAllData(prev => prev.map(u => String(u._id) === String(updated._id) ? updated : u))
+      await updateUser.mutateAsync({ id: editTarget._id, data: editForm })
       setEditTarget(null)
     } catch (err) { console.error('Update failed:', err) }
-    finally { setEditing(false) }
   }
 
   const handleToggleStatus = async (user: DbAdminUser) => {
     try {
       if (user.status === 'active') {
-        await usersApi.deactivate(user._id)
-        setAllData(prev => prev.map(u =>
-          String(u._id) === String(user._id) ? { ...u, status: 'inactive' as const } : u
-        ))
+        await deactivateUser.mutateAsync(String(user._id))
       } else {
-        const updated = await usersApi.update(user._id, { status: 'active' })
-        setAllData(prev => prev.map(u => String(u._id) === String(updated._id) ? updated : u))
+        await updateUser.mutateAsync({ id: user._id, data: { status: 'active' } })
       }
     } catch (err) { console.error('Toggle failed:', err) }
   }
-
-  // Pre-filter by role before giving to TanStack Table
-  const roleFiltered = useMemo(
-    () => roleFilter === 'all' ? allData : allData.filter(u => u.role === roleFilter),
-    [allData, roleFilter]
-  )
 
   const columns = useMemo(() => userColumns({
     onEdit: user => { setEditTarget(user); setEditForm({ name: user.name, role: user.role, status: user.status }) },
     onToggleStatus: handleToggleStatus,
   }), [])
 
-  const table = useDataTableConfig(roleFiltered, columns, tableState)
+  const table = useDataTableConfig(data, columns, tableState, {
+    pageCount: result?.meta.totalPages ?? 1,
+  })
 
-  // Sync status filter to TanStack column filter
-  useEffect(() => {
-    const col = table.getColumn('status')
-    if (!col) return
-    col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
-  }, [statusFilter, table])
-
-  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
+  if (loading && data.length === 0) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">
@@ -129,8 +112,8 @@ export default function UserList() {
         <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
           <SearchBar
             placeholder="Search by name or email…"
-            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-            onChange={val => table.getColumn('name')?.setFilterValue(val)}
+            value={search}
+            onChange={setSearch}
           />
           <div className="flex items-center gap-3">
             <Select value={roleFilter} onValueChange={setRoleFilter}>

@@ -1,7 +1,6 @@
 export { StatusBadge } from "./StatusBadge";
 export { OverviewCard } from "./OverviewCard";
 export { SearchBar } from "./SearchBar";
-export { TablePagination } from "./TablePagination";
 export { CustomHeader } from "./CustomHeader";
 export { WarningDialog } from "./WarningDialog";
 export { ColumnUserInfo } from "./ColumnUserInfo";

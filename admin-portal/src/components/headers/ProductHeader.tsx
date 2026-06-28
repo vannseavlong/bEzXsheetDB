@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 import { Plus } from 'lucide-react'
-import type { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { SearchBar } from '@/components/shared/SearchBar'
 import {
@@ -10,21 +9,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Product } from '@/types'
 
 interface Props {
-  table: Table<Product>
+  search: string
+  setSearch: (v: string) => void
   statusFilter: string
   setStatusFilter: (v: string) => void
 }
 
-export function ProductHeader({ table, statusFilter, setStatusFilter }: Props) {
+export function ProductHeader({ search, setSearch, statusFilter, setStatusFilter }: Props) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
       <SearchBar
         placeholder="Search products..."
-        value={(table.getColumn('nameEn')?.getFilterValue() as string) ?? ''}
-        onChange={(val) => table.getColumn('nameEn')?.setFilterValue(val)}
+        value={search}
+        onChange={setSearch}
       />
       <div className="flex flex-row gap-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}>

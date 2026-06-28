@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { hashPassword, validatePasswordStrength } from 'longcelot-sheet-db'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { requireRole } from '../../middleware/auth'
+import { listResource } from '../../utils/list-query'
 
 const VALID_ROLES = ['super_admin', 'admin', 'operation', 'finance', 'marketing'] as const
 type Role = (typeof VALID_ROLES)[number]
@@ -11,11 +12,14 @@ export function createUsersRouter(adapter: SheetAdapter) {
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   // GET /api/admin/users  — list all (auth only; RBAC gates the frontend page)
-  router.get('/', async (_req, res, next) => {
+  router.get('/', async (req, res, next) => {
     try {
-      const users = await ctx().table('users').findMany({})
-      const safe = (users as any[]).map(({ password_hash: _ph, ...u }) => u)
-      res.json({ data: safe })
+      const result = await listResource(ctx().table('users'), req.query, {
+        searchFields: ['name', 'email', 'user_id'],
+        filterFields: ['status', 'role'],
+      })
+      const data = (result.data as any[]).map(({ password_hash: _ph, ...u }) => u)
+      res.json({ ...result, data })
     } catch (err) { next(err) }
   })
 

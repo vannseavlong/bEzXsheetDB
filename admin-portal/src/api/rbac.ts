@@ -1,4 +1,6 @@
-import { apiClient } from './client'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { apiClient, buildQuery } from './client'
+import type { ListParams, ListResponse } from './createResourceHooks'
 
 export type DbRole = {
   id: string | number
@@ -22,22 +24,49 @@ export type RoleInput = {
 
 const BASE = '/admin/rbac'
 
-export const rbacApi = {
-  listRoles: () =>
-    apiClient.get<{ data: DbRole[] }>(`${BASE}/roles`).then(r => r.data),
+export const useRoles = (params: ListParams = {}) =>
+  useQuery({
+    queryKey: ['roles', 'list', params],
+    queryFn: () => apiClient.get<ListResponse<DbRole>>(`${BASE}/roles${buildQuery(params)}`),
+  })
 
-  createRole: (data: RoleInput) =>
-    apiClient.post<{ data: DbRole }>(`${BASE}/roles`, data).then(r => r.data),
+export function useCreateRole() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: RoleInput) => apiClient.post<{ data: DbRole }>(`${BASE}/roles`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['roles', 'list'] }),
+  })
+}
 
-  updateRole: (id: string | number, data: Partial<RoleInput>) =>
-    apiClient.put<{ data: DbRole }>(`${BASE}/roles/${id}`, data).then(r => r.data),
+export function useUpdateRole() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string | number; data: Partial<RoleInput> }) =>
+      apiClient.put<{ data: DbRole }>(`${BASE}/roles/${id}`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['roles', 'list'] }),
+  })
+}
 
-  deleteRole: (id: string | number) =>
-    apiClient.del(`${BASE}/roles/${id}`),
+export function useDeleteRole() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string | number) => apiClient.del(`${BASE}/roles/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['roles', 'list'] }),
+  })
+}
 
-  getRolePermissions: (code: string) =>
-    apiClient.get<{ data: RolePermission[] }>(`${BASE}/roles/${code}/permissions`).then(r => r.data),
+export const useRolePermissions = (code: string | undefined) =>
+  useQuery({
+    queryKey: ['roles', 'permissions', code],
+    queryFn: () => apiClient.get<{ data: RolePermission[] }>(`${BASE}/roles/${code}/permissions`).then((r) => r.data),
+    enabled: !!code,
+  })
 
-  setRolePermissions: (code: string, permissions: RolePermission[]) =>
-    apiClient.put<{ message: string }>(`${BASE}/roles/${code}/permissions`, { permissions }),
+export function useSetRolePermissions() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ code, permissions }: { code: string; permissions: RolePermission[] }) =>
+      apiClient.put<{ message: string }>(`${BASE}/roles/${code}/permissions`, { permissions }),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['roles', 'permissions', vars.code] }),
+  })
 }

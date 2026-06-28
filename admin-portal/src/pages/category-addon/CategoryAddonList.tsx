@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 import { Table, TableBody } from '@/components/ui/table'
 import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
@@ -7,50 +7,49 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { categoryAddonColumns } from '@/components/data-table/columns/CategoryAddonColumns'
 import { CategoryAddonHeader } from '@/components/headers/CategoryAddonHeader'
-import { categoryAddonsApi } from '@/api/category-addons'
+import { useCategoryAddonsList, useRemoveCategoryAddon } from '@/api/category-addons'
 import type { CategoryAddon } from '@/types'
 
 export default function CategoryAddonList() {
   const tableState = useTableState()
-  const { statusFilter, setStatusFilter } = tableState
+  const { statusFilter, setStatusFilter, search, setSearch, pagination } = tableState
 
-  const [data, setData] = useState<CategoryAddon[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: result, isLoading } = useCategoryAddonsList({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    search,
+    status: statusFilter === 'all' ? undefined : statusFilter === 'active',
+  })
 
-  useEffect(() => {
-    categoryAddonsApi.list()
-      .then(rows => setData(rows.map(r => ({
-        id: r._id, nameEn: r.name_en, categories: [], status: r.status,
-        itemCount: 0, items: [], badge_en: r.badge_en ?? '',
-      }))))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  const data: CategoryAddon[] = useMemo(
+    () => (result?.data ?? []).map((r) => ({
+      id: r._id, nameEn: r.name_en, categories: [], status: r.status,
+      itemCount: 0, items: [], badge_en: r.badge_en ?? '',
+    })),
+    [result]
+  )
 
+  const removeCategoryAddon = useRemoveCategoryAddon()
   const handleDelete = async (id: string) => {
     try {
-      await categoryAddonsApi.remove(id)
-      setData(prev => prev.filter(i => i.id !== id))
+      await removeCategoryAddon.mutateAsync(id)
     } catch (err) { console.error('Delete failed:', err) }
   }
 
   const columns = useMemo(() => categoryAddonColumns({ onDelete: handleDelete }), [])
 
-  const table = useDataTableConfig(data, columns, tableState)
+  const table = useDataTableConfig(data, columns, tableState, {
+    pageCount: result?.meta.totalPages ?? 1,
+  })
 
-  useEffect(() => {
-    const col = table.getColumn('status')
-    if (!col) return
-    col.setFilterValue(statusFilter === 'all' ? undefined : statusFilter === 'active')
-  }, [statusFilter, table])
-
-  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
+  if (isLoading && data.length === 0) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">
       <div className="rounded-md border flex flex-col flex-1 min-h-0">
         <CategoryAddonHeader
-          table={table}
+          search={search}
+          setSearch={setSearch}
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
         />

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
+import { listResource } from '../../utils/list-query'
 
 export function createBlockedSchedulesRouter(adapter: SheetAdapter) {
   const router = Router()
@@ -14,10 +15,14 @@ export function createBlockedSchedulesRouter(adapter: SheetAdapter) {
   })
 
   // GET /api/admin/blocked-schedules
-  router.get('/', async (_req, res, next) => {
+  router.get('/', async (req, res, next) => {
     try {
-      const data = await ctx().table('blocked_schedules').findMany({ orderBy: 'blocked_date', order: 'desc' })
-      res.json({ data })
+      const result = await listResource(ctx().table('blocked_schedules'), req.query, {
+        searchFields: ['name', 'associated_address'],
+        defaultOrderBy: 'blocked_date',
+        defaultOrder: 'desc',
+      })
+      res.json(result)
     } catch (err) { next(err) }
   })
 

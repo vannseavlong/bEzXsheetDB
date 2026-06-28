@@ -11,10 +11,10 @@ import TaskInformationPanel, { type TaskItem } from '@/components/category/task-
 import { TaskInformationDialog, type TaskData } from '@/components/category/task-information/TaskInformationDialog'
 import DraggableComboboxPanel from '@/components/common/draggable/DraggableComboboxPanel'
 import type { ComboItem } from '@/components/common/draggable/SortableComboBox'
-import { productsApi } from '@/api/products'
+import { useProduct, useCreateProduct, useUpdateProduct } from '@/api/products'
 import { uploadImage } from '@/api/upload'
-import { productOptionsApi } from '@/api/product-options'
-import { taskInfoApi } from '@/api/task-info'
+import { useProductOptions } from '@/api/product-options'
+import { useReplaceTaskInfoForProduct, useTaskInfoByProduct, toTaskItem } from '@/api/task-info'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
 function emptyLang(val = ''): MultiLangVal { return { en: val, km: '', vi: '', tw: '', cn: '' } }
@@ -39,29 +39,32 @@ export default function ProductForm() {
   const [saving, setSaving] = useState(false)
 
   // Load all product options for the dropdown
+  const { data: allOptionsResult } = useProductOptions()
   useEffect(() => {
-    productOptionsApi.list().then(rows =>
-      setOptionChoices(rows.map(r => ({ label: r.name_en, value: r._id })))
-    ).catch(console.error)
-  }, [])
+    if (!allOptionsResult) return
+    setOptionChoices(allOptionsResult.data.map(r => ({ label: r.name_en, value: r._id })))
+  }, [allOptionsResult])
 
   // Load existing product on edit
+  const editId = isEdit ? id : undefined
+  const { data: product } = useProduct(editId)
+  const { data: linkedOptionsResult } = useProductOptions(editId ? { product_id: editId } : undefined)
+  const { data: tasks } = useTaskInfoByProduct(editId)
+
   useEffect(() => {
-    if (!isEdit || !id) return
-    Promise.all([
-      productsApi.get(id),
-      productOptionsApi.list(id),
-      taskInfoApi.listByProduct(id),
-    ]).then(([product, options, tasks]) => {
-      setName(emptyLang(product.name_en))
-      setBasePrice(product.base_price)
-      setDuration(product.duration)
-      setStatus(product.status ? 'active' : 'inactive')
-      setSort(product.sort)
-      setLinkedOptions(options.map(o => ({ id: o._id, value: o._id })))
-      setTaskItems(tasks.map(taskInfoApi.toTaskItem))
-    }).catch(console.error)
-  }, [id, isEdit])
+    if (!product || !linkedOptionsResult || !tasks) return
+    setName(emptyLang(product.name_en))
+    setBasePrice(product.base_price)
+    setDuration(product.duration)
+    setStatus(product.status ? 'active' : 'inactive')
+    setSort(product.sort)
+    setLinkedOptions(linkedOptionsResult.data.map(o => ({ id: o._id, value: o._id })))
+    setTaskItems(tasks.map(toTaskItem))
+  }, [product, linkedOptionsResult, tasks])
+
+  const createProduct = useCreateProduct()
+  const updateProduct = useUpdateProduct()
+  const replaceTaskInfo = useReplaceTaskInfoForProduct()
 
   async function handleSave() {
     setSaving(true)
@@ -74,13 +77,13 @@ export default function ProductForm() {
 
       let productId = id!
       if (isEdit) {
-        await productsApi.update(productId, payload)
+        await updateProduct.mutateAsync({ id: productId, data: payload })
       } else {
-        const created = await productsApi.create(payload)
+        const created = await createProduct.mutateAsync(payload)
         productId = created._id
       }
 
-      await taskInfoApi.replaceForProduct(productId, taskItems)
+      await replaceTaskInfo.mutateAsync({ productId, items: taskItems })
       navigate('/product')
     } catch (err) {
       console.error('Save failed:', err)

@@ -131,6 +131,32 @@ under v0.1.22 would close this gap directly; added to the roadmap below.
 
 ---
 
+## ✅ Fixed in v0.1.25
+
+| # | Item |
+|---|---|
+| 16 | `findMany({ orderBy })` numeric sort — `CRUDOperations` now has `compareOrderValues`/`toOrderNumber`, comparing numerically when both sides parse cleanly as numbers and falling back to the original string comparison otherwise |
+
+Found while adding server-side pagination + filtering to the admin portal's list endpoints
+(`backendSheetDB/utils/list-query.ts`): every `orderBy: 'sort'`-style numeric column came back as
+`0, 1, 10, 11, 2, 3, ...` once a table passed 10 rows, because `findMany`'s sort coerced both sides
+to strings before comparing. This got more severe than "just looks wrong" once pagination landed on
+top of it — page boundaries (`offset = pageIndex * pageSize`) and the category list's drag-and-drop
+reorder (which now writes `sort = offset + i` for just the dragged page) both assume `findMany`
+returns true numeric rank order. With the lexicographic bug, a page's boundaries didn't line up with
+real rank ranges, and reordering one page could write `sort` values that collided with or skipped
+rows that weren't even on that page.
+
+Verified directly against the installed `dist/adapter/crud.js`: pulled `compareOrderValues`/
+`toOrderNumber` out and ran them against the original 12-row repro (`0,1,2,...,11` instead of
+`0,1,10,11,2,...`), negative/decimal numbers, and confirmed text/date columns (`name_en`,
+`blocked_date`) still compare identically to before (lexicographic, since neither side parses as a
+number). All passed. Local workaround in `list-query.ts` (a duplicate numeric-aware comparator that
+sorted in JS before delegating to `findMany`) removed — `listResource` now passes `orderBy`/`order`
+straight through to `findMany` again.
+
+---
+
 ## 🗺️ Owner Roadmap (not yet shipped)
 
 | Item | Priority |

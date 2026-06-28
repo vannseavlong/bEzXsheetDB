@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 import { Table, TableBody } from '@/components/ui/table'
 import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
@@ -7,10 +7,10 @@ import { TableRows } from '@/components/data-table/TableRows'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { blockedScheduleColumns } from '@/components/data-table/columns/BlockedScheduleColumns'
 import { BlockedScheduleHeader } from '@/components/headers/BlockedScheduleHeader'
-import { blockedSchedulesApi } from '@/api/blocked-schedules'
+import { useBlockedSchedules, useRemoveBlockedSchedule, type DbBlockedSchedule } from '@/api/blocked-schedules'
 import type { BlockedSchedule } from '@/types'
 
-function dbToSchedule(db: import('@/api/blocked-schedules').DbBlockedSchedule): BlockedSchedule {
+function dbToSchedule(db: DbBlockedSchedule): BlockedSchedule {
   const cleanerIds: string[] = db.cleaner_ids ? JSON.parse(db.cleaner_ids) : []
   return {
     id: String(db._id),
@@ -25,16 +25,18 @@ function dbToSchedule(db: import('@/api/blocked-schedules').DbBlockedSchedule): 
 
 export default function BlockedScheduleList() {
   const tableState = useTableState()
+  const { search, setSearch, pagination } = tableState
 
-  const [data, setData] = useState<BlockedSchedule[]>([])
+  const { data: result, isLoading } = useBlockedSchedules({
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
+    search,
+  })
+  const data = useMemo(() => (result?.data ?? []).map(dbToSchedule), [result])
 
-  useEffect(() => {
-    blockedSchedulesApi.list().then(res => setData(res.map(dbToSchedule)))
-  }, [])
-
+  const removeBlockedSchedule = useRemoveBlockedSchedule()
   async function handleDelete(id: string) {
-    await blockedSchedulesApi.delete(id)
-    setData(prev => prev.filter(i => i.id !== id))
+    await removeBlockedSchedule.mutateAsync(id)
   }
 
   const columns = useMemo(
@@ -42,12 +44,16 @@ export default function BlockedScheduleList() {
     []
   )
 
-  const table = useDataTableConfig(data, columns, tableState)
+  const table = useDataTableConfig(data, columns, tableState, {
+    pageCount: result?.meta.totalPages ?? 1,
+  })
+
+  if (isLoading && data.length === 0) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">
       <div className="rounded-md border flex flex-col flex-1 min-h-0">
-        <BlockedScheduleHeader />
+        <BlockedScheduleHeader search={search} setSearch={setSearch} />
         <div className="flex min-h-0 overflow-hidden">
           <Table className="min-w-full">
             <DataTableHeader table={table} />

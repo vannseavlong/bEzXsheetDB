@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { CustomHeader, MultiLanguageInput } from '@/components/shared'
-import { itemsApi } from '@/api/items'
+import { useItems, useItem, useCreateItem, useUpdateItem } from '@/api/items'
 import type { MultiLangValue } from '@/types'
 
 interface FormState {
@@ -35,34 +35,34 @@ export default function ItemForm() {
   const isNew = id === 'new'
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
-  const [categories, setCategories] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
-  // Load category list from live data
+  // Category dropdown options, derived from the live item list
+  const { data: allItems } = useItems()
+  const categories = useMemo(
+    () => Array.from(new Set((allItems?.data ?? []).map((i) => i.category))).sort(),
+    [allItems]
+  )
   useEffect(() => {
-    itemsApi.list().then(res => {
-      const unique = Array.from(new Set(res.map(i => i.category))).sort()
-      setCategories(unique)
-      if (isNew && unique.length > 0) {
-        setForm(prev => ({ ...prev, category: unique[0] }))
-      }
-    })
-  }, [isNew])
+    if (isNew && categories.length > 0) {
+      setForm((prev) => (prev.category ? prev : { ...prev, category: categories[0] }))
+    }
+  }, [isNew, categories])
 
   // Load existing item for edit
+  const { data: item } = useItem(isNew ? undefined : id)
   useEffect(() => {
-    if (!isNew && id) {
-      itemsApi.get(id).then(res => {
-        const item = res
-        setForm({
-          name: { en: item.name_en, km: item.name_km, vi: '', tw: '', cn: '' },
-          category: item.category,
-          status: item.status,
-          sortOrder: item.sort_order,
-        })
-      })
-    }
-  }, [id, isNew])
+    if (!item) return
+    setForm({
+      name: { en: item.name_en, km: item.name_km, vi: '', tw: '', cn: '' },
+      category: item.category,
+      status: item.status,
+      sortOrder: item.sort_order,
+    })
+  }, [item])
+
+  const createItem = useCreateItem()
+  const updateItem = useUpdateItem()
 
   async function handleSave() {
     if (!form.name.en.trim() || !form.name.km.trim() || !form.category) return
@@ -76,9 +76,9 @@ export default function ItemForm() {
         sort_order: form.sortOrder,
       }
       if (isNew) {
-        await itemsApi.create(payload)
+        await createItem.mutateAsync(payload)
       } else {
-        await itemsApi.update(id!, payload)
+        await updateItem.mutateAsync({ id: id!, data: payload })
       }
       navigate('/item')
     } catch (err) {

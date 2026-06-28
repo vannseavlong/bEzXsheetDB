@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
+import { listResource } from '../../utils/list-query'
 
 // All available module→action pairs (mirrors frontend permission.ts MODULE_ACTIONS).
 // Used by GET /rbac/permissions so the frontend can render the full permissions matrix.
@@ -52,10 +53,13 @@ export function createRbacRouter(adapter: SheetAdapter) {
   // ── Roles CRUD ────────────────────────────────────────────────────────────
 
   // GET /rbac/roles
-  router.get('/roles', async (_req, res, next) => {
+  router.get('/roles', async (req, res, next) => {
     try {
-      const roles = (await ctx().table('roles').findMany({})) as any[]
-      res.json({ data: roles.map(toRoleItem) })
+      const result = await listResource(ctx().table('roles'), req.query, {
+        searchFields: ['name', 'code', 'description'],
+        filterFields: ['status'],
+      })
+      res.json({ ...result, data: (result.data as any[]).map(toRoleItem) })
     } catch (err) { next(err) }
   })
 

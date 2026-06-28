@@ -27,3 +27,14 @@ export const apiClient = {
   put: <T>(path: string, body: unknown) => request<T>('PUT', path, body),
   del: (path: string) => request<void>('DELETE', path),
 }
+
+/** Serializes a params object into a `?a=1&b=2` query string, dropping undefined/empty values. */
+export function buildQuery(params: Record<string, unknown> = {}): string {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === '') continue
+    search.set(key, String(value))
+  }
+  const qs = search.toString()
+  return qs ? `?${qs}` : ''
+}

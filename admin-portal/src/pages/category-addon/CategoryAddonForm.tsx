@@ -16,7 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CustomHeader } from '@/components/shared/CustomHeader'
 import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
 import NewCategoryAddonCard, { type AddonItemState } from '@/components/category/NewCategoryAddonCard'
-import { categoryAddonsApi } from '@/api/category-addons'
+import {
+  useCategoryAddon, useAddonItems, useCreateCategoryAddon, useUpdateCategoryAddon,
+  useCreateAddonItem, useRemoveAddonItem,
+} from '@/api/category-addons'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
 function emptyLang(val = ''): MultiLangVal { return { en: val, km: '', vi: '', tw: '', cn: '' } }
@@ -47,29 +50,28 @@ export default function CategoryAddonForm() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
+  const editId = isEdit ? id : undefined
+  const { data: addon } = useCategoryAddon(editId)
+  const { data: dbItems } = useAddonItems(editId)
+
   useEffect(() => {
-    if (!isEdit || !id) return
-    Promise.all([
-      categoryAddonsApi.get(id),
-      categoryAddonsApi.getItems(id),
-    ]).then(([addon, dbItems]) => {
-      setName(emptyLang(addon.name_en))
-      setBadge(emptyLang(addon.badge_en ?? ''))
-      setSelectionType(addon.selection_type)
-      setIsRequired(addon.is_required)
-      setStatus(addon.status)
-      setItems(dbItems.map(i => ({
-        id: i._id,
-        imgUrl: i.img_url ?? '',
-        nameEn: i.name_en, nameKm: i.name_km,
-        nameVi: '', nameTw: '', nameCn: '',
-        amount: String(i.amount),
-        duration: String(i.duration),
-        status: i.status,
-        type: i.type as 'SINGLE' | 'MULTIPLE',
-      })))
-    }).catch(console.error)
-  }, [id, isEdit])
+    if (!addon || !dbItems) return
+    setName(emptyLang(addon.name_en))
+    setBadge(emptyLang(addon.badge_en ?? ''))
+    setSelectionType(addon.selection_type)
+    setIsRequired(addon.is_required)
+    setStatus(addon.status)
+    setItems(dbItems.map(i => ({
+      id: i._id,
+      imgUrl: i.img_url ?? '',
+      nameEn: i.name_en, nameKm: i.name_km,
+      nameVi: '', nameTw: '', nameCn: '',
+      amount: String(i.amount),
+      duration: String(i.duration),
+      status: i.status,
+      type: i.type as 'SINGLE' | 'MULTIPLE',
+    })))
+  }, [addon, dbItems])
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -83,6 +85,11 @@ export default function CategoryAddonForm() {
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, [field]: value } : i))
   }
 
+  const createCategoryAddon = useCreateCategoryAddon()
+  const updateCategoryAddon = useUpdateCategoryAddon()
+  const createAddonItem = useCreateAddonItem()
+  const removeAddonItem = useRemoveAddonItem()
+
   async function handleSave() {
     setSaving(true)
     try {
@@ -94,23 +101,25 @@ export default function CategoryAddonForm() {
 
       let addonId = id!
       if (isEdit) {
-        await categoryAddonsApi.update(addonId, groupPayload)
+        await updateCategoryAddon.mutateAsync({ id: addonId, data: groupPayload })
         // Replace items: delete all existing, then recreate
-        const existing = await categoryAddonsApi.getItems(addonId)
-        await Promise.all(existing.map(e => categoryAddonsApi.removeItem(e._id)))
+        await Promise.all((dbItems ?? []).map(e => removeAddonItem.mutateAsync(e._id)))
       } else {
-        const created = await categoryAddonsApi.create(groupPayload)
+        const created = await createCategoryAddon.mutateAsync(groupPayload)
         addonId = created._id
       }
 
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
-        await categoryAddonsApi.createItem(addonId, {
-          name_en: item.nameEn, name_km: item.nameKm,
-          type: item.type, img_url: item.imgUrl || undefined,
-          amount: parseFloat(item.amount) || 0,
-          duration: parseFloat(item.duration) || 0,
-          status: item.status, sort: i,
+        await createAddonItem.mutateAsync({
+          addonId,
+          data: {
+            name_en: item.nameEn, name_km: item.nameKm,
+            type: item.type, img_url: item.imgUrl || undefined,
+            amount: parseFloat(item.amount) || 0,
+            duration: parseFloat(item.duration) || 0,
+            status: item.status, sort: i,
+          },
         })
       }
 

@@ -1,15 +1,20 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
+import { listResource } from '../../utils/list-query'
 
 export function createPlatformsRouter(adapter: SheetAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   // GET /api/admin/platforms
-  router.get('/', async (_req, res, next) => {
+  router.get('/', async (req, res, next) => {
     try {
-      const data = await ctx().table('platforms').findMany({})
-      res.json({ data })
+      const result = await listResource(ctx().table('platforms'), req.query, {
+        searchFields: ['name_en', 'name_km', 'description'],
+        filterFields: ['status', 'visibility'],
+        booleanFields: ['status'],
+      })
+      res.json(result)
     } catch (err) { next(err) }
   })
 

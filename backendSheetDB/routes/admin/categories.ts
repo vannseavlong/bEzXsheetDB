@@ -1,15 +1,22 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
+import { listResource } from '../../utils/list-query'
 
 export function createCategoriesRouter(adapter: SheetAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   // GET /api/admin/categories
-  router.get('/', async (_req, res, next) => {
+  router.get('/', async (req, res, next) => {
     try {
-      const data = await ctx().table('categories').findMany({ orderBy: 'sort', order: 'asc' })
-      res.json({ data })
+      const result = await listResource(ctx().table('categories'), req.query, {
+        searchFields: ['name_en', 'name_km'],
+        filterFields: ['status'],
+        booleanFields: ['status'],
+        defaultOrderBy: 'sort',
+        defaultOrder: 'asc',
+      })
+      res.json(result)
     } catch (err) { next(err) }
   })
 
@@ -22,15 +29,15 @@ export function createCategoriesRouter(adapter: SheetAdapter) {
     } catch (err) { next(err) }
   })
 
-  // PUT /api/admin/categories/sort — reorder, sort = index in `ids`
+  // PUT /api/admin/categories/sort — reorder, sort = offset + index in `ids`.
+  // `offset` lets a paginated page reorder its own slice without touching rows on other pages.
   router.put('/sort', async (req, res, next) => {
     try {
-      const { ids }: { ids: string[] } = req.body
-      await Promise.all(ids.map((id, sort) =>
-        ctx().table('categories').update({ where: { _id: id }, data: { sort } })
+      const { ids, offset = 0 }: { ids: string[]; offset?: number } = req.body
+      await Promise.all(ids.map((id, i) =>
+        ctx().table('categories').update({ where: { _id: id }, data: { sort: offset + i } })
       ))
-      const data = await ctx().table('categories').findMany({ orderBy: 'sort', order: 'asc' })
-      res.json({ data })
+      res.json({ success: true })
     } catch (err) { next(err) }
   })
 

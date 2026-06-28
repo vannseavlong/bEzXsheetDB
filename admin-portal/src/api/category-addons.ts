@@ -1,4 +1,6 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
+import { createResourceHooks, type ListParams } from './createResourceHooks'
 
 export type DbCategoryAddon = {
   _id: string; name_en: string; name_km: string
@@ -27,32 +29,43 @@ export type AddonItemInput = {
 }
 
 const BASE = '/admin/category-addons'
+const resource = createResourceHooks<DbCategoryAddon, AddonInput>('category-addons', BASE)
 
-export const categoryAddonsApi = {
-  list: () =>
-    apiClient.get<{ data: DbCategoryAddon[] }>(BASE).then(r => r.data),
+export const useCategoryAddonsList = (params?: ListParams) => resource.useList(params)
+export const useCategoryAddon = (id: string | undefined) => resource.useGet(id)
+export const useCreateCategoryAddon = resource.useCreate
+export const useUpdateCategoryAddon = resource.useUpdate
+export const useRemoveCategoryAddon = resource.useRemove
 
-  get: (id: string) =>
-    apiClient.get<{ data: DbCategoryAddon }>(`${BASE}/${id}`).then(r => r.data),
+export const useAddonItems = (addonId: string | undefined) =>
+  useQuery({
+    queryKey: ['category-addons', 'items', addonId],
+    queryFn: () => apiClient.get<{ data: DbAddonItem[] }>(`${BASE}/${addonId}/items`).then((r) => r.data),
+    enabled: !!addonId,
+  })
 
-  create: (data: AddonInput) =>
-    apiClient.post<{ data: DbCategoryAddon }>(BASE, data).then(r => r.data),
+export function useCreateAddonItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ addonId, data }: { addonId: string; data: AddonItemInput }) =>
+      apiClient.post<{ data: DbAddonItem }>(`${BASE}/${addonId}/items`, data).then((r) => r.data),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['category-addons', 'items', vars.addonId] }),
+  })
+}
 
-  update: (id: string, data: Partial<AddonInput>) =>
-    apiClient.patch<{ data: DbCategoryAddon }>(`${BASE}/${id}`, data).then(r => r.data),
+export function useUpdateAddonItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ itemId, data }: { itemId: string; data: Partial<AddonItemInput> }) =>
+      apiClient.patch<{ data: DbAddonItem }>(`/admin/category-addon-items/${itemId}`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['category-addons', 'items'] }),
+  })
+}
 
-  remove: (id: string) =>
-    apiClient.del(`${BASE}/${id}`),
-
-  getItems: (addonId: string) =>
-    apiClient.get<{ data: DbAddonItem[] }>(`${BASE}/${addonId}/items`).then(r => r.data),
-
-  createItem: (addonId: string, data: AddonItemInput) =>
-    apiClient.post<{ data: DbAddonItem }>(`${BASE}/${addonId}/items`, data).then(r => r.data),
-
-  updateItem: (itemId: string, data: Partial<AddonItemInput>) =>
-    apiClient.patch<{ data: DbAddonItem }>(`/admin/category-addon-items/${itemId}`, data).then(r => r.data),
-
-  removeItem: (itemId: string) =>
-    apiClient.del(`/admin/category-addon-items/${itemId}`),
+export function useRemoveAddonItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (itemId: string) => apiClient.del(`/admin/category-addon-items/${itemId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['category-addons', 'items'] }),
+  })
 }

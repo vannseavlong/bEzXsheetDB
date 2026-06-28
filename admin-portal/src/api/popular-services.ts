@@ -1,4 +1,6 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
+import { createResourceHooks, type ListParams } from './createResourceHooks'
 
 export type DbPopularService = {
   _id: string; name_en: string; name_km: string
@@ -20,26 +22,26 @@ export type ServiceItemInput = {
 }
 
 const BASE = '/admin/popular-services'
+const resource = createResourceHooks<DbPopularService, PopularServiceInput>('popular-services', BASE)
 
-export const popularServicesApi = {
-  list: () =>
-    apiClient.get<{ data: DbPopularService[] }>(BASE).then(r => r.data),
+export const usePopularServices = (params?: ListParams) => resource.useList(params)
+export const usePopularService = (id: string | undefined) => resource.useGet(id)
+export const useCreatePopularService = resource.useCreate
+export const useUpdatePopularService = resource.useUpdate
+export const useRemovePopularService = resource.useRemove
 
-  get: (id: string) =>
-    apiClient.get<{ data: DbPopularService }>(`${BASE}/${id}`).then(r => r.data),
+export const usePopularServiceItems = (id: string | undefined) =>
+  useQuery({
+    queryKey: ['popular-services', 'items', id],
+    queryFn: () => apiClient.get<{ data: DbPopularServiceItem[] }>(`${BASE}/${id}/items`).then((r) => r.data),
+    enabled: !!id,
+  })
 
-  create: (data: PopularServiceInput) =>
-    apiClient.post<{ data: DbPopularService }>(BASE, data).then(r => r.data),
-
-  update: (id: string, data: Partial<PopularServiceInput>) =>
-    apiClient.patch<{ data: DbPopularService }>(`${BASE}/${id}`, data).then(r => r.data),
-
-  remove: (id: string) =>
-    apiClient.del(`${BASE}/${id}`),
-
-  getItems: (id: string) =>
-    apiClient.get<{ data: DbPopularServiceItem[] }>(`${BASE}/${id}/items`).then(r => r.data),
-
-  setItems: (id: string, items: ServiceItemInput[]) =>
-    apiClient.put<{ data: DbPopularServiceItem[] }>(`${BASE}/${id}/items`, { items }).then(r => r.data),
+export function useSetPopularServiceItems() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, items }: { id: string; items: ServiceItemInput[] }) =>
+      apiClient.put<{ data: DbPopularServiceItem[] }>(`${BASE}/${id}/items`, { items }).then((r) => r.data),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['popular-services', 'items', vars.id] }),
+  })
 }

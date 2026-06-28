@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import type { TaskItem } from '@/components/category/task-information/TaskInformationPanel'
 
@@ -9,52 +10,61 @@ export type DbTaskInfo = {
 
 const BASE = '/admin/task-info'
 
-export const taskInfoApi = {
-  listByCategory: (categoryId: string) =>
-    apiClient.get<{ data: DbTaskInfo[] }>(`${BASE}?category_id=${categoryId}`).then(r => r.data),
+export const useTaskInfoByCategory = (categoryId: string | undefined) =>
+  useQuery({
+    queryKey: ['task-info', 'category', categoryId],
+    queryFn: () => apiClient.get<{ data: DbTaskInfo[] }>(`${BASE}?category_id=${categoryId}`).then((r) => r.data),
+    enabled: !!categoryId,
+  })
 
-  listByProduct: (productId: string) =>
-    apiClient.get<{ data: DbTaskInfo[] }>(`${BASE}?product_id=${productId}`).then(r => r.data),
+export const useTaskInfoByProduct = (productId: string | undefined) =>
+  useQuery({
+    queryKey: ['task-info', 'product', productId],
+    queryFn: () => apiClient.get<{ data: DbTaskInfo[] }>(`${BASE}?product_id=${productId}`).then((r) => r.data),
+    enabled: !!productId,
+  })
 
-  /** Converts a DbTaskInfo row → TaskItem for the panel */
-  toTaskItem: (db: DbTaskInfo): TaskItem => ({
+/** Converts a DbTaskInfo row → TaskItem for the panel */
+export function toTaskItem(db: DbTaskInfo): TaskItem {
+  return {
     id: db._id,
     en: { title: db.title_en, description: db.description_en ?? [] },
     km: { title: db.title_km, description: db.description_km ?? [] },
     vi: { title: '', description: [] },
     tw: { title: '', description: [] },
     cn: { title: '', description: [] },
-  }),
+  }
+}
 
-  /** Replace all task info for a category with the current panel items */
-  replaceForCategory: async (categoryId: string, items: TaskItem[]) => {
-    await apiClient.del(`${BASE}/by-category/${categoryId}`)
-    for (let i = 0; i < items.length; i++) {
-      const t = items[i]
-      await apiClient.post(`${BASE}`, {
-        category_id: categoryId,
-        sort: i,
-        title_en: t.en.title,
-        title_km: t.km.title,
-        description_en: t.en.description,
-        description_km: t.km.description,
-      })
-    }
-  },
+async function replaceTaskInfo(deletePath: string, fields: { category_id?: string; product_id?: string }, items: TaskItem[]) {
+  await apiClient.del(deletePath)
+  for (let i = 0; i < items.length; i++) {
+    const t = items[i]
+    await apiClient.post(BASE, {
+      ...fields,
+      sort: i,
+      title_en: t.en.title,
+      title_km: t.km.title,
+      description_en: t.en.description,
+      description_km: t.km.description,
+    })
+  }
+}
 
-  /** Replace all task info for a product with the current panel items */
-  replaceForProduct: async (productId: string, items: TaskItem[]) => {
-    await apiClient.del(`${BASE}/by-product/${productId}`)
-    for (let i = 0; i < items.length; i++) {
-      const t = items[i]
-      await apiClient.post(`${BASE}`, {
-        product_id: productId,
-        sort: i,
-        title_en: t.en.title,
-        title_km: t.km.title,
-        description_en: t.en.description,
-        description_km: t.km.description,
-      })
-    }
-  },
+export function useReplaceTaskInfoForCategory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ categoryId, items }: { categoryId: string; items: TaskItem[] }) =>
+      replaceTaskInfo(`${BASE}/by-category/${categoryId}`, { category_id: categoryId }, items),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['task-info', 'category', vars.categoryId] }),
+  })
+}
+
+export function useReplaceTaskInfoForProduct() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ productId, items }: { productId: string; items: TaskItem[] }) =>
+      replaceTaskInfo(`${BASE}/by-product/${productId}`, { product_id: productId }, items),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['task-info', 'product', vars.productId] }),
+  })
 }

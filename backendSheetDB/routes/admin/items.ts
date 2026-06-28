@@ -1,15 +1,22 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
+import { listResource } from '../../utils/list-query'
 
 export function createItemsRouter(adapter: SheetAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 
   // GET /api/admin/items
-  router.get('/', async (_req, res, next) => {
+  router.get('/', async (req, res, next) => {
     try {
-      const data = await ctx().table('items').findMany({ orderBy: 'sort_order', order: 'asc' })
-      res.json({ data })
+      const result = await listResource(ctx().table('items'), req.query, {
+        searchFields: ['name_en', 'name_km', 'category'],
+        filterFields: ['status', 'category'],
+        booleanFields: ['status'],
+        defaultOrderBy: 'sort_order',
+        defaultOrder: 'asc',
+      })
+      res.json(result)
     } catch (err) { next(err) }
   })
 

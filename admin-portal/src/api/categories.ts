@@ -1,4 +1,6 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
+import { createResourceHooks, type ListParams } from './createResourceHooks'
 
 export type DbCategory = {
   _id: string; name_en: string; name_km: string
@@ -17,35 +19,51 @@ export type DbCategoryLink = {
 }
 
 const BASE = '/admin/categories'
+const resource = createResourceHooks<DbCategory, CategoryInput>('categories', BASE)
 
-export const categoriesApi = {
-  list: () =>
-    apiClient.get<{ data: DbCategory[] }>(BASE).then(r => r.data),
+export const useCategories = (params?: ListParams) => resource.useList(params)
+export const useCategory = (id: string | undefined) => resource.useGet(id)
+export const useCreateCategory = resource.useCreate
+export const useUpdateCategory = resource.useUpdate
+export const useRemoveCategory = resource.useRemove
 
-  get: (id: string) =>
-    apiClient.get<{ data: DbCategory }>(`${BASE}/${id}`).then(r => r.data),
+export function useReorderCategories() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ ids, offset }: { ids: string[]; offset?: number }) =>
+      apiClient.put<{ success: true }>(`${BASE}/sort`, { ids, offset }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['categories', 'list'] }),
+  })
+}
 
-  create: (data: CategoryInput) =>
-    apiClient.post<{ data: DbCategory }>(BASE, data).then(r => r.data),
+export const useCategoryProducts = (id: string | undefined) =>
+  useQuery({
+    queryKey: ['categories', 'products', id],
+    queryFn: () => apiClient.get<{ data: DbCategoryLink[] }>(`${BASE}/${id}/products`).then((r) => r.data),
+    enabled: !!id,
+  })
 
-  update: (id: string, data: Partial<CategoryInput>) =>
-    apiClient.patch<{ data: DbCategory }>(`${BASE}/${id}`, data).then(r => r.data),
+export function useSetCategoryProducts() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, productIds }: { id: string; productIds: string[] }) =>
+      apiClient.put<{ data: DbCategoryLink[] }>(`${BASE}/${id}/products`, { product_ids: productIds }).then((r) => r.data),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['categories', 'products', vars.id] }),
+  })
+}
 
-  remove: (id: string) =>
-    apiClient.del(`${BASE}/${id}`),
+export const useCategoryAddons = (id: string | undefined) =>
+  useQuery({
+    queryKey: ['categories', 'addons', id],
+    queryFn: () => apiClient.get<{ data: DbCategoryLink[] }>(`${BASE}/${id}/addons`).then((r) => r.data),
+    enabled: !!id,
+  })
 
-  reorder: (ids: string[]) =>
-    apiClient.put<{ data: DbCategory[] }>(`${BASE}/sort`, { ids }).then(r => r.data),
-
-  getProducts: (id: string) =>
-    apiClient.get<{ data: DbCategoryLink[] }>(`${BASE}/${id}/products`).then(r => r.data),
-
-  setProducts: (id: string, productIds: string[]) =>
-    apiClient.put<{ data: DbCategoryLink[] }>(`${BASE}/${id}/products`, { product_ids: productIds }).then(r => r.data),
-
-  getAddons: (id: string) =>
-    apiClient.get<{ data: DbCategoryLink[] }>(`${BASE}/${id}/addons`).then(r => r.data),
-
-  setAddons: (id: string, addonIds: string[]) =>
-    apiClient.put<{ data: DbCategoryLink[] }>(`${BASE}/${id}/addons`, { addon_ids: addonIds }).then(r => r.data),
+export function useSetCategoryAddons() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, addonIds }: { id: string; addonIds: string[] }) =>
+      apiClient.put<{ data: DbCategoryLink[] }>(`${BASE}/${id}/addons`, { addon_ids: addonIds }).then((r) => r.data),
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['categories', 'addons', vars.id] }),
+  })
 }

@@ -1,4 +1,6 @@
+import { useQuery } from '@tanstack/react-query'
 import { apiClient } from './client'
+import { createResourceHooks, type ListParams } from './createResourceHooks'
 
 export type DbBlockedSchedule = {
   _id: string | number
@@ -26,23 +28,16 @@ export type BlockedScheduleInput = {
 }
 
 const BASE = '/admin/blocked-schedules'
+const resource = createResourceHooks<DbBlockedSchedule, BlockedScheduleInput>('blocked-schedules', BASE)
 
-export const blockedSchedulesApi = {
-  list: () =>
-    apiClient.get<{ data: DbBlockedSchedule[] }>(BASE).then(r => r.data),
+export const useBlockedSchedules = (params?: ListParams) => resource.useList(params)
+export const useBlockedSchedule = (id: string | undefined) => resource.useGet(id)
+export const useCreateBlockedSchedule = resource.useCreate
+export const useUpdateBlockedSchedule = resource.useUpdate
+export const useRemoveBlockedSchedule = resource.useRemove
 
-  get: (id: string | number) =>
-    apiClient.get<{ data: DbBlockedSchedule }>(`${BASE}/${id}`).then(r => r.data),
-
-  create: (data: BlockedScheduleInput) =>
-    apiClient.post<{ data: DbBlockedSchedule }>(BASE, data).then(r => r.data),
-
-  update: (id: string | number, data: Partial<BlockedScheduleInput>) =>
-    apiClient.patch<{ data: DbBlockedSchedule }>(`${BASE}/${id}`, data).then(r => r.data),
-
-  delete: (id: string | number) =>
-    apiClient.del(`${BASE}/${id}`),
-
-  listCleaners: () =>
-    apiClient.get<{ data: DbCleaner[] }>(`${BASE}/cleaners`).then(r => r.data),
-}
+export const useCleaners = () =>
+  useQuery({
+    queryKey: ['blocked-schedules', 'cleaners'],
+    queryFn: () => apiClient.get<{ data: DbCleaner[] }>(`${BASE}/cleaners`).then((r) => r.data),
+  })

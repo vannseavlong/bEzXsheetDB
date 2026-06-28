@@ -19,7 +19,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "longcelot-sheet-db": "^0.1.24",
+    "longcelot-sheet-db": "^0.1.25",
     "multer": "^2.2.0"
   },
   "devDependencies": {
