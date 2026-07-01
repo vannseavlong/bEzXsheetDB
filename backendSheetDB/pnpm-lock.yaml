@@ -18,8 +18,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
       longcelot-sheet-db:
-        specifier: ^0.1.25
-        version: 0.1.25(@types/node@25.9.1)
+        specifier: ^0.1.27
+        version: 0.1.27(@types/node@25.9.1)
       multer:
         specifier: ^2.2.0
         version: 2.2.0
@@ -649,8 +649,8 @@ packages:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
     engines: {node: '>=10'}
 
-  longcelot-sheet-db@0.1.25:
-    resolution: {integrity: sha512-m5dx8zwbKrdN1RU/NcW9xmobW6xN7wAdHHpbGJJ5I4v456HT1FWSOoK7w+41FRtKGd+w0DF0wDVOT0IzZE/UmA==}
+  longcelot-sheet-db@0.1.27:
+    resolution: {integrity: sha512-jTXu7RCguGOlLG5O9ydPOMhnsbOW+si/LbmfBHeDKJjCCybUsZsTLJnJWxwKEzxTJUZs8C2Vk/BGEM16r0f3ZA==}
     engines: {node: '>=16.0.0'}
     hasBin: true
 
@@ -1599,11 +1599,12 @@ snapshots:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
 
-  longcelot-sheet-db@0.1.25(@types/node@25.9.1):
+  longcelot-sheet-db@0.1.27(@types/node@25.9.1):
     dependencies:
       bcryptjs: 3.0.3
       chalk: 4.1.2
       commander: 14.0.3
+      dotenv: 17.4.2
       google-auth-library: 10.7.0
       googleapis: 172.0.0
       inquirer: 8.2.7(@types/node@25.9.1)

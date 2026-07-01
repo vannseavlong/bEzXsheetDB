@@ -4,6 +4,7 @@ import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
 import { DataTableHeader } from '@/components/data-table/DataTableHeader'
 import { TableRows } from '@/components/data-table/TableRows'
+import { TableRowSkeleton } from '@/components/data-table/TableRowSkeleton'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
 import { blockedScheduleColumns } from '@/components/data-table/columns/BlockedScheduleColumns'
 import { BlockedScheduleHeader } from '@/components/headers/BlockedScheduleHeader'
@@ -34,8 +35,6 @@ export default function BlockedScheduleList() {
     pageCount: result?.meta.totalPages ?? 1,
   })
 
-  if (isLoading && data.length === 0) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
-
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">
       <div className="rounded-md border flex flex-col flex-1 min-h-0">
@@ -44,7 +43,11 @@ export default function BlockedScheduleList() {
           <Table className="min-w-full">
             <DataTableHeader table={table} />
             <TableBody>
-              <TableRows table={table} columns={columns} />
+              {isLoading && data.length === 0 ? (
+                <TableRowSkeleton columns={columns} />
+              ) : (
+                <TableRows table={table} columns={columns} />
+              )}
             </TableBody>
           </Table>
         </div>

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Check, Lock, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -28,6 +29,27 @@ function roleColor(idx: number) { return ROLE_COLORS[idx % ROLE_COLORS.length] }
 
 function roleInitials(name: string) {
   return name.split(/[\s_-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase()
+}
+
+function PermissionMatrixSkeleton({ rows = 6 }: { rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div
+          key={i}
+          className="grid items-center border-b"
+          style={{ gridTemplateColumns: 'minmax(160px, 2fr) repeat(7, minmax(72px, 1fr))' }}
+        >
+          <div className="px-4 py-3"><Skeleton className="h-4 w-24" /></div>
+          {PERMISSION_COLUMNS.map(col => (
+            <div key={col.key} className="flex justify-center py-3">
+              <Skeleton className="size-4 rounded-sm" />
+            </div>
+          ))}
+        </div>
+      ))}
+    </>
+  )
 }
 
 function NaCell() {
@@ -153,15 +175,16 @@ export default function RoleList() {
     }
   }
 
-  if (loading) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
-
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden">
       <div className="flex-1 overflow-y-auto">
         {/* Role tabs */}
         <div className="px-6 pt-4 pb-3 flex items-center gap-2 flex-wrap justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            {roles.map((role, idx) => {
+            {loading && Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-28 rounded-lg" />
+            ))}
+            {!loading && roles.map((role, idx) => {
               const isSelected = selectedCode === role.code
               const color = roleColor(idx)
               return (
@@ -251,8 +274,8 @@ export default function RoleList() {
                   ))}
                 </div>
 
-                {permsLoading ? (
-                  <div className="p-6 text-sm text-muted-foreground">Loading permissions…</div>
+                {loading || permsLoading ? (
+                  <PermissionMatrixSkeleton />
                 ) : (
                   MODULE_SECTIONS.map((section, sectionIdx) => (
                     <div key={section.sectionLabel} className={cn(sectionIdx > 0 && 'border-t-2 border-border/60')}>

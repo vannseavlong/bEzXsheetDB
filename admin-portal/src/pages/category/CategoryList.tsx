@@ -5,6 +5,7 @@ import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
 import { DataTableHeader } from '@/components/data-table/DataTableHeader'
 import { TableRows } from '@/components/data-table/TableRows'
+import { TableRowSkeleton } from '@/components/data-table/TableRowSkeleton'
 import { SortableRows } from '@/components/data-table/SortableRows'
 import { DraggableContext } from '@/components/data-table/DraggableContext'
 import { DataTablePagination } from '@/components/data-table/DataTablePagination'
@@ -64,7 +65,7 @@ export default function CategoryList() {
     } catch (err) { console.error('Reorder failed:', err) }
   }
 
-  if (isLoading && data.length === 0) return <div className="p-8 text-sm text-muted-foreground">Loading…</div>
+  const isInitialLoading = isLoading && data.length === 0
 
   return (
     <div className="flex flex-col h-[calc(100vh-88px)] overflow-hidden p-4 pb-0">
@@ -76,7 +77,14 @@ export default function CategoryList() {
           setStatusFilter={setStatusFilter}
         />
         <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto">
-          {isFiltered ? (
+          {isInitialLoading ? (
+            <Table className="min-w-full">
+              <DataTableHeader table={table} />
+              <TableBody>
+                <TableRowSkeleton columns={columns} />
+              </TableBody>
+            </Table>
+          ) : isFiltered ? (
             <Table className="min-w-full">
               <DataTableHeader table={table} />
               <TableBody>

@@ -26,9 +26,11 @@ import ordersSchema from '../schemas/admin/orders'
 export function createAdapter() {
   // Render (and other ephemeral-filesystem hosts) can't see the gitignored
   // token file, so allow passing it as a JSON env var in those environments.
+  const tokenFile = fs.existsSync(path.join(process.cwd(), '.lsdb-tokens.json'))
+    ? '.lsdb-tokens.json'
+    : '.sheet-db-tokens.json' // legacy filename, still written by lsdb < 0.1.26
   const tokens = JSON.parse(
-    env.SHEET_DB_TOKENS ??
-      fs.readFileSync(path.join(process.cwd(), '.sheet-db-tokens.json'), 'utf-8')
+    env.SHEET_DB_TOKENS ?? fs.readFileSync(path.join(process.cwd(), tokenFile), 'utf-8')
   )
 
   const adapter = createSheetAdapter({

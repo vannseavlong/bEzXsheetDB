@@ -63,4 +63,5 @@ Thumbs.db
 *.zip
 *.local
 certs/
+backendSheetDB/.lsdb-tokens.json
 backendSheetDB/.sheet-db-tokens.json
