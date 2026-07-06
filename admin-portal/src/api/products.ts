@@ -43,3 +43,16 @@ export const useProductCategoryLinks = (id: string | undefined) =>
     queryFn: () => apiClient.get<{ data: DbCategoryProductLink[] }>(`${BASE}/${id}/categories`).then((r) => r.data),
     enabled: !!id,
   })
+
+export function useSetProductCategories() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, categoryIds }: { id: string; categoryIds: string[] }) =>
+      apiClient.put<{ data: DbCategoryProductLink[] }>(`${BASE}/${id}/categories`, { category_ids: categoryIds }).then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['products', 'categories', vars.id] })
+      // membership changes also affect each category's own product list
+      qc.invalidateQueries({ queryKey: ['categories', 'products'] })
+    },
+  })
+}
