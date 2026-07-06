@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CustomHeader } from '@/components/shared/CustomHeader'
@@ -11,7 +10,7 @@ import TaskInformationPanel, { type TaskItem } from '@/components/category/task-
 import { TaskInformationDialog, type TaskData } from '@/components/category/task-information/TaskInformationDialog'
 import DraggableComboboxPanel from '@/components/common/draggable/DraggableComboboxPanel'
 import type { ComboItem } from '@/components/common/draggable/SortableComboBox'
-import { useProduct, useCreateProduct, useUpdateProduct } from '@/api/products'
+import { useProduct, useCreateProduct, useUpdateProduct, useProductOptionLinks, useSetProductOptions } from '@/api/products'
 import { uploadImage } from '@/api/upload'
 import { useProductOptions } from '@/api/product-options'
 import { useReplaceTaskInfoForProduct, useTaskInfoByProduct, toTaskItem } from '@/api/task-info'
@@ -25,10 +24,7 @@ export default function ProductForm() {
   const isEdit = id !== 'new'
 
   const [name, setName] = useState<MultiLangVal>(emptyLang())
-  const [basePrice, setBasePrice] = useState(0)
-  const [duration, setDuration] = useState(1)
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
-  const [sort, setSort] = useState(0)
   const [imageUrl, setImageUrl] = useState('')
   const [taskItems, setTaskItems] = useState<TaskItem[]>([])
   const [linkedOptions, setLinkedOptions] = useState<ComboItem[]>([])
@@ -48,22 +44,24 @@ export default function ProductForm() {
   // Load existing product on edit
   const editId = isEdit ? id : undefined
   const { data: product } = useProduct(editId)
-  const { data: linkedOptionsResult } = useProductOptions(editId ? { product_id: editId } : undefined)
+  const { data: linkedOptionsResult } = useProductOptionLinks(editId)
   const { data: tasks } = useTaskInfoByProduct(editId)
 
   useEffect(() => {
     if (!product || !linkedOptionsResult || !tasks) return
     setName(emptyLang(product.name_en))
-    setBasePrice(product.base_price)
-    setDuration(product.duration)
     setStatus(product.status ? 'active' : 'inactive')
-    setSort(product.sort)
-    setLinkedOptions(linkedOptionsResult.data.map(o => ({ id: o.id, value: o.id })))
+    setImageUrl(product.thumbnail_url ?? '')
+    setLinkedOptions(linkedOptionsResult
+      .sort((a, b) => a.sort - b.sort)
+      .map(l => ({ id: l._id, value: l.product_option_id, amount: String(l.price), duration: String(l.duration) }))
+    )
     setTaskItems(tasks.map(toTaskItem))
   }, [product, linkedOptionsResult, tasks])
 
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
+  const setProductOptions = useSetProductOptions()
   const replaceTaskInfo = useReplaceTaskInfoForProduct()
 
   async function handleSave() {
@@ -71,8 +69,8 @@ export default function ProductForm() {
     try {
       const payload = {
         name_en: name.en, name_km: name.km,
-        base_price: basePrice, duration,
-        status: status === 'active', sort,
+        thumbnail_url: imageUrl || undefined,
+        status: status === 'active',
       }
 
       let productId = id!
@@ -83,7 +81,17 @@ export default function ProductForm() {
         productId = created._id
       }
 
-      await replaceTaskInfo.mutateAsync({ productId, items: taskItems })
+      await Promise.all([
+        setProductOptions.mutateAsync({
+          id: productId,
+          options: linkedOptions.filter(o => o.value).map(o => ({
+            product_option_id: o.value,
+            price: parseFloat(o.amount ?? '') || 0,
+            duration: parseFloat(o.duration ?? '') || 0,
+          })),
+        }),
+        replaceTaskInfo.mutateAsync({ productId, items: taskItems }),
+      ])
       navigate('/product')
     } catch (err) {
       console.error('Save failed:', err)
@@ -119,19 +127,9 @@ export default function ProductForm() {
             <CardContent className="space-y-5">
               <ProfilePicker imageUrl={imageUrl} onUpload={uploadImage} onChange={(_, url) => setImageUrl(url)} />
 
-              <MultiLanguageInput label="Name" required values={name} onChange={setName} />
-
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Base Price ($)</Label>
-                  <Input type="number" min="0" step="0.01" value={basePrice}
-                    onChange={e => setBasePrice(parseFloat(e.target.value) || 0)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Duration (hours)</Label>
-                  <Input type="number" min="0" value={duration}
-                    onChange={e => setDuration(parseInt(e.target.value) || 0)} />
-                </div>
+                <MultiLanguageInput label="Name" required values={name} onChange={setName} />
+
                 <div className="space-y-1.5">
                   <Label>Status</Label>
                   <Select value={status} onValueChange={v => setStatus(v as 'active' | 'inactive')}>
@@ -142,22 +140,17 @@ export default function ProductForm() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Sort Order</Label>
-                  <Input type="number" min="0" value={sort}
-                    onChange={e => setSort(parseInt(e.target.value) || 0)} />
-                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="w-80 space-y-4">
+        <div className="w-[26rem] shrink-0 space-y-4">
           <TaskInformationPanel items={taskItems} onChange={setTaskItems}
             onAdd={openAddTask} onEdit={openEditTask} />
 
           <DraggableComboboxPanel title="Product Options" buttonText="Add Product Option"
-            data={linkedOptions} onChange={setLinkedOptions} options={optionChoices} showAmount />
+            data={linkedOptions} onChange={setLinkedOptions} options={optionChoices} showAmount showDuration />
         </div>
       </div>
 

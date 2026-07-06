@@ -51,13 +51,6 @@ export const productOptionColumns = ({
       },
     },
     {
-      accessorKey: 'productNameEn',
-      header: 'Product',
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.original.productNameEn}</span>
-      ),
-    },
-    {
       accessorKey: 'status',
       header: 'Status',
       filterFn: (row, id, value) => row.getValue(id) === value,

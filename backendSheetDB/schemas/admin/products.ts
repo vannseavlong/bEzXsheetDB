@@ -8,8 +8,7 @@ export default defineTable({
   columns: {
     name_en: string().required(),
     name_km: string().required(),
-    base_price: number().min(0).required(),
-    duration: number().min(0).required(),
+    thumbnail_url: string(),
     status: boolean().default(true),
     sort: number().default(0),
   },

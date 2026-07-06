@@ -13,6 +13,7 @@ import productsSchema from '../schemas/admin/products'
 import categoryAddonsSchema from '../schemas/admin/category_addons'
 import categoryAddonItemsSchema from '../schemas/admin/category_addon_items'
 import productOptionsSchema from '../schemas/admin/product_options'
+import productProductOptionsSchema from '../schemas/admin/product_product_options'
 import popularServicesSchema from '../schemas/admin/popular_services'
 import categoryProductsSchema from '../schemas/admin/category_products'
 import categoryCategoryAddonsSchema from '../schemas/admin/category_category_addons'
@@ -63,6 +64,7 @@ export function createAdapter() {
   adapter.registerSchema(categoryAddonsSchema)
   adapter.registerSchema(categoryAddonItemsSchema)
   adapter.registerSchema(productOptionsSchema)
+  adapter.registerSchema(productProductOptionsSchema)
   adapter.registerSchema(popularServicesSchema)
   adapter.registerSchema(categoryProductsSchema)
   adapter.registerSchema(categoryCategoryAddonsSchema)

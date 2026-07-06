@@ -2,12 +2,12 @@ import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 
-function toProductOptionDto(r: Record<string, unknown>, productNameEn: string) {
+function toProductOptionDto(r: Record<string, unknown>) {
   return {
     id: r._id,
     nameEn: r.name_en,
+    nameKm: r.name_km,
     type: r.type,
-    productNameEn,
     status: r.status,
   }
 }
@@ -21,18 +21,15 @@ export function createProductOptionsRouter(adapter: SheetAdapter) {
     try {
       const result = await listResource(ctx().table('product_options'), req.query, {
         searchFields: ['name_en', 'name_km', 'type'],
-        filterFields: ['status', 'product_id', 'type'],
+        filterFields: ['status', 'type'],
         booleanFields: ['status'],
-        defaultOrderBy: 'sort',
+        defaultOrderBy: 'name_en',
         defaultOrder: 'asc',
       })
 
-      const products = (await ctx().table('products').findMany({})) as any[]
-      const productNameById = Object.fromEntries(products.map((p) => [p._id, p.name_en]))
-
       res.json({
         ...result,
-        data: result.data.map((r) => toProductOptionDto(r, productNameById[String(r.product_id)] ?? '')),
+        data: result.data.map((r) => toProductOptionDto(r)),
       })
     } catch (err) { next(err) }
   })

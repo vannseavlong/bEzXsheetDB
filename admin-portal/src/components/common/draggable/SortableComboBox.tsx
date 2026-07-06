@@ -10,6 +10,7 @@ export type ComboItem = {
   id: string
   value: string
   amount?: string
+  duration?: string
 }
 
 type Props = {
@@ -19,9 +20,13 @@ type Props = {
   onDelete: () => void
   showAmount?: boolean
   onAmountChange?: (amount: string) => void
+  showDuration?: boolean
+  onDurationChange?: (duration: string) => void
 }
 
-export default function SortableComboBox({ item, options, onUpdate, onDelete, showAmount, onAmountChange }: Props) {
+export default function SortableComboBox({
+  item, options, onUpdate, onDelete, showAmount, onAmountChange, showDuration, onDurationChange,
+}: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
 
   const style = {
@@ -38,7 +43,7 @@ export default function SortableComboBox({ item, options, onUpdate, onDelete, sh
         {...attributes} {...listeners}>
         <Grip className="h-4 w-4" />
       </button>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <Select value={item.value} onValueChange={onUpdate}>
           <SelectTrigger className="h-9">
             <SelectValue placeholder="Select..." />
@@ -52,10 +57,18 @@ export default function SortableComboBox({ item, options, onUpdate, onDelete, sh
       </div>
       {showAmount && (
         <Input
-          className="w-28 h-9 shrink-0"
+          className="w-24 h-9 shrink-0"
           placeholder="Amount"
           value={item.amount ?? ''}
           onChange={e => onAmountChange?.(e.target.value)}
+        />
+      )}
+      {showDuration && (
+        <Input
+          className="w-24 h-9 shrink-0"
+          placeholder="Duration"
+          value={item.duration ?? ''}
+          onChange={e => onDurationChange?.(e.target.value)}
         />
       )}
       <button type="button" onClick={onDelete}

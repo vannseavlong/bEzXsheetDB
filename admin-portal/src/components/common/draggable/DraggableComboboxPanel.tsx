@@ -18,10 +18,11 @@ type Props = {
   onChange: Dispatch<SetStateAction<ComboItem[]>>
   options?: { label: string; value: string }[]
   showAmount?: boolean
+  showDuration?: boolean
 }
 
 export default function DraggableComboboxPanel({
-  title, buttonText, data, onChange, options = [], showAmount,
+  title, buttonText, data, onChange, options = [], showAmount, showDuration,
 }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -45,11 +46,14 @@ export default function DraggableComboboxPanel({
   const handleAmountChange = (id: string, amount: string) =>
     onChange(prev => prev.map(i => i.id === id ? { ...i, amount } : i))
 
+  const handleDurationChange = (id: string, duration: string) =>
+    onChange(prev => prev.map(i => i.id === id ? { ...i, duration } : i))
+
   const handleDelete = (id: string) =>
     onChange(prev => prev.filter(i => i.id !== id))
 
   const handleAdd = () =>
-    onChange(prev => [...prev, { id: Date.now().toString(), value: '', amount: '' }])
+    onChange(prev => [...prev, { id: Date.now().toString(), value: '', amount: '', duration: '' }])
 
   return (
     <Card className="shadow-none">
@@ -71,6 +75,8 @@ export default function DraggableComboboxPanel({
                     onDelete={() => handleDelete(item.id)}
                     showAmount={showAmount}
                     onAmountChange={a => handleAmountChange(item.id, a)}
+                    showDuration={showDuration}
+                    onDurationChange={d => handleDurationChange(item.id, d)}
                   />
                 )
               })}

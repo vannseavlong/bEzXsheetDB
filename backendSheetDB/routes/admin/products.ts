@@ -9,8 +9,7 @@ function toProductDto(r: Record<string, unknown>, categoryNames: string[]) {
     nameEn: r.name_en,
     nameKm: r.name_km,
     categories: categoryNames,
-    basePrice: r.base_price,
-    duration: r.duration,
+    thumbnailUrl: r.thumbnail_url ?? null,
     status: r.status,
     sort: r.sort,
   }
@@ -48,8 +47,21 @@ export function createProductsRouter(adapter: SheetAdapter) {
   // POST /api/admin/products
   router.post('/', async (req, res, next) => {
     try {
-      const item = await ctx().table('products').create(req.body)
+      const existing = await ctx().table('products').findMany({})
+      const item = await ctx().table('products').create({ ...req.body, sort: existing.length })
       res.status(201).json({ data: item })
+    } catch (err) { next(err) }
+  })
+
+  // PUT /api/admin/products/sort — reorder, sort = offset + index in `ids`.
+  // `offset` lets a paginated page reorder its own slice without touching rows on other pages.
+  router.put('/sort', async (req, res, next) => {
+    try {
+      const { ids, offset = 0 }: { ids: string[]; offset?: number } = req.body
+      await Promise.all(ids.map((id, i) =>
+        ctx().table('products').update({ where: { _id: id }, data: { sort: offset + i } })
+      ))
+      res.json({ success: true })
     } catch (err) { next(err) }
   })
 
@@ -84,11 +96,31 @@ export function createProductsRouter(adapter: SheetAdapter) {
   // GET /api/admin/products/:id/options
   router.get('/:id/options', async (req, res, next) => {
     try {
-      const data = await ctx().table('product_options').findMany({
+      const data = await ctx().table('product_product_options').findMany({
         where: { product_id: req.params.id },
         orderBy: 'sort',
         order: 'asc',
       })
+      res.json({ data })
+    } catch (err) { next(err) }
+  })
+
+  // PUT /api/admin/products/:id/options — replace full option list
+  router.put('/:id/options', async (req, res, next) => {
+    try {
+      const { options }: { options: { product_option_id: string; price: number; duration: number }[] } = req.body
+      await ctx().table('product_product_options').delete({ where: { product_id: req.params.id } })
+      const data = options.length
+        ? await ctx().table('product_product_options').createMany(
+            options.map((o, sort) => ({
+              product_id: req.params.id,
+              product_option_id: o.product_option_id,
+              price: o.price,
+              duration: o.duration,
+              sort,
+            }))
+          )
+        : []
       res.json({ data })
     } catch (err) { next(err) }
   })

@@ -1,7 +1,9 @@
 import { NavLink } from 'react-router-dom'
 import { MoreHorizontal } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { toEmbeddableImageUrl } from '@/lib/drive-image'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +20,18 @@ interface ProductColumnsOptions {
 export const productColumns = ({
   onDelete,
 }: ProductColumnsOptions = {}): ColumnDef<Product>[] => [
+  {
+    accessorKey: 'thumbnailUrl',
+    header: 'Image',
+    cell: ({ row }) => (
+      <Avatar className="h-9 w-9 rounded-md">
+        {row.original.thumbnailUrl ? (
+          <AvatarImage src={toEmbeddableImageUrl(row.original.thumbnailUrl)} alt={row.original.nameEn} />
+        ) : null}
+        <AvatarFallback className="rounded-md text-xs">-</AvatarFallback>
+      </Avatar>
+    ),
+  },
   {
     accessorKey: 'nameEn',
     header: 'Name',
@@ -36,22 +50,6 @@ export const productColumns = ({
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
         {row.original.categories.length > 0 ? row.original.categories.join(', ') : '-'}
-      </span>
-    ),
-  },
-  {
-    accessorKey: 'basePrice',
-    header: 'Price',
-    cell: ({ row }) => (
-      <span className="text-sm font-medium">${row.original.basePrice.toFixed(2)}</span>
-    ),
-  },
-  {
-    accessorKey: 'duration',
-    header: 'Duration',
-    cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground">
-        {row.original.duration} {row.original.duration === 1 ? 'hr' : 'hrs'}
       </span>
     ),
   },

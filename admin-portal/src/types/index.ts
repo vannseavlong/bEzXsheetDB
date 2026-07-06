@@ -217,8 +217,7 @@ export interface Product {
   nameEn: string
   nameKm: string
   categories: string[]
-  basePrice: number
-  duration: number
+  thumbnailUrl: string | null
   status: boolean
   sort: number
 }
@@ -228,8 +227,8 @@ export interface Product {
 export interface ProductOption {
   id: string
   nameEn: string
+  nameKm: string
   type: string
-  productNameEn: string
   status: boolean
 }
 
