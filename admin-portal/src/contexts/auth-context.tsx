@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 
-export type AdminRole = 'super_admin' | 'admin' | 'operation' | 'finance' | 'marketing'
+// A role's `code` from the dynamic roles table — 'super_admin' is the one special-cased value.
+export type AdminRole = string
 
 export interface AdminUser {
   id: string

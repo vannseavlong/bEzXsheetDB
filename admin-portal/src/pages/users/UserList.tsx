@@ -27,17 +27,10 @@ import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
 import { userColumns } from '@/components/data-table/columns/UserColumns'
 import { useUsers, useCreateUser, useUpdateUser, useDeactivateUser, type DbAdminUser } from '@/api/users'
+import { useRoles } from '@/api/rbac'
 
-const ROLES = [
-  { value: 'super_admin', label: 'Super Admin' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'operation', label: 'Operation' },
-  { value: 'finance', label: 'Finance' },
-  { value: 'marketing', label: 'Marketing' },
-]
-
-type EditForm = { name: string; role: string; status: string }
-type CreateForm = { name: string; email: string; password: string; role: string }
+type EditForm = { name: string; role_id: string; status: string }
+type CreateForm = { name: string; email: string; password: string; role_id: string }
 
 export default function UserList() {
   const tableState = useTableState()
@@ -45,20 +38,23 @@ export default function UserList() {
 
   const [roleFilter, setRoleFilter] = useState('all')
 
+  const { data: rolesResult } = useRoles()
+  const roles = (rolesResult?.data ?? []).filter((r) => r.status)
+
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false)
-  const [createForm, setCreateForm] = useState<CreateForm>({ name: '', email: '', password: '', role: 'admin' })
+  const [createForm, setCreateForm] = useState<CreateForm>({ name: '', email: '', password: '', role_id: '' })
 
   // Edit dialog
   const [editTarget, setEditTarget] = useState<DbAdminUser | null>(null)
-  const [editForm, setEditForm] = useState<EditForm>({ name: '', role: '', status: '' })
+  const [editForm, setEditForm] = useState<EditForm>({ name: '', role_id: '', status: '' })
 
   const { data: result, isLoading: loading } = useUsers({
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
     search,
     status: statusFilter === 'all' ? undefined : statusFilter,
-    role: roleFilter === 'all' ? undefined : roleFilter,
+    role_id: roleFilter === 'all' ? undefined : roleFilter,
   })
   const data = result?.data ?? []
 
@@ -69,11 +65,11 @@ export default function UserList() {
   const editing = updateUser.isPending
 
   const handleCreate = async () => {
-    if (!createForm.name || !createForm.email || !createForm.password) return
+    if (!createForm.name || !createForm.email || !createForm.password || !createForm.role_id) return
     try {
       await createUser.mutateAsync(createForm)
       setCreateOpen(false)
-      setCreateForm({ name: '', email: '', password: '', role: 'admin' })
+      setCreateForm({ name: '', email: '', password: '', role_id: '' })
     } catch (err) { console.error('Create failed:', err) }
   }
 
@@ -96,7 +92,7 @@ export default function UserList() {
   }
 
   const columns = useMemo(() => userColumns({
-    onEdit: user => { setEditTarget(user); setEditForm({ name: user.name, role: user.role, status: user.status }) },
+    onEdit: user => { setEditTarget(user); setEditForm({ name: user.name, role_id: user.role_id, status: user.status }) },
     onToggleStatus: handleToggleStatus,
   }), [])
 
@@ -121,7 +117,7 @@ export default function UserList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                {ROLES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                {roles.map(r => <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>)}
               </SelectContent>
             </Select>
 
@@ -181,10 +177,10 @@ export default function UserList() {
             </div>
             <div className="space-y-1.5">
               <Label>Role</Label>
-              <Select value={createForm.role} onValueChange={v => setCreateForm(p => ({ ...p, role: v }))}>
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <Select value={createForm.role_id} onValueChange={v => setCreateForm(p => ({ ...p, role_id: v }))}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Select a role" /></SelectTrigger>
                 <SelectContent>
-                  {ROLES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                  {roles.map(r => <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -193,7 +189,7 @@ export default function UserList() {
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button
               onClick={handleCreate}
-              disabled={!createForm.name || !createForm.email || !createForm.password || creating}
+              disabled={!createForm.name || !createForm.email || !createForm.password || !createForm.role_id || creating}
             >
               {creating ? 'Creating…' : 'Create'}
             </Button>
@@ -213,10 +209,10 @@ export default function UserList() {
             </div>
             <div className="space-y-1.5">
               <Label>Role</Label>
-              <Select value={editForm.role} onValueChange={v => setEditForm(p => ({ ...p, role: v }))}>
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <Select value={editForm.role_id} onValueChange={v => setEditForm(p => ({ ...p, role_id: v }))}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Select a role" /></SelectTrigger>
                 <SelectContent>
-                  {ROLES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                  {roles.map(r => <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

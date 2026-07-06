@@ -4,11 +4,14 @@ import type { SheetAdapter } from 'longcelot-sheet-db'
 import { env } from '../../config/env'
 import { signJwt } from '../../utils/jwt'
 
-async function buildPermissions(adapter: SheetAdapter, userRole: string): Promise<string[]> {
-  if (userRole === 'super_admin') return []
+async function resolveRole(adapter: SheetAdapter, roleId: string): Promise<any> {
   const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
-  const role = await ctx.table('roles').findOne({ where: { code: userRole } }) as any
-  if (!role) return []
+  return await ctx.table('roles').findOne({ where: { _id: roleId } }) as any
+}
+
+async function buildPermissions(adapter: SheetAdapter, role: any): Promise<string[]> {
+  if (!role || role.code === 'super_admin') return []
+  const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
   const all = await ctx.table('role_permissions').findMany({}) as any[]
   return all
     .filter((rp: any) => String(rp.role_id) === String(role._id))
@@ -28,12 +31,13 @@ export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHand
       const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
       const user = await ctx.table('users').findOne({ where: { email: profile.email } }) as any
       if (!user || user.status !== 'active') return null
-      const permissions = await buildPermissions(adapter, user.role)
+      const role = await resolveRole(adapter, user.role_id)
+      const permissions = await buildPermissions(adapter, role)
       return {
         id: user._id,
         email: user.email,
         name: profile.name,
-        role: user.role,
+        role: role?.code ?? null,
         permissions,
         profileUrl: profile.picture ?? user.profile_url ?? null,
       }
@@ -70,12 +74,13 @@ export function createAuthRoutes(adapter: SheetAdapter) {
       const valid = await comparePassword(password, user.password_hash)
       if (!valid) return res.status(401).json({ message: 'Invalid email or password' })
 
-      const permissions = await buildPermissions(adapter, user.role)
+      const role = await resolveRole(adapter, user.role_id)
+      const permissions = await buildPermissions(adapter, role)
       const payload = {
         id: user._id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: role?.code ?? null,
         permissions,
         profileUrl: user.profile_url ?? null,
       }

@@ -7,7 +7,10 @@ export type DbAdminUser = {
   user_id: string
   name: string
   email: string
-  role: string
+  role_id: string
+  /** Joined from the roles table by the backend; null if the role was deleted. */
+  role_name: string | null
+  role_code: string | null
   status: 'active' | 'inactive'
   actor_sheet_id?: string
   profile_url?: string
@@ -17,12 +20,12 @@ export type AdminUserInput = {
   name: string
   email: string
   password: string
-  role: string
+  role_id: string
 }
 
 export type AdminUserUpdate = {
   name?: string
-  role?: string
+  role_id?: string
   status?: string
 }
 

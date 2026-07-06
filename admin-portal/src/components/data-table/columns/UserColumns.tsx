@@ -10,14 +10,6 @@ import {
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { DbAdminUser } from '@/api/users'
 
-const ROLE_LABELS: Record<string, string> = {
-  super_admin: 'Super Admin',
-  admin: 'Admin',
-  operation: 'Operation',
-  finance: 'Finance',
-  marketing: 'Marketing',
-}
-
 interface UserColumnsOptions {
   onEdit?: (user: DbAdminUser) => void
   onToggleStatus?: (user: DbAdminUser) => void
@@ -42,10 +34,10 @@ export const userColumns = ({ onEdit, onToggleStatus }: UserColumnsOptions = {})
     cell: ({ row }) => <p className="text-sm text-muted-foreground">{row.original.email}</p>,
   },
   {
-    accessorKey: 'role',
+    accessorKey: 'role_id',
     header: 'Role',
     cell: ({ row }) => (
-      <span className="text-sm">{ROLE_LABELS[row.original.role] ?? row.original.role}</span>
+      <span className="text-sm">{row.original.role_name ?? 'Unknown'}</span>
     ),
   },
   {

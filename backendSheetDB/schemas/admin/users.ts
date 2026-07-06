@@ -7,11 +7,10 @@ export default defineTable({
   columns: {
     user_id: string().required().unique(),
     name: string().required(),
-    role: string().required(),
+    role_id: string().required().ref('roles._id'),
     email: string().required().unique(),
     actor_sheet_id: string(),
     status: string().enum(['active', 'inactive']).default('active'),
-    // null for Google-OAuth-only users; set for email+password accounts
     password_hash: string(),
     profile_url: string(),
   },
