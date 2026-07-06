@@ -53,6 +53,35 @@ export function useSetCategoryProducts() {
   })
 }
 
+export type DbCategoryProductOptionLink = {
+  _id: string; category_product_id: string; product_option_id: string
+  price: number; duration: number; sort: number
+}
+
+export const useCategoryProductOptions = (categoryId: string | undefined, productId: string | undefined) =>
+  useQuery({
+    queryKey: ['categories', 'products', categoryId, productId, 'options'],
+    queryFn: () => apiClient
+      .get<{ data: DbCategoryProductOptionLink[] }>(`${BASE}/${categoryId}/products/${productId}/options`)
+      .then((r) => r.data),
+    enabled: !!categoryId && !!productId,
+  })
+
+export function useSetCategoryProductOptions() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ categoryId, productId, options }: {
+      categoryId: string
+      productId: string
+      options: { product_option_id: string; price: number; duration: number }[]
+    }) => apiClient
+      .put<{ data: DbCategoryProductOptionLink[] }>(`${BASE}/${categoryId}/products/${productId}/options`, { options })
+      .then((r) => r.data),
+    onSuccess: (_data, vars) =>
+      qc.invalidateQueries({ queryKey: ['categories', 'products', vars.categoryId, vars.productId, 'options'] }),
+  })
+}
+
 export const useCategoryAddons = (id: string | undefined) =>
   useQuery({
     queryKey: ['categories', 'addons', id],

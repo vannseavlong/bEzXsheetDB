@@ -13,9 +13,8 @@ export type ProductInput = {
   thumbnail_url?: string; status: boolean
 }
 
-export type DbProductOptionLink = {
-  _id: string; product_id: string; product_option_id: string
-  price: number; duration: number; sort: number
+export type DbCategoryProductLink = {
+  _id: string; category_id: string; product_id: string; sort: number
 }
 
 const BASE = '/admin/products'
@@ -36,20 +35,11 @@ export function useReorderProducts() {
   })
 }
 
-export const useProductOptionLinks = (id: string | undefined) =>
+// Which categories a product is linked to. Pricing/options are category-scoped —
+// see useCategoryProductOptions/useSetCategoryProductOptions in api/categories.ts.
+export const useProductCategoryLinks = (id: string | undefined) =>
   useQuery({
-    queryKey: ['products', 'options', id],
-    queryFn: () => apiClient.get<{ data: DbProductOptionLink[] }>(`${BASE}/${id}/options`).then((r) => r.data),
+    queryKey: ['products', 'categories', id],
+    queryFn: () => apiClient.get<{ data: DbCategoryProductLink[] }>(`${BASE}/${id}/categories`).then((r) => r.data),
     enabled: !!id,
   })
-
-export function useSetProductOptions() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, options }: {
-      id: string
-      options: { product_option_id: string; price: number; duration: number }[]
-    }) => apiClient.put<{ data: DbProductOptionLink[] }>(`${BASE}/${id}/options`, { options }).then((r) => r.data),
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['products', 'options', vars.id] }),
-  })
-}

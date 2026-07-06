@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useQueries } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CustomHeader } from '@/components/shared/CustomHeader'
 import { MultiLanguageInput } from '@/components/shared/MultiLanguageInput'
 import { ProfilePicker } from '@/components/shared/ProfilePicker'
@@ -10,9 +12,13 @@ import TaskInformationPanel, { type TaskItem } from '@/components/category/task-
 import { TaskInformationDialog, type TaskData } from '@/components/category/task-information/TaskInformationDialog'
 import DraggableComboboxPanel from '@/components/common/draggable/DraggableComboboxPanel'
 import type { ComboItem } from '@/components/common/draggable/SortableComboBox'
-import { useProduct, useCreateProduct, useUpdateProduct, useProductOptionLinks, useSetProductOptions } from '@/api/products'
+import { useProduct, useCreateProduct, useUpdateProduct, useProductCategoryLinks } from '@/api/products'
 import { uploadImage } from '@/api/upload'
 import { useProductOptions } from '@/api/product-options'
+import {
+  useCategories, useSetCategoryProductOptions, type DbCategoryProductOptionLink,
+} from '@/api/categories'
+import { apiClient } from '@/api/client'
 import { useReplaceTaskInfoForProduct, useTaskInfoByProduct, toTaskItem } from '@/api/task-info'
 
 type MultiLangVal = { en: string; km: string; vi: string; tw: string; cn: string }
@@ -27,7 +33,10 @@ export default function ProductForm() {
   const [status, setStatus] = useState<'active' | 'inactive'>('active')
   const [imageUrl, setImageUrl] = useState('')
   const [taskItems, setTaskItems] = useState<TaskItem[]>([])
-  const [linkedOptions, setLinkedOptions] = useState<ComboItem[]>([])
+  // Product options/pricing are category-scoped: a product linked to multiple
+  // categories can have different options+prices per category, so this is keyed by category_id.
+  const [optionsByCategory, setOptionsByCategory] = useState<Record<string, ComboItem[]>>({})
+  const [activeCategoryTab, setActiveCategoryTab] = useState('')
   const [optionChoices, setOptionChoices] = useState<{ label: string; value: string }[]>([])
 
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
@@ -44,24 +53,61 @@ export default function ProductForm() {
   // Load existing product on edit
   const editId = isEdit ? id : undefined
   const { data: product } = useProduct(editId)
-  const { data: linkedOptionsResult } = useProductOptionLinks(editId)
   const { data: tasks } = useTaskInfoByProduct(editId)
+  const { data: categoriesResult } = useCategories()
+  const { data: categoryLinksResult } = useProductCategoryLinks(editId)
+
+  const categoryNameById = useMemo(
+    () => Object.fromEntries((categoriesResult?.data ?? []).map(c => [c.id, c.nameEn])),
+    [categoriesResult]
+  )
+  const linkedCategories = useMemo(
+    () => (categoryLinksResult ?? []).slice().sort((a, b) => a.sort - b.sort),
+    [categoryLinksResult]
+  )
+
+  // Fetch this product's option list within each linked category — one query per tab.
+  const optionQueries = useQueries({
+    queries: linkedCategories.map(link => ({
+      queryKey: ['categories', 'products', link.category_id, editId, 'options'],
+      queryFn: () => apiClient
+        .get<{ data: DbCategoryProductOptionLink[] }>(`/admin/categories/${link.category_id}/products/${editId}/options`)
+        .then(r => r.data),
+      enabled: !!editId,
+    })),
+  })
 
   useEffect(() => {
-    if (!product || !linkedOptionsResult || !tasks) return
+    optionQueries.forEach((q, i) => {
+      const categoryId = linkedCategories[i]?.category_id
+      if (!categoryId || !q.data) return
+      setOptionsByCategory(prev => prev[categoryId] ? prev : {
+        ...prev,
+        [categoryId]: q.data!
+          .slice()
+          .sort((a, b) => a.sort - b.sort)
+          .map(l => ({ id: l._id, value: l.product_option_id, amount: String(l.price), duration: String(l.duration) })),
+      })
+    })
+  }, [optionQueries, linkedCategories])
+
+  useEffect(() => {
+    if (linkedCategories.length && !activeCategoryTab) {
+      setActiveCategoryTab(linkedCategories[0].category_id)
+    }
+  }, [linkedCategories, activeCategoryTab])
+
+  useEffect(() => {
+    if (!product || !tasks) return
     setName(emptyLang(product.name_en))
     setStatus(product.status ? 'active' : 'inactive')
     setImageUrl(product.thumbnail_url ?? '')
-    setLinkedOptions(linkedOptionsResult
-      .sort((a, b) => a.sort - b.sort)
-      .map(l => ({ id: l._id, value: l.product_option_id, amount: String(l.price), duration: String(l.duration) }))
-    )
     setTaskItems(tasks.map(toTaskItem))
-  }, [product, linkedOptionsResult, tasks])
+  }, [product, tasks])
 
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
-  const setProductOptions = useSetProductOptions()
+  const setCategoryProductOptions = useSetCategoryProductOptions()
   const replaceTaskInfo = useReplaceTaskInfoForProduct()
 
   async function handleSave() {
@@ -82,14 +128,17 @@ export default function ProductForm() {
       }
 
       await Promise.all([
-        setProductOptions.mutateAsync({
-          id: productId,
-          options: linkedOptions.filter(o => o.value).map(o => ({
-            product_option_id: o.value,
-            price: parseFloat(o.amount ?? '') || 0,
-            duration: parseFloat(o.duration ?? '') || 0,
-          })),
-        }),
+        ...linkedCategories.map(link =>
+          setCategoryProductOptions.mutateAsync({
+            categoryId: link.category_id,
+            productId,
+            options: (optionsByCategory[link.category_id] ?? []).filter(o => o.value).map(o => ({
+              product_option_id: o.value,
+              price: parseFloat(o.amount ?? '') || 0,
+              duration: parseFloat(o.duration ?? '') || 0,
+            })),
+          })
+        ),
         replaceTaskInfo.mutateAsync({ productId, items: taskItems }),
       ])
       navigate('/product')
@@ -149,8 +198,40 @@ export default function ProductForm() {
           <TaskInformationPanel items={taskItems} onChange={setTaskItems}
             onAdd={openAddTask} onEdit={openEditTask} />
 
-          <DraggableComboboxPanel title="Product Options" buttonText="Add Product Option"
-            data={linkedOptions} onChange={setLinkedOptions} options={optionChoices} showAmount showDuration />
+          {linkedCategories.length === 0 ? (
+            <Card className="shadow-none">
+              <CardHeader><CardTitle className="text-base">Product Options</CardTitle></CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Add this product to a category first — options and pricing are set per category.
+              </CardContent>
+            </Card>
+          ) : (
+            <DraggableComboboxPanel key={activeCategoryTab} title="Product Options" buttonText="Add Product Option"
+              data={optionsByCategory[activeCategoryTab] ?? []}
+              onChange={updater => setOptionsByCategory(prev => ({
+                ...prev,
+                [activeCategoryTab]: typeof updater === 'function'
+                  ? updater(prev[activeCategoryTab] ?? [])
+                  : updater,
+              }))}
+              options={optionChoices} showAmount showDuration
+              headerExtra={
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-sm text-muted-foreground shrink-0">Category</span>
+                  <Tabs value={activeCategoryTab} onValueChange={setActiveCategoryTab}>
+                    <TabsList>
+                      {linkedCategories
+                        .filter(link => categoryNameById[link.category_id])
+                        .map(link => (
+                          <TabsTrigger key={link.category_id} value={link.category_id}>
+                            {categoryNameById[link.category_id]}
+                          </TabsTrigger>
+                        ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
+              } />
+          )}
         </div>
       </div>
 

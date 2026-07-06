@@ -114,13 +114,78 @@ export function createCategoriesRouter(adapter: SheetAdapter) {
   })
 
   // PUT /api/admin/categories/:id/products  — replace full product list
+  // Diffs against existing links instead of wipe-and-recreate so that unchanged
+  // (category, product) pairs keep their _id — category_product_options rows key
+  // off that _id, and would otherwise be silently orphaned on every save.
   router.put('/:id/products', async (req, res, next) => {
     try {
       const { product_ids }: { product_ids: string[] } = req.body
-      await ctx().table('category_products').delete({ where: { category_id: req.params.id } })
-      const data = product_ids.length
-        ? await ctx().table('category_products').createMany(
-            product_ids.map((product_id, sort) => ({ category_id: req.params.id, product_id, sort }))
+      const existing = await ctx().table('category_products').findMany({
+        where: { category_id: req.params.id },
+      }) as any[]
+      const existingByProduct = new Map(existing.map((l) => [l.product_id, l]))
+      const keep = new Set(product_ids)
+
+      const removed = existing.filter((l) => !keep.has(l.product_id))
+      await Promise.all(removed.map((l) => ctx().table('category_products').delete({ where: { _id: l._id } })))
+      await Promise.all(
+        removed.map((l) => ctx().table('category_product_options').delete({ where: { category_product_id: l._id } }))
+      )
+
+      await Promise.all(
+        product_ids.map((product_id, sort) => {
+          const current = existingByProduct.get(product_id)
+          return current
+            ? ctx().table('category_products').update({ where: { _id: current._id }, data: { sort } })
+            : ctx().table('category_products').create({ category_id: req.params.id, product_id, sort })
+        })
+      )
+
+      const data = await ctx().table('category_products').findMany({
+        where: { category_id: req.params.id },
+        orderBy: 'sort',
+        order: 'asc',
+      })
+      res.json({ data })
+    } catch (err) { next(err) }
+  })
+
+  // GET /api/admin/categories/:categoryId/products/:productId/options
+  router.get('/:categoryId/products/:productId/options', async (req, res, next) => {
+    try {
+      const link = await ctx().table('category_products').findOne({
+        where: { category_id: req.params.categoryId, product_id: req.params.productId },
+      })
+      if (!link) return res.json({ data: [] })
+      const data = await ctx().table('category_product_options').findMany({
+        where: { category_product_id: (link as any)._id },
+        orderBy: 'sort',
+        order: 'asc',
+      })
+      res.json({ data })
+    } catch (err) { next(err) }
+  })
+
+  // PUT /api/admin/categories/:categoryId/products/:productId/options — replace full option list
+  router.put('/:categoryId/products/:productId/options', async (req, res, next) => {
+    try {
+      const { options }: { options: { product_option_id: string; price: number; duration: number }[] } = req.body
+      const link = await ctx().table('category_products').findOne({
+        where: { category_id: req.params.categoryId, product_id: req.params.productId },
+      })
+      if (!link) return res.status(404).json({ message: 'Product is not linked to this category' })
+
+      const categoryProductId = (link as any)._id
+      await ctx().table('category_product_options').delete({ where: { category_product_id: categoryProductId } })
+      const data = options.length
+        ? await ctx().table('category_product_options').createMany(
+            options.map((o, sort) => ({
+              category_product_id: categoryProductId,
+              product_option_id: o.product_option_id,
+              price: o.price,
+              duration: o.duration,
+              sort,
+            }))
           )
         : []
       res.json({ data })

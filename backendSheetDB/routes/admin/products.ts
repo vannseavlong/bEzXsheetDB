@@ -93,10 +93,11 @@ export function createProductsRouter(adapter: SheetAdapter) {
     } catch (err) { next(err) }
   })
 
-  // GET /api/admin/products/:id/options
-  router.get('/:id/options', async (req, res, next) => {
+  // GET /api/admin/products/:id/categories — which categories this product is linked to
+  // (product options/pricing are category-scoped, see categories.ts :categoryId/products/:productId/options)
+  router.get('/:id/categories', async (req, res, next) => {
     try {
-      const data = await ctx().table('product_product_options').findMany({
+      const data = await ctx().table('category_products').findMany({
         where: { product_id: req.params.id },
         orderBy: 'sort',
         order: 'asc',
@@ -105,22 +106,36 @@ export function createProductsRouter(adapter: SheetAdapter) {
     } catch (err) { next(err) }
   })
 
-  // PUT /api/admin/products/:id/options — replace full option list
-  router.put('/:id/options', async (req, res, next) => {
+  // PUT /api/admin/products/:id/categories — replace full category list for this product.
+  // Diffs against existing links (same reasoning as categories.ts PUT /:id/products) so
+  // unchanged links keep their _id and category_product_options survive the save; new links
+  // are appended to the end of that category's own product ordering.
+  router.put('/:id/categories', async (req, res, next) => {
     try {
-      const { options }: { options: { product_option_id: string; price: number; duration: number }[] } = req.body
-      await ctx().table('product_product_options').delete({ where: { product_id: req.params.id } })
-      const data = options.length
-        ? await ctx().table('product_product_options').createMany(
-            options.map((o, sort) => ({
-              product_id: req.params.id,
-              product_option_id: o.product_option_id,
-              price: o.price,
-              duration: o.duration,
-              sort,
-            }))
-          )
-        : []
+      const { category_ids }: { category_ids: string[] } = req.body
+      const existing = await ctx().table('category_products').findMany({
+        where: { product_id: req.params.id },
+      }) as any[]
+      const existingByCategory = new Map(existing.map((l) => [l.category_id, l]))
+      const keep = new Set(category_ids)
+
+      const removed = existing.filter((l) => !keep.has(l.category_id))
+      await Promise.all(removed.map((l) => ctx().table('category_products').delete({ where: { _id: l._id } })))
+      await Promise.all(
+        removed.map((l) => ctx().table('category_product_options').delete({ where: { category_product_id: l._id } }))
+      )
+
+      const added = category_ids.filter((category_id) => !existingByCategory.has(category_id))
+      await Promise.all(
+        added.map(async (category_id) => {
+          const siblings = await ctx().table('category_products').findMany({ where: { category_id } })
+          return ctx().table('category_products').create({ category_id, product_id: req.params.id, sort: siblings.length })
+        })
+      )
+
+      const data = await ctx().table('category_products').findMany({
+        where: { product_id: req.params.id },
+      })
       res.json({ data })
     } catch (err) { next(err) }
   })

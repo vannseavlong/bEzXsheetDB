@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors, type DragEndEvent,
@@ -19,10 +19,12 @@ type Props = {
   options?: { label: string; value: string }[]
   showAmount?: boolean
   showDuration?: boolean
+  /** Extra content rendered in the header below the title, e.g. a scope switcher (tabs). */
+  headerExtra?: ReactNode
 }
 
 export default function DraggableComboboxPanel({
-  title, buttonText, data, onChange, options = [], showAmount, showDuration,
+  title, buttonText, data, onChange, options = [], showAmount, showDuration, headerExtra,
 }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -59,6 +61,7 @@ export default function DraggableComboboxPanel({
     <Card className="shadow-none">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
+        {headerExtra}
       </CardHeader>
       <CardContent className="pb-4">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
