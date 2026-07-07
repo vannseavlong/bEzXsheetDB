@@ -9,6 +9,8 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { categoryAddonColumns } from '@/components/data-table/columns/CategoryAddonColumns'
 import { CategoryAddonHeader } from '@/components/headers/CategoryAddonHeader'
 import { useCategoryAddonsList, useRemoveCategoryAddon } from '@/api/category-addons'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 
 export default function CategoryAddonList() {
   const tableState = useTableState()
@@ -23,6 +25,10 @@ export default function CategoryAddonList() {
 
   const data = useMemo(() => result?.data ?? [], [result])
 
+  const { hasPermission } = usePermission()
+  const canUpdate = hasPermission(MODULES.CATEGORY_ADDON, ACTIONS.UPDATE)
+  const canDelete = hasPermission(MODULES.CATEGORY_ADDON, ACTIONS.DELETE)
+
   const removeCategoryAddon = useRemoveCategoryAddon()
   const handleDelete = async (id: string) => {
     try {
@@ -30,7 +36,10 @@ export default function CategoryAddonList() {
     } catch (err) { console.error('Delete failed:', err) }
   }
 
-  const columns = useMemo(() => categoryAddonColumns({ onDelete: handleDelete }), [])
+  const columns = useMemo(
+    () => categoryAddonColumns({ onDelete: handleDelete, canUpdate, canDelete }),
+    [canUpdate, canDelete]
+  )
 
   const table = useDataTableConfig(data, columns, tableState, {
     pageCount: result?.meta.totalPages ?? 1,

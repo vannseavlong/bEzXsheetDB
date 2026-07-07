@@ -11,7 +11,11 @@ import {
 import { Badge } from '@/components/ui/badge'
 import type { Cleaner } from '@/types'
 
-export const cleanerColumns: ColumnDef<Cleaner>[] = [
+interface CleanerColumnsOptions {
+  canUpdate?: boolean
+}
+
+export const cleanerColumns = ({ canUpdate = false }: CleanerColumnsOptions = {}): ColumnDef<Cleaner>[] => [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -89,22 +93,25 @@ export const cleanerColumns: ColumnDef<Cleaner>[] = [
   {
     id: 'actions',
     header: '',
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <NavLink to={`/cleaner/${row.original.id}`} className="flex items-center gap-2 text-blue-600">
-              <Pen className="h-3 w-3" />
-              Edit
-            </NavLink>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+    cell: ({ row }) => {
+      if (!canUpdate) return null
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <NavLink to={`/cleaner/${row.original.id}`} className="flex items-center gap-2 text-blue-600">
+                <Pen className="h-3 w-3" />
+                Edit
+              </NavLink>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
   },
 ]

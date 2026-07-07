@@ -6,6 +6,8 @@ import { env } from './env'
 // Admin schemas
 import usersSchema from '../schemas/admin/users'
 import rolesSchema from '../schemas/admin/roles'
+import modulesSchema from '../schemas/admin/modules'
+import actionsSchema from '../schemas/admin/actions'
 import rolePermissionsSchema from '../schemas/admin/role_permissions'
 import categoriesSchema from '../schemas/admin/categories'
 import platformsSchema from '../schemas/admin/platforms'
@@ -57,6 +59,8 @@ export function createAdapter() {
   // This is the single migration point: swap adapter above → all routes work.
   adapter.registerSchema(usersSchema)
   adapter.registerSchema(rolesSchema)
+  adapter.registerSchema(modulesSchema)
+  adapter.registerSchema(actionsSchema)
   adapter.registerSchema(rolePermissionsSchema)
   adapter.registerSchema(categoriesSchema)
   adapter.registerSchema(platformsSchema)

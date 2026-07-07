@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 import type { Cleaner } from '@/types'
 
 type Props = {
@@ -19,6 +21,8 @@ type Props = {
 }
 
 export function CleanerHeader({ table, statusFilter, setStatusFilter }: Props) {
+  const { hasPermission } = usePermission()
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
       <SearchBar
@@ -37,11 +41,13 @@ export function CleanerHeader({ table, statusFilter, setStatusFilter }: Props) {
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
-        <NavLink to="/cleaner/new">
-          <Button size="sm">
-            New Cleaner <Plus className="ml-1 h-4 w-4" />
-          </Button>
-        </NavLink>
+        {hasPermission(MODULES.CLEANER, ACTIONS.ADD) && (
+          <NavLink to="/cleaner/new">
+            <Button size="sm">
+              New Cleaner <Plus className="ml-1 h-4 w-4" />
+            </Button>
+          </NavLink>
+        )}
       </div>
     </div>
   )

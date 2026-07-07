@@ -1,12 +1,19 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/auth-context'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS } from '@/lib/permission-registry'
 
 type Props = {
   requiredRole?: string
+  /** Module key from permission-registry.ts. Omit to only require auth. */
+  module?: string
+  /** Defaults to VIEW — the action needed to load this route at all. */
+  action?: string
 }
 
-export default function ProtectedRoute({ requiredRole }: Props) {
+export default function ProtectedRoute({ requiredRole, module, action = ACTIONS.VIEW }: Props) {
   const { isAuthenticated, isLoading, user } = useAuth()
+  const { hasPermission } = usePermission()
   const location = useLocation()
 
   if (isLoading) {
@@ -22,6 +29,10 @@ export default function ProtectedRoute({ requiredRole }: Props) {
   }
 
   if (requiredRole && user?.role !== requiredRole) {
+    return <Navigate to="/not-authorised" replace />
+  }
+
+  if (module && !hasPermission(module, action)) {
     return <Navigate to="/not-authorised" replace />
   }
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Table, TableBody } from '@/components/ui/table'
 import { useTableState } from '@/hooks/use-table-state'
 import { useDataTableConfig } from '@/hooks/use-data-table-config'
@@ -8,13 +8,19 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { CleanerHeader } from '@/components/headers/CleanerHeader'
 import { cleanerColumns } from '@/components/data-table/columns/CleanerColumns'
 import { mockCleaners } from '@/data/cleaners'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 import type { Cleaner } from '@/types'
 
 export default function CleanerList() {
   const tableState = useTableState()
   const { statusFilter, setStatusFilter } = tableState
 
-  const table = useDataTableConfig(mockCleaners as Cleaner[], cleanerColumns, tableState)
+  const { hasPermission } = usePermission()
+  const canUpdate = hasPermission(MODULES.CLEANER, ACTIONS.UPDATE)
+  const columns = useMemo(() => cleanerColumns({ canUpdate }), [canUpdate])
+
+  const table = useDataTableConfig(mockCleaners as Cleaner[], columns, tableState)
 
   useEffect(() => {
     const col = table.getColumn('status')
@@ -34,7 +40,7 @@ export default function CleanerList() {
           <Table className="min-w-full">
             <DataTableHeader table={table} />
             <TableBody>
-              <TableRows columns={cleanerColumns} table={table} />
+              <TableRows columns={columns} table={table} />
             </TableBody>
           </Table>
         </div>

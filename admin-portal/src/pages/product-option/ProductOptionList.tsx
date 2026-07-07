@@ -9,6 +9,8 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { productOptionColumns } from '@/components/data-table/columns/ProductOptionColumns'
 import { ProductOptionHeader } from '@/components/headers/ProductOptionHeader'
 import { useProductOptions, useRemoveProductOption } from '@/api/product-options'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 
 export default function ProductOptionList() {
   const tableState = useTableState()
@@ -23,6 +25,10 @@ export default function ProductOptionList() {
 
   const data = useMemo(() => result?.data ?? [], [result])
 
+  const { hasPermission } = usePermission()
+  const canUpdate = hasPermission(MODULES.PRODUCT_OPTION, ACTIONS.UPDATE)
+  const canDelete = hasPermission(MODULES.PRODUCT_OPTION, ACTIONS.DELETE)
+
   const removeProductOption = useRemoveProductOption()
   const handleDelete = async (id: string) => {
     try {
@@ -30,7 +36,10 @@ export default function ProductOptionList() {
     } catch (err) { console.error('Delete failed:', err) }
   }
 
-  const columns = useMemo(() => productOptionColumns({ onDelete: handleDelete }), [])
+  const columns = useMemo(
+    () => productOptionColumns({ onDelete: handleDelete, canUpdate, canDelete }),
+    [canUpdate, canDelete]
+  )
 
   const table = useDataTableConfig(data, columns, tableState, {
     pageCount: result?.meta.totalPages ?? 1,

@@ -9,6 +9,8 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { blockedScheduleColumns } from '@/components/data-table/columns/BlockedScheduleColumns'
 import { BlockedScheduleHeader } from '@/components/headers/BlockedScheduleHeader'
 import { useBlockedSchedules, useRemoveBlockedSchedule } from '@/api/blocked-schedules'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 
 export default function BlockedScheduleList() {
   const tableState = useTableState()
@@ -21,14 +23,18 @@ export default function BlockedScheduleList() {
   })
   const data = useMemo(() => result?.data ?? [], [result])
 
+  const { hasPermission } = usePermission()
+  const canUpdate = hasPermission(MODULES.SETUP_SCHEDULE, ACTIONS.UPDATE)
+  const canDelete = hasPermission(MODULES.SETUP_SCHEDULE, ACTIONS.DELETE)
+
   const removeBlockedSchedule = useRemoveBlockedSchedule()
   async function handleDelete(id: string) {
     await removeBlockedSchedule.mutateAsync(id)
   }
 
   const columns = useMemo(
-    () => blockedScheduleColumns({ onDelete: handleDelete }),
-    []
+    () => blockedScheduleColumns({ onDelete: handleDelete, canUpdate, canDelete }),
+    [canUpdate, canDelete]
   )
 
   const table = useDataTableConfig(data, columns, tableState, {

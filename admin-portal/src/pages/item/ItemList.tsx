@@ -9,6 +9,8 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { itemColumns } from '@/components/data-table/columns/ItemColumns'
 import { ItemHeader } from '@/components/headers/ItemHeader'
 import { useItems, useRemoveItem } from '@/api/items'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 
 export default function ItemList() {
   const tableState = useTableState()
@@ -26,14 +28,18 @@ export default function ItemList() {
 
   const data = useMemo(() => result?.data ?? [], [result])
 
+  const { hasPermission } = usePermission()
+  const canUpdate = hasPermission(MODULES.SETUP_ITEM, ACTIONS.UPDATE)
+  const canDelete = hasPermission(MODULES.SETUP_ITEM, ACTIONS.DELETE)
+
   const removeItem = useRemoveItem()
   async function handleDelete(id: string) {
     await removeItem.mutateAsync(id)
   }
 
   const columns = useMemo(
-    () => itemColumns({ onDelete: handleDelete }),
-    []
+    () => itemColumns({ onDelete: handleDelete, canUpdate, canDelete }),
+    [canUpdate, canDelete]
   )
 
   const table = useDataTableConfig(data, columns, tableState, {

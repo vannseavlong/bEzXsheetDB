@@ -15,10 +15,14 @@ import type { PopularService } from '@/types'
 
 interface PopularServiceColumnsOptions {
   onDelete?: (id: string) => void
+  canUpdate?: boolean
+  canDelete?: boolean
 }
 
 export const popularServiceColumns = ({
   onDelete,
+  canUpdate = false,
+  canDelete = false,
 }: PopularServiceColumnsOptions = {}): ColumnDef<PopularService>[] => [
   {
     accessorKey: 'imageUrl',
@@ -60,25 +64,32 @@ export const popularServiceColumns = ({
   {
     id: 'actions',
     header: '',
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <NavLink to={`/popular-service/${row.original.id}`}>Edit</NavLink>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-red-600"
-            onClick={() => onDelete?.(row.original.id)}
-          >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
+    cell: ({ row }) => {
+      if (!canUpdate && !canDelete) return null
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {canUpdate && (
+              <DropdownMenuItem asChild>
+                <NavLink to={`/popular-service/${row.original.id}`}>Edit</NavLink>
+              </DropdownMenuItem>
+            )}
+            {canDelete && (
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => onDelete?.(row.original.id)}
+              >
+                Delete
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
   },
 ]

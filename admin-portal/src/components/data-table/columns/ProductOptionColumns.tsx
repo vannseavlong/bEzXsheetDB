@@ -26,10 +26,14 @@ const TYPE_VARIANTS: Record<string, 'confirm' | 'purple' | 'secondary'> = {
 
 interface ProductOptionColumnsOptions {
   onDelete?: (id: string) => void
+  canUpdate?: boolean
+  canDelete?: boolean
 }
 
 export const productOptionColumns = ({
   onDelete,
+  canUpdate = false,
+  canDelete = false,
 }: ProductOptionColumnsOptions = {}): ColumnDef<ProductOption>[] => [
     {
       accessorKey: 'nameEn',
@@ -59,27 +63,34 @@ export const productOptionColumns = ({
     {
       id: 'actions',
       header: '',
-      cell: ({ row }) => (
-        <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <NavLink to={`/product-option/${row.original.id}`}>Edit</NavLink>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-600 focus:text-red-600"
-                onClick={() => onDelete?.(row.original.id)}
-              >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
+      cell: ({ row }) => {
+        if (!canUpdate && !canDelete) return null
+        return (
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {canUpdate && (
+                  <DropdownMenuItem asChild>
+                    <NavLink to={`/product-option/${row.original.id}`}>Edit</NavLink>
+                  </DropdownMenuItem>
+                )}
+                {canDelete && (
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-600"
+                    onClick={() => onDelete?.(row.original.id)}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )
+      },
     },
   ]

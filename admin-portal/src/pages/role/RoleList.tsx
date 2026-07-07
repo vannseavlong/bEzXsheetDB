@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Check, Lock, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, Lock, Pencil, Plus, Settings2, Trash2 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -10,15 +10,24 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { ACTIONS } from '@/lib/permission'
-import { MODULE_SECTIONS, PERMISSION_COLUMNS } from './_constants'
 import {
   useRoles, useCreateRole, useDeleteRole, useRolePermissions, useSetRolePermissions,
-  type DbRole,
+  useRbacModules, useRbacActions,
+  type DbRole, type RbacModule,
 } from '@/api/rbac'
+import { ModuleModal } from './_components/ModuleModal'
+import { ActionModal } from './_components/ActionModal'
+import { MODULE_REGISTRY, MODULES, ACTIONS } from '@/lib/permission-registry'
+import { usePermission } from '@/hooks/use-permission'
 
 const ROLE_COLORS = [
   '#EF4444', '#3B82F6', '#10B981', '#F59E0B',
@@ -31,21 +40,29 @@ function roleInitials(name: string) {
   return name.split(/[\s_-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase()
 }
 
-function PermissionMatrixSkeleton({ rows = 6 }: { rows?: number }) {
+function groupBySection(modules: RbacModule[]) {
+  const sections = new Map<string, RbacModule[]>()
+  for (const mod of modules) {
+    const list = sections.get(mod.section) ?? []
+    list.push(mod)
+    sections.set(mod.section, list)
+  }
+  return Array.from(sections.entries()).map(([sectionLabel, mods]) => ({ sectionLabel, modules: mods }))
+}
+
+function PermissionMatrixSkeleton({ columns, rows = 6 }: { columns: number; rows?: number }) {
+  const gridTemplate = `minmax(160px, 2fr) repeat(${Math.max(columns, 1)}, minmax(72px, 1fr)) 48px`
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (
-        <div
-          key={i}
-          className="grid items-center border-b"
-          style={{ gridTemplateColumns: 'minmax(160px, 2fr) repeat(7, minmax(72px, 1fr))' }}
-        >
+        <div key={i} className="grid items-center border-b" style={{ gridTemplateColumns: gridTemplate }}>
           <div className="px-4 py-3"><Skeleton className="h-4 w-24" /></div>
-          {PERMISSION_COLUMNS.map(col => (
-            <div key={col.key} className="flex justify-center py-3">
+          {Array.from({ length: columns }).map((_, j) => (
+            <div key={j} className="flex justify-center py-3">
               <Skeleton className="size-4 rounded-sm" />
             </div>
           ))}
+          <div />
         </div>
       ))}
     </>
@@ -68,6 +85,19 @@ export default function RoleList() {
   const { data: rolesResult, isLoading: loading } = useRoles()
   const roles = rolesResult?.data ?? []
 
+  const { data: modules = [], isLoading: modulesLoading } = useRbacModules()
+  const { data: actions = [], isLoading: actionsLoading } = useRbacActions()
+  const sections = React.useMemo(() => groupBySection(modules), [modules])
+  const unregisteredModuleCount = React.useMemo(() => {
+    const existingKeys = new Set(modules.map((m) => m.key))
+    return MODULE_REGISTRY.filter((m) => !existingKeys.has(m.key)).length
+  }, [modules])
+
+  const { hasPermission } = usePermission()
+  const canAddRole = hasPermission(MODULES.RBAC, ACTIONS.ADD)
+  const canDeleteRole = hasPermission(MODULES.RBAC, ACTIONS.DELETE)
+  const canUpdateRole = hasPermission(MODULES.RBAC, ACTIONS.UPDATE)
+
   const [selectedCode, setSelectedCode] = React.useState<string | null>(null)
   const [draftPermissions, setDraftPermissions] = React.useState<Record<string, string[]>>({})
   const [editMode, setEditMode] = React.useState(false)
@@ -78,6 +108,11 @@ export default function RoleList() {
 
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = React.useState<DbRole | null>(null)
+
+  // Module / action catalog dialogs
+  const [moduleModalOpen, setModuleModalOpen] = React.useState(false)
+  const [editingModule, setEditingModule] = React.useState<RbacModule | undefined>(undefined)
+  const [actionModalOpen, setActionModalOpen] = React.useState(false)
 
   // Default-select the first role once the list loads
   React.useEffect(() => {
@@ -102,8 +137,8 @@ export default function RoleList() {
   const deleting = deleteRole.isPending
 
   const selectedRole = roles.find(r => r.code === selectedCode)
-  const selectedIdx = roles.findIndex(r => r.code === selectedCode)
   const activePermissions = editMode ? draftPermissions : currentPermissions
+  const gridTemplate = `minmax(160px, 2fr) repeat(${Math.max(actions.length, 1)}, minmax(72px, 1fr)) 48px`
 
   const handleEnterEdit = () => {
     setDraftPermissions({ ...currentPermissions })
@@ -118,8 +153,8 @@ export default function RoleList() {
   const handleSave = async () => {
     if (!selectedCode) return
     try {
-      const permissions = Object.entries(draftPermissions).flatMap(([module, actions]) =>
-        actions.map(action => ({ module, action }))
+      const permissions = Object.entries(draftPermissions).flatMap(([module, mActions]) =>
+        mActions.map(action => ({ module, action }))
       )
       await setRolePermissions.mutateAsync({ code: selectedCode, permissions })
       setEditMode(false)
@@ -130,20 +165,20 @@ export default function RoleList() {
 
   const handleToggle = (moduleKey: string, actionKey: string, enabled: boolean) => {
     if (!editMode) return
-    const mod = MODULE_SECTIONS.flatMap(s => s.modules).find(m => m.key === moduleKey)
+    const mod = modules.find(m => m.key === moduleKey)
     setDraftPermissions(prev => {
       const rolePerms = { ...prev }
-      let actions = [...(rolePerms[moduleKey] ?? [])]
+      let mActions = [...(rolePerms[moduleKey] ?? [])]
       if (enabled) {
-        if (!actions.includes(actionKey)) actions.push(actionKey)
-        if (actionKey !== ACTIONS.VIEW && mod?.applicableActions.includes(ACTIONS.VIEW)) {
-          if (!actions.includes(ACTIONS.VIEW)) actions.push(ACTIONS.VIEW)
+        if (!mActions.includes(actionKey)) mActions.push(actionKey)
+        if (actionKey !== 'VIEW' && mod?.actions.includes('VIEW')) {
+          if (!mActions.includes('VIEW')) mActions.push('VIEW')
         }
       } else {
-        actions = actions.filter(a => a !== actionKey)
-        if (actionKey === ACTIONS.VIEW) actions = []
+        mActions = mActions.filter(a => a !== actionKey)
+        if (actionKey === 'VIEW') mActions = []
       }
-      rolePerms[moduleKey] = actions
+      rolePerms[moduleKey] = mActions
       return rolePerms
     })
   }
@@ -204,7 +239,7 @@ export default function RoleList() {
                       {roleInitials(role.name)}
                     </span>
                     {role.name}
-                    {isSelected && !editMode && (
+                    {isSelected && !editMode && canDeleteRole && (
                       <button
                         onClick={(e) => { e.stopPropagation(); setDeleteTarget(role) }}
                         className="ml-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-destructive"
@@ -217,17 +252,24 @@ export default function RoleList() {
               )
             })}
 
-            <button
-              onClick={() => setCreateOpen(true)}
-              className="size-9 flex items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
-            >
-              <Plus className="size-3.5" />
-            </button>
+            {canAddRole && (
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="size-9 flex items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
+              >
+                <Plus className="size-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Edit / Save controls */}
           <div className="flex items-center gap-2">
-            {selectedRole && (
+            {canUpdateRole && (
+              <Button size="sm" variant="outline" onClick={() => setActionModalOpen(true)} className="gap-1.5">
+                <Settings2 className="size-3.5" /> Actions
+              </Button>
+            )}
+            {selectedRole && canUpdateRole && (
               editMode ? (
                 <>
                   <Button size="sm" variant="outline" onClick={handleCancelEdit}>Cancel</Button>
@@ -257,27 +299,45 @@ export default function RoleList() {
           </div>
         )}
 
+        {/* Registry sync hint */}
+        {!modulesLoading && unregisteredModuleCount > 0 && canUpdateRole && (
+          <div className="mx-6 mb-3 px-3 py-2 rounded-md border border-dashed text-xs text-muted-foreground flex items-center justify-between gap-3">
+            <span>
+              {unregisteredModuleCount} module{unregisteredModuleCount === 1 ? '' : 's'} used by the app{' '}
+              {unregisteredModuleCount === 1 ? "isn't" : "aren't"} registered here yet.
+            </span>
+            <button
+              onClick={() => { setEditingModule(undefined); setModuleModalOpen(true) }}
+              className="font-medium text-foreground hover:underline cursor-pointer shrink-0"
+            >
+              Register now
+            </button>
+          </div>
+        )}
+
         {/* Permissions matrix */}
         <div className="px-6 pb-6">
           <div className="border rounded-lg overflow-hidden bg-background">
             <div className="overflow-x-auto">
               <div className="min-w-[700px]">
-                <div
-                  className="grid border-b bg-muted/40"
-                  style={{ gridTemplateColumns: 'minmax(160px, 2fr) repeat(7, minmax(72px, 1fr))' }}
-                >
+                <div className="grid border-b bg-muted/40" style={{ gridTemplateColumns: gridTemplate }}>
                   <div className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Module</div>
-                  {PERMISSION_COLUMNS.map(col => (
-                    <div key={col.key} className="py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-center">
-                      {col.label}
+                  {actions.map(a => (
+                    <div key={a.key} className="py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-center">
+                      {a.label}
                     </div>
                   ))}
+                  <div />
                 </div>
 
-                {loading || permsLoading ? (
-                  <PermissionMatrixSkeleton />
+                {loading || permsLoading || modulesLoading || actionsLoading ? (
+                  <PermissionMatrixSkeleton columns={actions.length} />
+                ) : sections.length === 0 ? (
+                  <div className="px-4 py-8 text-sm text-muted-foreground">
+                    No modules yet — add one to start building the permissions matrix.
+                  </div>
                 ) : (
-                  MODULE_SECTIONS.map((section, sectionIdx) => (
+                  sections.map((section, sectionIdx) => (
                     <div key={section.sectionLabel} className={cn(sectionIdx > 0 && 'border-t-2 border-border/60')}>
                       <div className="px-4 py-2 bg-muted/50 border-b flex items-center gap-2.5">
                         <div className="w-0.5 h-3 rounded-full bg-muted-foreground/40" />
@@ -289,22 +349,22 @@ export default function RoleList() {
                         <div
                           key={mod.key}
                           className={cn(
-                            'grid items-center hover:bg-muted/20 transition-colors',
+                            'group grid items-center hover:bg-muted/20 transition-colors',
                             idx < section.modules.length - 1 && 'border-b'
                           )}
-                          style={{ gridTemplateColumns: 'minmax(160px, 2fr) repeat(7, minmax(72px, 1fr))' }}
+                          style={{ gridTemplateColumns: gridTemplate }}
                         >
                           <div className="px-4 py-3 text-sm font-medium">{mod.label}</div>
-                          {PERMISSION_COLUMNS.map(col => {
-                            const isApplicable = mod.applicableActions.includes(col.key)
-                            const isChecked = activePermissions[mod.key]?.includes(col.key) ?? false
+                          {actions.map(a => {
+                            const isApplicable = mod.actions.includes(a.key)
+                            const isChecked = activePermissions[mod.key]?.includes(a.key) ?? false
                             return (
-                              <div key={col.key} className="flex justify-center py-3">
+                              <div key={a.key} className="flex justify-center py-3">
                                 {isApplicable ? (
                                   <Checkbox
                                     checked={isChecked}
                                     disabled={!editMode}
-                                    onCheckedChange={checked => handleToggle(mod.key, col.key, !!checked)}
+                                    onCheckedChange={checked => handleToggle(mod.key, a.key, !!checked)}
                                   />
                                 ) : (
                                   <NaCell />
@@ -312,10 +372,38 @@ export default function RoleList() {
                               </div>
                             )
                           })}
+                          <div className="flex justify-center py-3">
+                            {canUpdateRole && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="size-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer">
+                                    <Pencil className="size-3.5" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => { setEditingModule(mod); setModuleModalOpen(true) }}>
+                                    Edit module
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
                   ))
+                )}
+
+                {canUpdateRole && (
+                  <div className="border-t px-4 py-3">
+                    <button
+                      onClick={() => { setEditingModule(undefined); setModuleModalOpen(true) }}
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      <Plus className="size-3.5" />
+                      Add module
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -384,6 +472,19 @@ export default function RoleList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ModuleModal
+        open={moduleModalOpen}
+        onClose={() => setModuleModalOpen(false)}
+        actions={actions}
+        existingModules={modules}
+        editModule={editingModule}
+      />
+      <ActionModal
+        open={actionModalOpen}
+        onClose={() => setActionModalOpen(false)}
+        actions={actions}
+      />
     </div>
   )
 }

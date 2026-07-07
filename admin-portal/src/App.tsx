@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import ProtectedRoute from '@/components/layout/ProtectedRoute'
+import { MODULES } from '@/lib/permission-registry'
 import LoginPage from '@/pages/auth/LoginPage'
 import AuthCallbackPage from '@/pages/auth/AuthCallbackPage'
 
@@ -78,80 +79,144 @@ export default function App() {
 
       {/* Full-screen authenticated routes */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/order" element={<OrderPage />} />
+        <Route element={<ProtectedRoute module={MODULES.ORDER} />}>
+          <Route path="/order" element={<OrderPage />} />
+        </Route>
         <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/chat" element={<ChatPage />} />
+        <Route element={<ProtectedRoute module={MODULES.CHAT} />}>
+          <Route path="/chat" element={<ChatPage />} />
+        </Route>
       </Route>
 
       {/* Layout-wrapped authenticated routes */}
       <Route element={<ProtectedRoute />}>
       <Route element={<Layout />}>
-        <Route path="/" element={<Dashboard />} />
+        <Route element={<ProtectedRoute module={MODULES.DASHBOARD} />}>
+          <Route path="/" element={<Dashboard />} />
+        </Route>
 
         {/* Cleaners */}
-        <Route path="/cleaner" element={<CleanerList />} />
-        <Route path="/cleaner/new" element={<CleanerForm />} />
-        <Route path="/cleaner/:id" element={<CleanerForm />} />
+        <Route element={<ProtectedRoute module={MODULES.CLEANER} />}>
+          <Route path="/cleaner" element={<CleanerList />} />
+          <Route path="/cleaner/new" element={<CleanerForm />} />
+          <Route path="/cleaner/:id" element={<CleanerForm />} />
+        </Route>
 
-        {/* Roles / RBAC — super_admin only */}
-        <Route element={<ProtectedRoute requiredRole="super_admin" />}>
+        {/* Roles / RBAC */}
+        <Route element={<ProtectedRoute module={MODULES.RBAC} />}>
           <Route path="/roles" element={<RoleList />} />
           <Route path="/roles/new" element={<RoleForm />} />
           <Route path="/roles/:id" element={<RoleForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.ADMIN_USERS} />}>
           <Route path="/admin-users" element={<UserList />} />
         </Route>
 
         {/* Partners */}
-        <Route path="/partner" element={<PartnerList />} />
-        <Route path="/partner/onboarding" element={<PartnerOnboarding />} />
-        <Route path="/partner/tracking" element={<PartnerTracking />} />
-        <Route path="/partner/payout" element={<PartnerPayout />} />
-        <Route path="/partner/:id" element={<PartnerDetail />} />
+        <Route element={<ProtectedRoute module={MODULES.PARTNER} />}>
+          <Route path="/partner" element={<PartnerList />} />
+          <Route path="/partner/:id" element={<PartnerDetail />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.PARTNER_ONBOARDING} />}>
+          <Route path="/partner/onboarding" element={<PartnerOnboarding />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.PARTNER_TRACKING} />}>
+          <Route path="/partner/tracking" element={<PartnerTracking />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.PARTNER_PAYOUT} />}>
+          <Route path="/partner/payout" element={<PartnerPayout />} />
+        </Route>
 
         {/* Marketing */}
-        <Route path="/overview" element={<MarketingOverview />} />
-        <Route path="/coupon" element={<CouponList />} />
-        <Route path="/coupon/:id" element={<CouponForm />} />
-        <Route path="/payment-link" element={<PaymentLinkList />} />
-        <Route path="/payment-link/:id" element={<PaymentLinkForm />} />
-        <Route path="/banner" element={<BannerList />} />
-        <Route path="/banner/new-banner" element={<BannerForm />} />
-        <Route path="/otp" element={<OtpPage />} />
-        <Route path="/push-notification" element={<PushNotificationList />} />
-        <Route path="/push-notification/:id" element={<PushNotificationForm />} />
-        <Route path="/push-notification/:id/detail" element={<PushNotificationDetail />} />
+        <Route element={<ProtectedRoute module={MODULES.MARKETING_OVERVIEW} />}>
+          <Route path="/overview" element={<MarketingOverview />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.MARKETING_COUPON} />}>
+          <Route path="/coupon" element={<CouponList />} />
+          <Route path="/coupon/:id" element={<CouponForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.MARKETING_PAYMENT_LINK} />}>
+          <Route path="/payment-link" element={<PaymentLinkList />} />
+          <Route path="/payment-link/:id" element={<PaymentLinkForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.MARKETING_OTP} />}>
+          <Route path="/otp" element={<OtpPage />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.MARKETING_BANNER} />}>
+          <Route path="/banner" element={<BannerList />} />
+          <Route path="/banner/new-banner" element={<BannerForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.MARKETING_NOTIFICATION} />}>
+          <Route path="/push-notification" element={<PushNotificationList />} />
+          <Route path="/push-notification/:id" element={<PushNotificationForm />} />
+          <Route path="/push-notification/:id/detail" element={<PushNotificationDetail />} />
+        </Route>
 
         {/* Finance */}
-        <Route path="/finance-orders" element={<FinanceOrders />} />
-        <Route path="/top-up" element={<TopUp />} />
-        <Route path="/b-combos" element={<BCombos />} />
-        <Route path="/direct-sales" element={<DirectSales />} />
-        <Route path="/all-user" element={<AllUser />} />
+        <Route element={<ProtectedRoute module={MODULES.FINANCE_ORDER} />}>
+          <Route path="/finance-orders" element={<FinanceOrders />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.FINANCE_TOPUP} />}>
+          <Route path="/top-up" element={<TopUp />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.FINANCE_BCOMBO} />}>
+          <Route path="/b-combos" element={<BCombos />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.FINANCE_DIRECT_SALES} />}>
+          <Route path="/direct-sales" element={<DirectSales />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.MARKETING_ALL_USER} />}>
+          <Route path="/all-user" element={<AllUser />} />
+        </Route>
 
-        {/* Setup — Phase 10 complete */}
-        <Route path="/category" element={<CategoryList />} />
-        <Route path="/category/:id" element={<CategoryForm />} />
-        <Route path="/category-addon" element={<CategoryAddonList />} />
-        <Route path="/category-addon/:id" element={<CategoryAddonForm />} />
-        <Route path="/popular-service" element={<PopularServiceList />} />
-        <Route path="/popular-service/:id" element={<PopularServiceForm />} />
-        <Route path="/product" element={<ProductList />} />
-        <Route path="/product/:id" element={<ProductForm />} />
-        <Route path="/product-option" element={<ProductOptionList />} />
-        <Route path="/product-option/:id" element={<ProductOptionForm />} />
-        <Route path="/item" element={<ItemList />} />
-        <Route path="/item/:id" element={<ItemForm />} />
-        <Route path="/blocked-schedule" element={<BlockedScheduleList />} />
-        <Route path="/blocked-schedule/:id" element={<BlockedScheduleForm />} />
-        <Route path="/activity-log" element={<ActivityLog />} />
+        {/* Setup — catalog entities, each with its own permission module */}
+        <Route element={<ProtectedRoute module={MODULES.CATEGORY} />}>
+          <Route path="/category" element={<CategoryList />} />
+          <Route path="/category/:id" element={<CategoryForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.CATEGORY_ADDON} />}>
+          <Route path="/category-addon" element={<CategoryAddonList />} />
+          <Route path="/category-addon/:id" element={<CategoryAddonForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.POPULAR_SERVICE} />}>
+          <Route path="/popular-service" element={<PopularServiceList />} />
+          <Route path="/popular-service/:id" element={<PopularServiceForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.PRODUCT} />}>
+          <Route path="/product" element={<ProductList />} />
+          <Route path="/product/:id" element={<ProductForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.PRODUCT_OPTION} />}>
+          <Route path="/product-option" element={<ProductOptionList />} />
+          <Route path="/product-option/:id" element={<ProductOptionForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.SETUP_ITEM} />}>
+          <Route path="/item" element={<ItemList />} />
+          <Route path="/item/:id" element={<ItemForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.SETUP_SCHEDULE} />}>
+          <Route path="/blocked-schedule" element={<BlockedScheduleList />} />
+          <Route path="/blocked-schedule/:id" element={<BlockedScheduleForm />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.ACTIVITY_LOG} />}>
+          <Route path="/activity-log" element={<ActivityLog />} />
+        </Route>
 
         {/* Customer Service */}
-        <Route path="/customer-overview" element={<CustomerOverview />} />
-        <Route path="/customer" element={<CustomerList />} />
-        <Route path="/direct-sale-customer" element={<DirectSaleCustomer />} />
-        <Route path="/registered-customer" element={<RegisteredCustomer />} />
-        <Route path="/tickets" element={<Tickets />} />
-        <Route path="/tickets/:id" element={<Tickets />} />
+        <Route element={<ProtectedRoute module={MODULES.CUSTOMER_OVERVIEW} />}>
+          <Route path="/customer-overview" element={<CustomerOverview />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.CUSTOMER_REGISTERED} />}>
+          <Route path="/customer" element={<CustomerList />} />
+          <Route path="/registered-customer" element={<RegisteredCustomer />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.CUSTOMER_DIRECT_SALE} />}>
+          <Route path="/direct-sale-customer" element={<DirectSaleCustomer />} />
+        </Route>
+        <Route element={<ProtectedRoute module={MODULES.CUSTOMER_TICKETS} />}>
+          <Route path="/tickets" element={<Tickets />} />
+          <Route path="/tickets/:id" element={<Tickets />} />
+        </Route>
       </Route>
       </Route>
     </Routes>

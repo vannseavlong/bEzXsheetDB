@@ -22,6 +22,27 @@ export type RoleInput = {
   status?: boolean
 }
 
+export type RbacAction = {
+  id: string | number
+  key: string
+  label: string
+}
+
+export type RbacModule = {
+  id: string | number
+  key: string
+  label: string
+  section: string
+  actions: string[]
+}
+
+export type ModuleInput = {
+  key: string
+  label: string
+  section: string
+  actions: string[]
+}
+
 const BASE = '/admin/rbac'
 
 export const useRoles = (params: ListParams = {}) =>
@@ -68,5 +89,47 @@ export function useSetRolePermissions() {
     mutationFn: ({ code, permissions }: { code: string; permissions: RolePermission[] }) =>
       apiClient.put<{ message: string }>(`${BASE}/roles/${code}/permissions`, { permissions }),
     onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['roles', 'permissions', vars.code] }),
+  })
+}
+
+// ── Actions catalog ─────────────────────────────────────────────────────────
+
+export const useRbacActions = () =>
+  useQuery({
+    queryKey: ['rbac', 'actions'],
+    queryFn: () => apiClient.get<{ data: RbacAction[] }>(`${BASE}/actions`).then((r) => r.data),
+  })
+
+export function useCreateRbacAction() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { key: string; label: string }) =>
+      apiClient.post<{ data: RbacAction }>(`${BASE}/actions`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rbac', 'actions'] }),
+  })
+}
+
+// ── Modules catalog ──────────────────────────────────────────────────────────
+
+export const useRbacModules = () =>
+  useQuery({
+    queryKey: ['rbac', 'modules'],
+    queryFn: () => apiClient.get<{ data: RbacModule[] }>(`${BASE}/modules`).then((r) => r.data),
+  })
+
+export function useCreateRbacModule() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: ModuleInput) => apiClient.post<{ data: RbacModule }>(`${BASE}/modules`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rbac', 'modules'] }),
+  })
+}
+
+export function useUpdateRbacModule() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ key, data }: { key: string; data: Partial<Omit<ModuleInput, 'key'>> }) =>
+      apiClient.put<{ data: RbacModule }>(`${BASE}/modules/${key}`, data).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rbac', 'modules'] }),
   })
 }

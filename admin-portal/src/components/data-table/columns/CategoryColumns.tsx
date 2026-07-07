@@ -16,11 +16,15 @@ import type { Category } from '@/types'
 interface CategoryColumnsOptions {
   onDelete?: (id: string) => void
   platformLabels?: Record<string, string>
+  canUpdate?: boolean
+  canDelete?: boolean
 }
 
 export const categoryColumns = ({
   onDelete,
   platformLabels,
+  canUpdate = false,
+  canDelete = false,
 }: CategoryColumnsOptions = {}): ColumnDef<Category>[] => [
     {
       accessorKey: 'thumbnailUrl',
@@ -66,25 +70,32 @@ export const categoryColumns = ({
     {
       id: 'actions',
       header: '',
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <NavLink to={`/category/${row.original.id}`}>Edit</NavLink>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={() => onDelete?.(row.original.id)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        if (!canUpdate && !canDelete) return null
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {canUpdate && (
+                <DropdownMenuItem asChild>
+                  <NavLink to={`/category/${row.original.id}`}>Edit</NavLink>
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={() => onDelete?.(row.original.id)}
+                >
+                  Delete
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
     },
   ]

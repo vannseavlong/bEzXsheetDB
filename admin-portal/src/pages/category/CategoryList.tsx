@@ -13,6 +13,8 @@ import { categoryColumns } from '@/components/data-table/columns/CategoryColumns
 import { CategoryTableHeader } from '@/components/headers/CategoryTableHeader'
 import { useCategories, useRemoveCategory, useReorderCategories } from '@/api/categories'
 import { usePlatforms } from '@/api/platforms'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 import type { Category } from '@/types'
 
 export default function CategoryList() {
@@ -39,6 +41,10 @@ export default function CategoryList() {
     [platforms]
   )
 
+  const { hasPermission } = usePermission()
+  const canUpdate = hasPermission(MODULES.CATEGORY, ACTIONS.UPDATE)
+  const canDelete = hasPermission(MODULES.CATEGORY, ACTIONS.DELETE)
+
   const removeCategory = useRemoveCategory()
   const handleDelete = async (id: string) => {
     try {
@@ -47,8 +53,8 @@ export default function CategoryList() {
   }
 
   const columns = useMemo(
-    () => categoryColumns({ onDelete: handleDelete, platformLabels }),
-    [platformLabels]
+    () => categoryColumns({ onDelete: handleDelete, platformLabels, canUpdate, canDelete }),
+    [platformLabels, canUpdate, canDelete]
   )
 
   const table = useDataTableConfig(data, columns, tableState, {

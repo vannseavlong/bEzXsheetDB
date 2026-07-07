@@ -13,10 +13,14 @@ import type { BlockedSchedule } from '@/types'
 
 interface BlockedScheduleColumnsOptions {
   onDelete?: (id: string) => void
+  canUpdate?: boolean
+  canDelete?: boolean
 }
 
 export const blockedScheduleColumns = ({
   onDelete,
+  canUpdate = false,
+  canDelete = false,
 }: BlockedScheduleColumnsOptions = {}): ColumnDef<BlockedSchedule>[] => [
   {
     accessorKey: 'name',
@@ -73,27 +77,34 @@ export const blockedScheduleColumns = ({
   {
     id: 'actions',
     header: '',
-    cell: ({ row }) => (
-      <div className="flex justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <NavLink to={`/blocked-schedule/${row.original.id}`}>Edit</NavLink>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600 focus:text-red-600"
-              onClick={() => onDelete?.(row.original.id)}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    ),
+    cell: ({ row }) => {
+      if (!canUpdate && !canDelete) return null
+      return (
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {canUpdate && (
+                <DropdownMenuItem asChild>
+                  <NavLink to={`/blocked-schedule/${row.original.id}`}>Edit</NavLink>
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600"
+                  onClick={() => onDelete?.(row.original.id)}
+                >
+                  Delete
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
+    },
   },
 ]

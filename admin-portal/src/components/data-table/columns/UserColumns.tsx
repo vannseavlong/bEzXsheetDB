@@ -13,9 +13,10 @@ import type { DbAdminUser } from '@/api/users'
 interface UserColumnsOptions {
   onEdit?: (user: DbAdminUser) => void
   onToggleStatus?: (user: DbAdminUser) => void
+  canUpdate?: boolean
 }
 
-export const userColumns = ({ onEdit, onToggleStatus }: UserColumnsOptions = {}): ColumnDef<DbAdminUser>[] => [
+export const userColumns = ({ onEdit, onToggleStatus, canUpdate = false }: UserColumnsOptions = {}): ColumnDef<DbAdminUser>[] => [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -50,6 +51,7 @@ export const userColumns = ({ onEdit, onToggleStatus }: UserColumnsOptions = {})
     id: 'actions',
     header: '',
     cell: ({ row }) => {
+      if (!canUpdate) return null
       const user = row.original
       return (
         <DropdownMenu>

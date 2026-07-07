@@ -28,6 +28,8 @@ import { useDataTableConfig } from '@/hooks/use-data-table-config'
 import { userColumns } from '@/components/data-table/columns/UserColumns'
 import { useUsers, useCreateUser, useUpdateUser, useDeactivateUser, type DbAdminUser } from '@/api/users'
 import { useRoles } from '@/api/rbac'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 
 type EditForm = { name: string; role_id: string; status: string }
 type CreateForm = { name: string; email: string; password: string; role_id: string }
@@ -91,10 +93,15 @@ export default function UserList() {
     } catch (err) { console.error('Toggle failed:', err) }
   }
 
+  const { hasPermission } = usePermission()
+  const canAdd = hasPermission(MODULES.ADMIN_USERS, ACTIONS.ADD)
+  const canUpdate = hasPermission(MODULES.ADMIN_USERS, ACTIONS.UPDATE)
+
   const columns = useMemo(() => userColumns({
     onEdit: user => { setEditTarget(user); setEditForm({ name: user.name, role_id: user.role_id, status: user.status }) },
     onToggleStatus: handleToggleStatus,
-  }), [])
+    canUpdate,
+  }), [canUpdate])
 
   const table = useDataTableConfig(data, columns, tableState, {
     pageCount: result?.meta.totalPages ?? 1,
@@ -132,9 +139,11 @@ export default function UserList() {
               </SelectContent>
             </Select>
 
-            <Button size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> New User
-            </Button>
+            {canAdd && (
+              <Button size="sm" onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" /> New User
+              </Button>
+            )}
           </div>
         </div>
 

@@ -9,6 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 
 interface Props {
   search: string
@@ -18,6 +20,8 @@ interface Props {
 }
 
 export function ProductHeader({ search, setSearch, statusFilter, setStatusFilter }: Props) {
+  const { hasPermission } = usePermission()
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
       <SearchBar
@@ -36,12 +40,14 @@ export function ProductHeader({ search, setSearch, statusFilter, setStatusFilter
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
         </Select>
-        <Button size="sm" asChild>
-          <NavLink to="/product/new">
-            <Plus className="h-4 w-4 mr-1" />
-            New Product
-          </NavLink>
-        </Button>
+        {hasPermission(MODULES.PRODUCT, ACTIONS.ADD) && (
+          <Button size="sm" asChild>
+            <NavLink to="/product/new">
+              <Plus className="h-4 w-4 mr-1" />
+              New Product
+            </NavLink>
+          </Button>
+        )}
       </div>
     </div>
   )

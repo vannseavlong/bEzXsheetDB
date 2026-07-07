@@ -9,6 +9,8 @@ import { DataTablePagination } from '@/components/data-table/DataTablePagination
 import { popularServiceColumns } from '@/components/data-table/columns/PopularServiceColumns'
 import { PopularServiceHeader } from '@/components/headers/PopularServiceHeader'
 import { usePopularServices, useRemovePopularService } from '@/api/popular-services'
+import { usePermission } from '@/hooks/use-permission'
+import { ACTIONS, MODULES } from '@/lib/permission-registry'
 
 export default function PopularServiceList() {
   const tableState = useTableState()
@@ -23,6 +25,10 @@ export default function PopularServiceList() {
 
   const data = useMemo(() => result?.data ?? [], [result])
 
+  const { hasPermission } = usePermission()
+  const canUpdate = hasPermission(MODULES.POPULAR_SERVICE, ACTIONS.UPDATE)
+  const canDelete = hasPermission(MODULES.POPULAR_SERVICE, ACTIONS.DELETE)
+
   const removePopularService = useRemovePopularService()
   const handleDelete = async (id: string) => {
     try {
@@ -30,7 +36,10 @@ export default function PopularServiceList() {
     } catch (err) { console.error('Delete failed:', err) }
   }
 
-  const columns = useMemo(() => popularServiceColumns({ onDelete: handleDelete }), [])
+  const columns = useMemo(
+    () => popularServiceColumns({ onDelete: handleDelete, canUpdate, canDelete }),
+    [canUpdate, canDelete]
+  )
 
   const table = useDataTableConfig(data, columns, tableState, {
     pageCount: result?.meta.totalPages ?? 1,

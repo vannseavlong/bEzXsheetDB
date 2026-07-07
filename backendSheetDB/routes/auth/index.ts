@@ -12,10 +12,22 @@ async function resolveRole(adapter: SheetAdapter, roleId: string): Promise<any> 
 async function buildPermissions(adapter: SheetAdapter, role: any): Promise<string[]> {
   if (!role || role.code === 'super_admin') return []
   const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
-  const all = await ctx.table('role_permissions').findMany({}) as any[]
+  const [all, modules, actions] = await Promise.all([
+    ctx.table('role_permissions').findMany({}) as Promise<any[]>,
+    ctx.table('modules').findMany({}) as Promise<any[]>,
+    ctx.table('actions').findMany({}) as Promise<any[]>,
+  ])
+  const moduleById = new Map(modules.map((m) => [String(m._id), m.key]))
+  const actionById = new Map(actions.map((a) => [String(a._id), a.key]))
+
   return all
     .filter((rp: any) => String(rp.role_id) === String(role._id))
-    .map((rp: any) => `${rp.module}:${rp.action}`)
+    .map((rp: any) => {
+      const moduleKey = moduleById.get(String(rp.module_id))
+      const actionKey = actionById.get(String(rp.action_id))
+      return moduleKey && actionKey ? `${moduleKey}:${actionKey}` : null
+    })
+    .filter((p): p is string => !!p)
 }
 
 // GET /api/admin/auth/google  →  GET /api/admin/auth/callback
