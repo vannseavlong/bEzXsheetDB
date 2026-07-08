@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import { toast } from '@/hooks/use-toast'
 import type { Category } from '@/types'
+
+function notifyError(error: unknown) {
+  toast({
+    title: 'Error',
+    description: error instanceof Error ? error.message : 'Something went wrong',
+    variant: 'destructive',
+  })
+}
 
 export type DbCategory = {
   _id: string; name_en: string; name_km: string
@@ -33,7 +42,11 @@ export function useReorderCategories() {
   return useMutation({
     mutationFn: ({ ids, offset }: { ids: string[]; offset?: number }) =>
       apiClient.put<{ success: true }>(`${BASE}/sort`, { ids, offset }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['categories', 'list'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categories', 'list'] })
+      toast({ title: 'Success', description: 'Categories reordered successfully' })
+    },
+    onError: notifyError,
   })
 }
 
@@ -49,7 +62,11 @@ export function useSetCategoryProducts() {
   return useMutation({
     mutationFn: ({ id, productIds }: { id: string; productIds: string[] }) =>
       apiClient.put<{ data: DbCategoryLink[] }>(`${BASE}/${id}/products`, { product_ids: productIds }).then((r) => r.data),
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['categories', 'products', vars.id] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['categories', 'products', vars.id] })
+      toast({ title: 'Success', description: 'Category products updated successfully' })
+    },
+    onError: notifyError,
   })
 }
 
@@ -77,8 +94,11 @@ export function useSetCategoryProductOptions() {
     }) => apiClient
       .put<{ data: DbCategoryProductOptionLink[] }>(`${BASE}/${categoryId}/products/${productId}/options`, { options })
       .then((r) => r.data),
-    onSuccess: (_data, vars) =>
-      qc.invalidateQueries({ queryKey: ['categories', 'products', vars.categoryId, vars.productId, 'options'] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['categories', 'products', vars.categoryId, vars.productId, 'options'] })
+      toast({ title: 'Success', description: 'Product options updated successfully' })
+    },
+    onError: notifyError,
   })
 }
 
@@ -94,6 +114,10 @@ export function useSetCategoryAddons() {
   return useMutation({
     mutationFn: ({ id, addonIds }: { id: string; addonIds: string[] }) =>
       apiClient.put<{ data: DbCategoryLink[] }>(`${BASE}/${id}/addons`, { addon_ids: addonIds }).then((r) => r.data),
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['categories', 'addons', vars.id] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['categories', 'addons', vars.id] })
+      toast({ title: 'Success', description: 'Category addons updated successfully' })
+    },
+    onError: notifyError,
   })
 }

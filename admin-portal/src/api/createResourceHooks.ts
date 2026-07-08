@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { apiClient, buildQuery } from './client'
+import { toast } from '@/hooks/use-toast'
 
 export interface ListParams {
   page?: number
@@ -28,6 +29,15 @@ export interface ListResponse<T> {
 export function createResourceHooks<TDb, TInput = Partial<TDb>, TList = TDb>(resource: string, basePath: string) {
   const listKey = (params: ListParams) => [resource, 'list', params] as const
   const detailKey = (id: string | undefined) => [resource, 'detail', id] as const
+  const label = resource.replace(/-/g, ' ')
+
+  function notifyError(error: unknown) {
+    toast({
+      title: 'Error',
+      description: error instanceof Error ? error.message : 'Something went wrong',
+      variant: 'destructive',
+    })
+  }
 
   function useList(params: ListParams = {}) {
     return useQuery({
@@ -49,7 +59,11 @@ export function createResourceHooks<TDb, TInput = Partial<TDb>, TList = TDb>(res
     const qc = useQueryClient()
     return useMutation({
       mutationFn: (data: TInput) => apiClient.post<{ data: TDb }>(basePath, data).then((r) => r.data),
-      onSuccess: () => qc.invalidateQueries({ queryKey: [resource, 'list'] }),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: [resource, 'list'] })
+        toast({ title: 'Success', description: `${label} created successfully` })
+      },
+      onError: notifyError,
     })
   }
 
@@ -61,7 +75,9 @@ export function createResourceHooks<TDb, TInput = Partial<TDb>, TList = TDb>(res
       onSuccess: (_data, vars) => {
         qc.invalidateQueries({ queryKey: [resource, 'list'] })
         qc.invalidateQueries({ queryKey: detailKey(vars.id) })
+        toast({ title: 'Success', description: `${label} updated successfully` })
       },
+      onError: notifyError,
     })
   }
 
@@ -69,7 +85,11 @@ export function createResourceHooks<TDb, TInput = Partial<TDb>, TList = TDb>(res
     const qc = useQueryClient()
     return useMutation({
       mutationFn: (id: string) => apiClient.del(`${basePath}/${id}`),
-      onSuccess: () => qc.invalidateQueries({ queryKey: [resource, 'list'] }),
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: [resource, 'list'] })
+        toast({ title: 'Success', description: `${label} deleted successfully` })
+      },
+      onError: notifyError,
     })
   }
 

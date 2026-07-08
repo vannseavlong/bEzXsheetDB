@@ -40,3 +40,21 @@ export function requirePermission(module: string, action: string) {
     next()
   }
 }
+
+/**
+ * Like requirePermission, but passes if the user has the action on ANY of the given
+ * modules — for endpoints shared by more than one page (e.g. task-info is edited from
+ * both the Category and Product forms), where gating on a single module would block
+ * someone who legitimately has access via the other one.
+ */
+export function requireAnyPermission(modules: string[], action: string) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    const user = req.user
+    if (user?.role === 'super_admin') return next()
+    const permissions = (user?.permissions as string[]) ?? []
+    if (!modules.some((module) => permissions.includes(`${module}:${action}`))) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+    next()
+  }
+}

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 // A role's `code` from the dynamic roles table — 'super_admin' is the one special-cased value.
 export type AdminRole = string
@@ -55,12 +56,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+
+  function persist(incomingUser: AdminUser, incomingToken: string) {
+    setUser(incomingUser)
+    setToken(incomingToken)
+    localStorage.setItem(USER_KEY, JSON.stringify(incomingUser))
+    localStorage.setItem(TOKEN_KEY, incomingToken)
+  }
+
+  function wipe() {
+    setUser(null)
+    setToken(null)
+    localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(TOKEN_KEY)
+    sessionStorage.removeItem(RETURN_TO_KEY)
+    // Drop every cached list/detail query — otherwise the next person to sign in
+    // on this device would briefly see the previous user's cached data.
+    queryClient.clear()
+  }
+
+  // Re-derives role/permissions from the DB and reissues the token, instead of trusting
+  // whatever was baked into the token at login. Called on mount and on tab focus — both
+  // are natural "the user is actually here" moments, cheap since the backend caches the
+  // RBAC catalog (see backendSheetDB/utils/rbac-cache.ts). No interval: the token is
+  // short-lived (see backend utils/jwt.ts) and api/client.ts transparently refreshes +
+  // retries on the 401 that produces, so staleness is bounded without polling on a timer.
+  const refreshUser = useCallback(async () => {
+    const currentToken = localStorage.getItem(TOKEN_KEY)
+    if (!currentToken) return
+    try {
+      const base = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
+      const res = await fetch(`${base}/admin/auth/me`, {
+        headers: { Authorization: `Bearer ${currentToken}` },
+      })
+      if (!res.ok) {
+        if (res.status === 401) wipe()
+        return
+      }
+      const data = await res.json() as { token: string; user: AdminUser }
+      persist(data.user, data.token)
+    } catch {
+      // Network hiccup — keep the existing session, try again on the next focus.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     setUser(readStorage<AdminUser>(USER_KEY))
     setToken(localStorage.getItem(TOKEN_KEY))
     setIsLoading(false)
-  }, [])
+    refreshUser()
+
+    function onFocus() { refreshUser() }
+    window.addEventListener('focus', onFocus)
+
+    return () => {
+      window.removeEventListener('focus', onFocus)
+    }
+  }, [refreshUser])
 
   function loginWithGoogle(returnTo = '/') {
     // Persist the destination so AuthCallbackPage can redirect there after login
@@ -71,17 +125,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function handleAuthCallback(incomingUser: AdminUser, incomingToken: string) {
-    setUser(incomingUser)
-    setToken(incomingToken)
-    localStorage.setItem(USER_KEY, JSON.stringify(incomingUser))
-    localStorage.setItem(TOKEN_KEY, incomingToken)
+    // Guards against a leftover cache from a previous account on this device/tab.
+    queryClient.clear()
+    persist(incomingUser, incomingToken)
   }
 
   function logout() {
-    setUser(null)
-    setToken(null)
-    localStorage.removeItem(USER_KEY)
-    localStorage.removeItem(TOKEN_KEY)
+    wipe()
   }
 
   return (

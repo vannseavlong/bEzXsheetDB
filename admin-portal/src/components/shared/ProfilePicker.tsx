@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toEmbeddableImageUrl } from "@/lib/drive-image";
+import { toast } from "@/hooks/use-toast";
 
 type ProfilePickerProps = {
   imageUrl?: string
@@ -38,6 +39,13 @@ export function ProfilePicker({ imageUrl, onChange, onUpload, className }: Profi
         const remoteUrl = await onUpload(file);
         lastUploadedUrl.current = remoteUrl;
         onChange?.(file, remoteUrl);
+      } catch (error) {
+        setPreview(imageUrl ? toEmbeddableImageUrl(imageUrl) : null);
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Upload failed",
+          variant: "destructive",
+        });
       } finally {
         setUploading(false);
       }

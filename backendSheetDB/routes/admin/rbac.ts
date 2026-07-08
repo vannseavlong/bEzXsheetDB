@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
+import { getCatalog, getActions, getRolePermissions, invalidateRbacCache } from '../../utils/rbac-cache'
 
 export function createRbacRouter(adapter: SheetAdapter) {
   const router = Router()
@@ -32,23 +33,11 @@ export function createRbacRouter(adapter: SheetAdapter) {
     }
   }
 
-  // Loads the modules/actions catalog once per request, keyed both ways for
-  // translating between the frontend's key-based wire format and the id-based
-  // foreign keys stored in role_permissions.
-  async function loadCatalog() {
-    const [modules, actions] = await Promise.all([
-      ctx().table('modules').findMany({}) as Promise<any[]>,
-      ctx().table('actions').findMany({}) as Promise<any[]>
-    ])
-    return {
-      modules,
-      actions,
-      moduleByKey: new Map(modules.map((m) => [m.key, m])),
-      moduleById: new Map(modules.map((m) => [String(m._id), m])),
-      actionByKey: new Map(actions.map((a) => [a.key, a])),
-      actionById: new Map(actions.map((a) => [String(a._id), a]))
-    }
-  }
+  // Loads the modules/actions catalog, keyed both ways for translating between the
+  // frontend's key-based wire format and the id-based foreign keys stored in
+  // role_permissions. Backed by a shared cache (see utils/rbac-cache.ts) since this
+  // is read on every login/permission-refresh across the whole app, not just here.
+  const loadCatalog = () => getCatalog(adapter)
 
   // ── Roles CRUD ────────────────────────────────────────────────────────────
 
@@ -78,6 +67,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
         status: status ? 'active' : 'inactive',
         created_by: (req as any).user?.id ?? 'system'
       }) as any
+      invalidateRbacCache()
       res.status(201).json({ data: toRoleItem(created) })
     } catch (err) { next(err) }
   })
@@ -105,6 +95,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
 
       const count = await ctx().table('roles').update({ where: { _id: req.params.id }, data })
       if (count === 0) return res.status(404).json({ message: 'Role not found' })
+      invalidateRbacCache()
       const role = await ctx().table('roles').findOne({ where: { _id: req.params.id } }) as any
       res.json({ data: toRoleItem(role) })
     } catch (err) { next(err) }
@@ -115,6 +106,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
     try {
       const count = await ctx().table('roles').delete({ where: { _id: req.params.id } })
       if (count === 0) return res.status(404).json({ message: 'Role not found' })
+      invalidateRbacCache()
       res.status(204).end()
     } catch (err) { next(err) }
   })
@@ -124,7 +116,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
   // GET /rbac/actions
   router.get('/actions', async (_req, res, next) => {
     try {
-      const actions = await ctx().table('actions').findMany({}) as any[]
+      const actions = await getActions(adapter)
       res.json({ data: actions.map(toActionItem) })
     } catch (err) { next(err) }
   })
@@ -139,6 +131,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
       if (actionByKey.has(key)) return res.status(409).json({ message: 'Action key already exists' })
 
       const created = await ctx().table('actions').create({ key, label }) as any
+      invalidateRbacCache()
       res.status(201).json({ data: toActionItem(created) })
     } catch (err) { next(err) }
   })
@@ -175,6 +168,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
         section,
         action_ids: actions.map((a) => String(catalog.actionByKey.get(a)._id))
       }) as any
+      invalidateRbacCache()
       res.status(201).json({ data: toModuleItem(created, catalog.actionById) })
     } catch (err) { next(err) }
   })
@@ -201,6 +195,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
       }
 
       await ctx().table('modules').update({ where: { _id: existing._id }, data })
+      invalidateRbacCache()
       const updated = await ctx().table('modules').findOne({ where: { _id: existing._id } }) as any
       res.json({ data: toModuleItem(updated, catalog.actionById) })
     } catch (err) { next(err) }
@@ -212,6 +207,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
       const module = await ctx().table('modules').findOne({ where: { key: req.params.key } }) as any
       if (!module) return res.status(404).json({ message: 'Module not found' })
       await ctx().table('modules').delete({ where: { _id: module._id } })
+      invalidateRbacCache()
       res.status(204).end()
     } catch (err) { next(err) }
   })
@@ -225,7 +221,7 @@ export function createRbacRouter(adapter: SheetAdapter) {
       if (!role) return res.status(404).json({ message: 'Role not found' })
 
       const [all, { moduleById, actionById }] = await Promise.all([
-        ctx().table('role_permissions').findMany({}) as Promise<any[]>,
+        getRolePermissions(adapter),
         loadCatalog()
       ])
       const mine = all.filter((rp) => String(rp.role_id) === String(role._id))
@@ -256,22 +252,20 @@ export function createRbacRouter(adapter: SheetAdapter) {
         return res.status(400).json({ message: 'Permissions reference unknown module/action keys' })
       }
 
-      // Delete all existing grants for this role
-      const all = (await ctx().table('role_permissions').findMany({})) as any[]
-      const toDelete = all.filter((rp) => String(rp.role_id) === String(role._id))
-      for (const rp of toDelete) {
-        await ctx().table('role_permissions').delete({ where: { _id: rp._id } })
-      }
+      // Delete all existing grants for this role in one call instead of one delete() per row —
+      // a full-access role save (~100+ permissions) used to mean 100+ sequential Sheets API calls.
+      await ctx().table('role_permissions').delete({ where: { role_id: String(role._id) } })
 
-      // Write new grants
-      for (const { module, action } of permissions) {
-        await ctx().table('role_permissions').create({
+      // Write new grants as a single batched append instead of one create() per row.
+      if (permissions.length > 0) {
+        await ctx().table('role_permissions').createMany(permissions.map(({ module, action }) => ({
           role_id: String(role._id),
           module_id: String(moduleByKey.get(module)._id),
           action_id: String(actionByKey.get(action)._id),
-        })
+        })))
       }
 
+      invalidateRbacCache()
       res.json({ message: 'Permissions updated' })
     } catch (err) { next(err) }
   })

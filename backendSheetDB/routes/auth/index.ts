@@ -3,19 +3,20 @@ import { createAuthRouter, comparePassword } from 'longcelot-sheet-db'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { env } from '../../config/env'
 import { signJwt } from '../../utils/jwt'
+import { requireAuth, type AuthRequest } from '../../middleware/auth'
+import { getRoles, getModules, getActions, getRolePermissions } from '../../utils/rbac-cache'
 
 async function resolveRole(adapter: SheetAdapter, roleId: string): Promise<any> {
-  const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
-  return await ctx.table('roles').findOne({ where: { _id: roleId } }) as any
+  const roles = await getRoles(adapter)
+  return roles.find((r: any) => String(r._id) === String(roleId)) ?? null
 }
 
 async function buildPermissions(adapter: SheetAdapter, role: any): Promise<string[]> {
   if (!role || role.code === 'super_admin') return []
-  const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
   const [all, modules, actions] = await Promise.all([
-    ctx.table('role_permissions').findMany({}) as Promise<any[]>,
-    ctx.table('modules').findMany({}) as Promise<any[]>,
-    ctx.table('actions').findMany({}) as Promise<any[]>,
+    getRolePermissions(adapter),
+    getModules(adapter),
+    getActions(adapter),
   ])
   const moduleById = new Map(modules.map((m) => [String(m._id), m.key]))
   const actionById = new Map(actions.map((a) => [String(a._id), a.key]))
@@ -85,6 +86,38 @@ export function createAuthRoutes(adapter: SheetAdapter) {
 
       const valid = await comparePassword(password, user.password_hash)
       if (!valid) return res.status(401).json({ message: 'Invalid email or password' })
+
+      const role = await resolveRole(adapter, user.role_id)
+      const permissions = await buildPermissions(adapter, role)
+      const payload = {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: role?.code ?? null,
+        permissions,
+        profileUrl: user.profile_url ?? null,
+      }
+
+      res.json({ token: signJwt(payload, env.JWT_SECRET), user: payload })
+    } catch (err) {
+      next(err)
+    }
+  })
+
+  // GET /api/admin/auth/me — re-derives role/permissions from the current DB state and
+  // reissues a token, so a role's permissions take effect without the user re-entering
+  // credentials. The frontend calls this on load/focus/interval instead of trusting the
+  // (possibly stale) permissions baked into the token it already has.
+  router.get('/me', requireAuth, async (req: AuthRequest, res, next) => {
+    try {
+      const id = req.user?.id as string | undefined
+      if (!id) return res.status(401).json({ message: 'Invalid or expired token' })
+
+      const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
+      const user = await ctx.table('users').findOne({ where: { _id: id } }) as any
+      if (!user || user.status !== 'active') {
+        return res.status(401).json({ message: 'Account is no longer active' })
+      }
 
       const role = await resolveRole(adapter, user.role_id)
       const permissions = await buildPermissions(adapter, role)

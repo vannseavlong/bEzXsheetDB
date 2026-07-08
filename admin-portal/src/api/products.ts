@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import { toast } from '@/hooks/use-toast'
 import type { Product } from '@/types'
+
+function notifyError(error: unknown) {
+  toast({
+    title: 'Error',
+    description: error instanceof Error ? error.message : 'Something went wrong',
+    variant: 'destructive',
+  })
+}
 
 export type DbProduct = {
   _id: string; name_en: string; name_km: string
@@ -31,7 +40,11 @@ export function useReorderProducts() {
   return useMutation({
     mutationFn: ({ ids, offset }: { ids: string[]; offset?: number }) =>
       apiClient.put<{ success: true }>(`${BASE}/sort`, { ids, offset }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['products', 'list'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products', 'list'] })
+      toast({ title: 'Success', description: 'Products reordered successfully' })
+    },
+    onError: notifyError,
   })
 }
 
@@ -53,6 +66,8 @@ export function useSetProductCategories() {
       qc.invalidateQueries({ queryKey: ['products', 'categories', vars.id] })
       // membership changes also affect each category's own product list
       qc.invalidateQueries({ queryKey: ['categories', 'products'] })
+      toast({ title: 'Success', description: 'Product categories updated successfully' })
     },
+    onError: notifyError,
   })
 }

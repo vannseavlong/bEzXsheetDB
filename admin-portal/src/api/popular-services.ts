@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import { toast } from '@/hooks/use-toast'
 import type { PopularService } from '@/types'
+
+function notifyError(error: unknown) {
+  toast({
+    title: 'Error',
+    description: error instanceof Error ? error.message : 'Something went wrong',
+    variant: 'destructive',
+  })
+}
 
 export type DbPopularService = {
   _id: string; name_en: string; name_km: string
@@ -43,6 +52,10 @@ export function useSetPopularServiceItems() {
   return useMutation({
     mutationFn: ({ id, items }: { id: string; items: ServiceItemInput[] }) =>
       apiClient.put<{ data: DbPopularServiceItem[] }>(`${BASE}/${id}/items`, { items }).then((r) => r.data),
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['popular-services', 'items', vars.id] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['popular-services', 'items', vars.id] })
+      toast({ title: 'Success', description: 'Popular service items updated successfully' })
+    },
+    onError: notifyError,
   })
 }

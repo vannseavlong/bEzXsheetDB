@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import { toast } from '@/hooks/use-toast'
 import type { CategoryAddon } from '@/types'
+
+function notifyError(error: unknown) {
+  toast({
+    title: 'Error',
+    description: error instanceof Error ? error.message : 'Something went wrong',
+    variant: 'destructive',
+  })
+}
 
 export type DbCategoryAddon = {
   _id: string; name_en: string; name_km: string
@@ -50,7 +59,11 @@ export function useCreateAddonItem() {
   return useMutation({
     mutationFn: ({ addonId, data }: { addonId: string; data: AddonItemInput }) =>
       apiClient.post<{ data: DbAddonItem }>(`${BASE}/${addonId}/items`, data).then((r) => r.data),
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['category-addons', 'items', vars.addonId] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['category-addons', 'items', vars.addonId] })
+      toast({ title: 'Success', description: 'Addon item created successfully' })
+    },
+    onError: notifyError,
   })
 }
 
@@ -59,7 +72,11 @@ export function useUpdateAddonItem() {
   return useMutation({
     mutationFn: ({ itemId, data }: { itemId: string; data: Partial<AddonItemInput> }) =>
       apiClient.patch<{ data: DbAddonItem }>(`/admin/category-addon-items/${itemId}`, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['category-addons', 'items'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['category-addons', 'items'] })
+      toast({ title: 'Success', description: 'Addon item updated successfully' })
+    },
+    onError: notifyError,
   })
 }
 
@@ -67,6 +84,10 @@ export function useRemoveAddonItem() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (itemId: string) => apiClient.del(`/admin/category-addon-items/${itemId}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['category-addons', 'items'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['category-addons', 'items'] })
+      toast({ title: 'Success', description: 'Addon item deleted successfully' })
+    },
+    onError: notifyError,
   })
 }

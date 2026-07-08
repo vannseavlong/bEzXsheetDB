@@ -10,7 +10,7 @@ export function createUploadRouter(adapter: SheetAdapter) {
   router.post('/', upload.single('file'), async (req, res) => {
     const file = req.file
     if (!file) {
-      res.status(400).json({ error: 'No file provided' })
+      res.status(400).json({ message: 'No file provided' })
       return
     }
 
@@ -20,7 +20,7 @@ export function createUploadRouter(adapter: SheetAdapter) {
       public: true,
     })
 
-    res.json({ url })
+    res.json({ message: 'File uploaded successfully', url })
   })
 
   return router

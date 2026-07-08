@@ -1,6 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
+import { toast } from '@/hooks/use-toast'
 import type { TaskItem } from '@/components/category/task-information/TaskInformationPanel'
+
+function notifyError(error: unknown) {
+  toast({
+    title: 'Error',
+    description: error instanceof Error ? error.message : 'Something went wrong',
+    variant: 'destructive',
+  })
+}
 
 export type DbTaskInfo = {
   _id: string; category_id?: string; product_id?: string; sort: number
@@ -56,7 +65,11 @@ export function useReplaceTaskInfoForCategory() {
   return useMutation({
     mutationFn: ({ categoryId, items }: { categoryId: string; items: TaskItem[] }) =>
       replaceTaskInfo(`${BASE}/by-category/${categoryId}`, { category_id: categoryId }, items),
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['task-info', 'category', vars.categoryId] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['task-info', 'category', vars.categoryId] })
+      toast({ title: 'Success', description: 'Task info updated successfully' })
+    },
+    onError: notifyError,
   })
 }
 
@@ -65,6 +78,10 @@ export function useReplaceTaskInfoForProduct() {
   return useMutation({
     mutationFn: ({ productId, items }: { productId: string; items: TaskItem[] }) =>
       replaceTaskInfo(`${BASE}/by-product/${productId}`, { product_id: productId }, items),
-    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ['task-info', 'product', vars.productId] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['task-info', 'product', vars.productId] })
+      toast({ title: 'Success', description: 'Task info updated successfully' })
+    },
+    onError: notifyError,
   })
 }

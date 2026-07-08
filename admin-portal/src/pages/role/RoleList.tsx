@@ -183,6 +183,15 @@ export default function RoleList() {
     })
   }
 
+  const handleToggleModuleAll = (moduleKey: string, enabled: boolean) => {
+    if (!editMode) return
+    const mod = modules.find(m => m.key === moduleKey)
+    setDraftPermissions(prev => ({
+      ...prev,
+      [moduleKey]: enabled ? [...(mod?.actions ?? [])] : [],
+    }))
+  }
+
   const handleCreateRole = async () => {
     if (!createForm.name.trim() || !createForm.code.trim()) return
     try {
@@ -345,7 +354,11 @@ export default function RoleList() {
                           {section.sectionLabel}
                         </span>
                       </div>
-                      {section.modules.map((mod, idx) => (
+                      {section.modules.map((mod, idx) => {
+                        const applicableActions = mod.actions
+                        const allChecked = applicableActions.length > 0 &&
+                          applicableActions.every(a => activePermissions[mod.key]?.includes(a))
+                        return (
                         <div
                           key={mod.key}
                           className={cn(
@@ -354,7 +367,15 @@ export default function RoleList() {
                           )}
                           style={{ gridTemplateColumns: gridTemplate }}
                         >
-                          <div className="px-4 py-3 text-sm font-medium">{mod.label}</div>
+                          <div className="px-4 py-3 text-sm font-medium flex items-center gap-2.5">
+                            {editMode && (
+                              <Checkbox
+                                checked={allChecked}
+                                onCheckedChange={checked => handleToggleModuleAll(mod.key, !!checked)}
+                              />
+                            )}
+                            {mod.label}
+                          </div>
                           {actions.map(a => {
                             const isApplicable = mod.actions.includes(a.key)
                             const isChecked = activePermissions[mod.key]?.includes(a.key) ?? false
@@ -389,7 +410,7 @@ export default function RoleList() {
                             )}
                           </div>
                         </div>
-                      ))}
+                      )})}
                     </div>
                   ))
                 )}

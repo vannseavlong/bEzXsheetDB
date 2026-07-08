@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './client'
 import { createResourceHooks, type ListParams } from './createResourceHooks'
+import { toast } from '@/hooks/use-toast'
 
 export type DbAdminUser = {
   _id: string | number
@@ -44,6 +45,16 @@ export function useUpdateUser() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string | number; data: AdminUserUpdate }) =>
       apiClient.patch<{ data: DbAdminUser }>(`${BASE}/${id}`, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users', 'list'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['users', 'list'] })
+      toast({ title: 'Success', description: 'User updated successfully' })
+    },
+    onError: (error: unknown) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Something went wrong',
+        variant: 'destructive',
+      })
+    },
   })
 }
