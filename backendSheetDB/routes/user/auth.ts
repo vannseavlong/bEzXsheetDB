@@ -48,7 +48,7 @@ export function createUserGoogleAuthHandler(adapter: SheetAdapter): RequestHandl
     adapter,
     basePath: '/api/user',
     jwtSecret: env.JWT_SECRET,
-    frontendUrl: `${env.MINI_APP_FRONTEND_URL}/auth/callback`,
+    frontendUrl: `${env.MINI_APP_FRONTEND_URL}/#/auth/callback`,
     registrationPolicy: 'open',
     oauthConfig: {
       clientId: env.GOOGLE_CLIENT_ID,
@@ -156,6 +156,47 @@ export function createUserAuthRouter(adapter: SheetAdapter) {
 
       const token = signJwt(toJwtPayload(user), env.JWT_SECRET)
       res.json({ token, user: toUserDto(user) })
+    } catch (err) { next(err) }
+  })
+
+  // PATCH /api/user/auth/me — updates profile fields (first/last name, phone, email) and
+  // reissues the token, so a Google sign-up user (created with no phone, see the customers
+  // schema comment) can fill one in from the checkout personal-info sheet and have it actually
+  // reach order/create, which reads customer_phone off the JWT claim rather than the request body.
+  router.patch('/me', requireAuth, requireRole('user'), async (req: AuthRequest, res, next) => {
+    try {
+      const id = req.user?.id as string | undefined
+      if (!id) return res.status(401).json({ message: 'Invalid or expired token' })
+
+      const user = await ctx().table('customers').findOne({ where: { _id: id } }) as Record<string, any> | null
+      if (!user || user.status !== 'active') {
+        return res.status(401).json({ message: 'Account is no longer active' })
+      }
+
+      const { firstName, lastName, phone, email } = req.body as {
+        firstName?: string; lastName?: string; phone?: string; email?: string
+      }
+      if (!firstName || !lastName || !phone || !email) {
+        return res.status(400).json({ message: 'firstName, lastName, phone and email are required' })
+      }
+
+      if (email !== user.email) {
+        const existingEmail = await ctx().table('customers').findOne({ where: { email } })
+        if (existingEmail) return res.status(409).json({ message: 'A user with this email already exists' })
+      }
+      if (phone !== user.phone) {
+        const existingPhone = await ctx().table('customers').findOne({ where: { phone } })
+        if (existingPhone) return res.status(409).json({ message: 'A user with this phone already exists' })
+      }
+
+      await ctx().table('customers').update({
+        where: { _id: id },
+        data: { first_name: firstName, last_name: lastName, phone, email },
+      })
+      const updated = await ctx().table('customers').findOne({ where: { _id: id } }) as Record<string, any>
+
+      const token = signJwt(toJwtPayload(updated), env.JWT_SECRET)
+      res.json({ token, user: toUserDto(updated) })
     } catch (err) { next(err) }
   })
 

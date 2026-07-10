@@ -4,6 +4,7 @@ import useAuthStore from '@/hooks/store/use-auth-store';
 import EditPersonal from './edit-personalInfo-sheet';
 import Icon from '@/assets/icons/icon-asset';
 import { useTranslation } from 'react-i18next';
+import { useUpdateProfileMutation } from '@/hooks/use-update-profile-mutation';
 
 type customerData = {
   customerFirstName: string;
@@ -22,8 +23,8 @@ const PersonalInfo = ({
   onEditSheetClose?: () => void;
 }) => {
   const { t } = useTranslation();
-  const { user, setUser } = useAuthStore();
-  // console.log('user: ', user);
+  const { user } = useAuthStore();
+  const { mutateAsync: updateProfile } = useUpdateProfileMutation();
 
   const [customerData, setCustomerData] = useState({
     customerFirstName: user?.firstName || '',
@@ -51,23 +52,20 @@ const PersonalInfo = ({
     onCustomerUpdate?.(initialData);
   }, [user?.firstName, user?.lastName, user?.phone, user?.email]);
 
-  const handleUpdateCustomer = (updatedData: {
+  const handleUpdateCustomer = async (updatedData: {
     customerFirstName: string;
     customerLastName: string;
     customerPhone: string;
     customerEmail: string;
   }) => {
+    await updateProfile({
+      firstName: updatedData.customerFirstName,
+      lastName: updatedData.customerLastName,
+      phone: updatedData.customerPhone,
+      email: updatedData.customerEmail
+    });
     setCustomerData(updatedData);
     onCustomerUpdate?.(updatedData);
-    if (user) {
-      setUser({
-        ...user,
-        firstName: updatedData.customerFirstName,
-        lastName: updatedData.customerLastName,
-        phone: updatedData.customerPhone,
-        email: updatedData.customerEmail
-      });
-    }
   };
 
   if (!user) {

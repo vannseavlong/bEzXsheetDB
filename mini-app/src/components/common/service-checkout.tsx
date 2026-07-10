@@ -1,6 +1,7 @@
 import Qty from './qty';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
+import { toEmbeddableImageUrl } from '@/lib/drive-image';
 import type { BookingLine, OrderPreviewAddOn } from '@/types/api';
 
 type ServiceCheckoutProps = {
@@ -28,7 +29,7 @@ export default function ServiceCheckout({
         {/* Icon */}
         <div className="flex-shrink-0">
           <img
-            src={product.thumbnailUrl ?? undefined}
+            src={toEmbeddableImageUrl(product.thumbnailUrl) ?? undefined}
             alt={getLocalizedName(product, i18n.language)}
             className="w-16 h-16 object-contain"
           />

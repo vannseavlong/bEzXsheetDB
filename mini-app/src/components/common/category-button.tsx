@@ -3,6 +3,7 @@ import type { Category } from '@/types/api';
 import Icon from '@/assets/icons/icon-asset';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
+import { toEmbeddableImageUrl } from '@/lib/drive-image';
 
 type props = {
   category: Category;
@@ -21,7 +22,10 @@ const CategoryButton: React.FC<props> = ({ category, isActive, onClick }) => {
           className={`relative w-[64px] h-[64px] flex items-center justify-center rounded-lg border-2 ${
             isActive ? 'border-[#1B4CFA]' : 'border-transparent'
           }`}>
-          <img src={category.thumbnailUrl ?? undefined} className="w-[48px] h-[48px]" />
+          <img
+            src={toEmbeddableImageUrl(category.thumbnailUrl) ?? undefined}
+            className="w-[48px] h-[48px]"
+          />
           {isActive && (
             <span className="absolute -top-2 -right-2 bg-white rounded-full shadow-sm">
               <Icon name="CheckIcon" />

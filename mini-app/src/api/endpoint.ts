@@ -3,6 +3,7 @@ export const API_ENDPOINT = {
   REGISTER: 'auth/register',
   LOGIN: 'auth/login',
   PROFILE: 'auth/me',
+  PROFILE_UPDATE: 'auth/me',
   LOGOUT: 'logout',
 
   CATEGORY_LIST: 'category/list',

@@ -18,7 +18,7 @@ type EditPersonalProps = {
     customerPhone: string;
     customerEmail: string;
     note?: string;
-  }) => void;
+  }) => void | Promise<void>;
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
 };
@@ -52,6 +52,7 @@ export function EditPersonal({
     customerPhone?: string;
     customerEmail?: string;
   }>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const getInitialFormData = () => ({
     customerFirstName: initialData?.customerFirstName || '',
@@ -93,12 +94,17 @@ export function EditPersonal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validate()) {
-      if (onSave) {
-        onSave(formData);
-      }
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    try {
+      setIsSaving(true);
+      await onSave?.(formData);
       setIsOpen(false);
+    } catch {
+      // Error toast is already surfaced by the api client's response interceptor;
+      // keep the sheet open so the user can retry.
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -201,8 +207,9 @@ export function EditPersonal({
         <div className="flex justify-center p-6 border-t">
           <Button
             onClick={handleSubmit}
+            disabled={isSaving}
             className="w-full rounded-2xl bg-gradient-to-r from-[#102C90] to-[#1B4CFA]">
-            {t('personalInfo.confirm')}
+            {isSaving ? t('common.loading') : t('personalInfo.confirm')}
           </Button>
         </div>
       </SheetContent>

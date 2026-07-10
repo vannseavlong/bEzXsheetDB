@@ -1,6 +1,7 @@
 import React from 'react';
 import type { OrderListItem } from '@/types/api';
 import { useTranslation } from 'react-i18next';
+import { toEmbeddableImageUrl } from '@/lib/drive-image';
 
 type Props = {
   order: OrderListItem;
@@ -13,7 +14,7 @@ const OrderList: React.FC<Props> = ({ order }) => {
     <div className="w-full h-auto flex items-center justify-between p-4 bg-white border-b border-gray-100">
       <div className="flex items-center space-x-3">
         <img
-          src={order.thumbnailUrl ?? undefined}
+          src={toEmbeddableImageUrl(order.thumbnailUrl) ?? undefined}
           alt={`Order ${order.id}`}
           loading="lazy"
           decoding="async"

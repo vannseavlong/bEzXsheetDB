@@ -3,6 +3,7 @@ import React from 'react';
 import Icon from '@/assets/icons/icon-asset';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
+import { toEmbeddableImageUrl } from '@/lib/drive-image';
 
 type Props = {
   data: PairProduct;
@@ -23,7 +24,7 @@ const ServicePreview: React.FC<Props> = ({ data, onClick, isActive, showPlusIcon
             isActive ? 'border-[#1B4CFA]' : 'border-transparent'
           }`}>
           <img
-            src={data?.thumbnailUrl || ''}
+            src={toEmbeddableImageUrl(data?.thumbnailUrl) || ''}
             className="w-[48px] h-[48px]"
             alt={getLocalizedName(data, i18n.language)}
             loading="lazy"

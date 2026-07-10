@@ -31,3 +31,10 @@ interface RegisterRequest {
   lastName: string;
   phone: string;
 }
+
+interface UpdateProfileRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+}

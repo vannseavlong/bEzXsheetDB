@@ -3,6 +3,7 @@ import useCategoryQuery from '@/hooks/use-category-query';
 import HomeSkeleton from '@/components/common/home-skeleton';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
+import { toEmbeddableImageUrl } from '@/lib/drive-image';
 
 export default function HomeContent() {
   const { data, isLoading } = useCategoryQuery();
@@ -20,7 +21,7 @@ export default function HomeContent() {
             <Link key={category.id} to={`/service/${category.id}`}>
               <div className="px-[26px] text-center justify-start">
                 <img
-                  src={category.thumbnailUrl ?? undefined}
+                  src={toEmbeddableImageUrl(category.thumbnailUrl) ?? undefined}
                   loading="lazy"
                   decoding="async"
                   className="w-12 h-12 rounded-md flex items-center justify-center mx-auto mb-3"

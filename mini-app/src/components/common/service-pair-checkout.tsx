@@ -2,6 +2,7 @@ import Qty from './qty';
 import type { SelectedService } from '@/hooks/use-checkout-state';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
+import { toEmbeddableImageUrl } from '@/lib/drive-image';
 
 type Props = {
   service: SelectedService;
@@ -18,7 +19,7 @@ export default function ServicePairCheckout({ service, pairImage, quantity = 1 }
       <div className="flex items-center justify-between gap-4">
         <div className="flex-shrink-0">
           <img
-            src={pairImage || '/fallback.png'}
+            src={toEmbeddableImageUrl(pairImage) || '/fallback.png'}
             alt={getLocalizedName(service, i18n.language)}
             className="w-16 h-16 object-contain"
           />

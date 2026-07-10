@@ -2,6 +2,7 @@ import type { OrderDetailItem } from '@/types/api';
 import Qty from './qty';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
+import { toEmbeddableImageUrl } from '@/lib/drive-image';
 
 export function OrderService({ service }: { service: OrderDetailItem }) {
   const { t, i18n } = useTranslation();
@@ -11,7 +12,7 @@ export function OrderService({ service }: { service: OrderDetailItem }) {
       <div className="flex items-center justify-center gap-4">
         <div className="flex-shrink-0">
           <img
-            src={service.thumbnailUrl ?? undefined}
+            src={toEmbeddableImageUrl(service.thumbnailUrl) ?? undefined}
             alt={getLocalizedName(service, i18n.language)}
             className="w-16 h-16 object-contain"
           />

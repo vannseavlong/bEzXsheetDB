@@ -72,6 +72,11 @@ export const registerApi = (
 
 export const meApi = (config?: import('axios').AxiosRequestConfig): Promise<AuthResponseProps> =>
   api.get(API_ENDPOINT.PROFILE, config);
+
+export const updateProfileApi = (
+  payload: UpdateProfileRequest,
+  config?: import('axios').AxiosRequestConfig
+): Promise<AuthResponseProps> => api.patch(API_ENDPOINT.PROFILE_UPDATE, payload, config);
 export const refreshToken = async (): Promise<string | null> => {
   try {
     const token = Cookies.get('token');
