@@ -148,6 +148,11 @@ This phase replaces all of that with the `backendSheetDB` API.
 ### D2 — Update API base URL
 - [ ] Update `.env.dev` / `.env.uat` `VITE_BASE_URL` to point to `backendSheetDB` server
 - [ ] Confirm all existing `API_ENDPOINT` keys still map to valid backendSheetDB routes; update any that don't
+- [ ] **Backend: implement `/api/user/*` app-facing routes** — `routes/user/index.ts` currently only
+  mounts `/auth`; everything else (`category`, `product`, `order`, `address`, `banner`, `homepage`,
+  `profile`) is an unimplemented placeholder comment. Confirmed via 404 on
+  `GET /api/user/category/list/detail` after sign-up. Mirror the read-only shape of
+  `routes/admin/categories.ts` for the user-facing category endpoints.
 
 ### D3 — Wire each screen to real backend
 - [ ] **Home screen** (`home.tsx` + `home-content.tsx`):
