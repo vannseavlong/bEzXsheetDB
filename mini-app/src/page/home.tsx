@@ -6,6 +6,7 @@ import useNavigationTitle from '@/hooks/use-navigation-title';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import BottomTabBar from '@/components/common/BottomTabBar';
+import AppBar from '@/components/common/app-bar';
 
 import * as pkg from 'web-bridge-gateway';
 const { callHandler } = pkg;
@@ -18,7 +19,8 @@ export default function CleaningServiceApp() {
   activeTabRef.current = activeTab;
 
   // Set navigation bar title based on active tab
-  useNavigationTitle(activeTab === 'home' ? t('navigation.homeTab') : t('navigation.bookingTab'));
+  const currentTitle = activeTab === 'home' ? t('navigation.homeTab') : t('navigation.bookingTab');
+  useNavigationTitle(currentTitle);
 
   // Reset order state when landing on home or booking tab
   useEffect(() => {
@@ -50,6 +52,7 @@ export default function CleaningServiceApp() {
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+      <AppBar title={currentTitle} showBackButton={false} />
       <div className="flex-1 overflow-y-auto overscroll-y-contain">
         {activeTab === 'home' ? <HomeContent /> : <BookingContent />}
       </div>

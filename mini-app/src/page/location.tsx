@@ -12,6 +12,7 @@ import useNavigationTitle from '@/hooks/use-navigation-title';
 import { useTranslation } from 'react-i18next';
 import { useLocationDistanceGuard } from '@/hooks/use-location-distance-guard';
 import LocationDistanceDialog from '@/components/common/location-distance-dialog';
+import AppBar from '@/components/common/app-bar';
 
 const Location: React.FC = () => {
   const { t } = useTranslation();
@@ -99,8 +100,10 @@ const Location: React.FC = () => {
 
   return (
     <div className="bg-[#F5F5F5] min-h-screen">
-      {/* Add New Location - Fixed at top */}
-      <div className="fixed top-0 left-0 right-0 bg-[#F5F5F5] px-4 pt-4 z-10">
+      <AppBar title={t('location.location')} />
+
+      {/* Add New Location - Fixed below the app bar */}
+      <div className="fixed top-14 left-0 right-0 bg-[#F5F5F5] px-4 pt-4 z-10">
         <button
           onClick={handleAddLocation}
           className="flex items-center gap-3 px-4 py-3 w-full bg-white transition-colors text-left rounded-[6px] border border-[#ECECEC] shadow-custom"
@@ -111,7 +114,7 @@ const Location: React.FC = () => {
       </div>
 
       {/* Address List - with top padding */}
-      <div className="pt-14 px-4">
+      <div className="pt-28 px-4">
         <div className="mt-6 space-y-4">
           {isLoading && <div>{t('location.loadingAddresses')}</div>}
           {isError && <div className="text-red-500">{t('location.errorLoadingAddresses')}</div>}

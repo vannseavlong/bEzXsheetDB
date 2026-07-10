@@ -9,6 +9,7 @@ import AddressInterface from '@/components/common/address';
 import DateTimePicker from '@/components/common/date-time-detail';
 import useNavigationTitle from '@/hooks/use-navigation-title';
 import { useTranslation } from 'react-i18next';
+import AppBar from '@/components/common/app-bar';
 
 export default function OrderDetail() {
   const { t } = useTranslation();
@@ -21,11 +22,17 @@ export default function OrderDetail() {
   if (isLoading) return <HomeSkeleton />;
 
   if (!orderDetailData) {
-    return <div className="p-4 text-gray-500">{t('order.orderNotFound')}</div>;
+    return (
+      <>
+        <AppBar title={t('order.orderDetails')} />
+        <div className="p-4 text-gray-500">{t('order.orderNotFound')}</div>
+      </>
+    );
   }
 
   return (
     <div className="bg-muted pb-4 flex flex-col gap-y-4">
+      <AppBar title={t('order.orderDetails')} />
       <OrderHeaderDetail order={orderDetailData} />
 
       <div className="p-4 bg-white">

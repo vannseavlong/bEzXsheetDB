@@ -15,6 +15,7 @@ import CheckoutContent from './checkout-content';
 import useNavigationTitle from '@/hooks/use-navigation-title';
 import { useTranslation } from 'react-i18next';
 import { validatePhoneNumber, validateName } from '@/lib/utils/validation';
+import AppBar from '@/components/common/app-bar';
 
 export default function Checkout() {
   const { t } = useTranslation();
@@ -192,10 +193,17 @@ export default function Checkout() {
     selectedAddressObj
   ]);
 
-  if (error) return <p className="text-red-500">{t('checkout.failedToLoadServices')}</p>;
+  if (error)
+    return (
+      <>
+        <AppBar title={t('checkout.checkout')} />
+        <p className="text-red-500">{t('checkout.failedToLoadServices')}</p>
+      </>
+    );
 
   return (
     <div className="bg-muted min-h-screen pb-28">
+      <AppBar title={t('checkout.checkout')} />
       {isCreatingOrder && (
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-3">

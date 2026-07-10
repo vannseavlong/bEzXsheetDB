@@ -17,6 +17,7 @@ import { useAddressContext } from '@/context/AddressContext';
 import { useTranslation } from 'react-i18next';
 import { useLocationDistanceGuard } from '@/hooks/use-location-distance-guard';
 import LocationDistanceDialog from '@/components/common/location-distance-dialog';
+import AppBar from '@/components/common/app-bar';
 
 const AddLocation: React.FC = () => {
   const { t } = useTranslation();
@@ -196,6 +197,9 @@ const AddLocation: React.FC = () => {
 
   return (
     <div className="bg-white min-h-screen relative">
+      <AppBar
+        title={isEditMode ? t('addLocation.editLocation') : t('addLocation.addLocation')}
+      />
       <div className="relative">
         <AddLocationMap
           isLoaded={isLoaded}

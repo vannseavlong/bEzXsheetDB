@@ -24,6 +24,7 @@ import type {
 import useOrderState, { type ServiceAddon } from '@/hooks/store/use-order-state';
 import Icon from '@/assets/icons/icon-asset';
 import useNavigationTitle from '@/hooks/use-navigation-title';
+import AppBar from '@/components/common/app-bar';
 
 export function Service() {
   const { t } = useTranslation();
@@ -287,6 +288,7 @@ export function Service() {
 
   return (
     <>
+      <AppBar title={t('common.service')} />
       <div className="bg-muted min-h-screen space-y-4 pb-50">
         {/* Category Selection */}
         <div className="bg-white shadow-sm flex items-start py-6 px-4 overflow-x-auto scroll-smooth space-x-4">
