@@ -14,6 +14,7 @@ import { createCategoryAddonItemsRouter } from './category-addon-items'
 import { createItemsRouter } from './items'
 import { createBlockedSchedulesRouter } from './blocked-schedules'
 import { createUploadRouter } from './upload'
+import { createOrdersRouter } from './orders'
 
 /**
  * All /api/admin/* routes.
@@ -40,6 +41,7 @@ export function createAdminRouter(adapter: SheetAdapter) {
   router.use('/category-addon-items', requirePermission('CATEGORY-ADDON', 'VIEW'), createCategoryAddonItemsRouter(adapter))
   router.use('/items', requirePermission('SETUP-ITEM', 'VIEW'), createItemsRouter(adapter))
   router.use('/blocked-schedules', requirePermission('SETUP-SCHEDULE', 'VIEW'), createBlockedSchedulesRouter(adapter))
+  router.use('/orders', requirePermission('ORDER', 'VIEW'), createOrdersRouter(adapter))
   router.use('/upload', createUploadRouter(adapter))
 
   return router

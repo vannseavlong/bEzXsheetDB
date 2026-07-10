@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 
@@ -19,7 +19,7 @@ export default function AppBar({ title, showBackButton = true }: AppBarProps) {
           onClick={() => navigate(-1)}
           aria-label={t('common.back')}
           className="-ml-2 flex h-8 w-8 shrink-0 items-center justify-center">
-          <ArrowLeft className="h-5 w-5" />
+          <ChevronLeft className="h-6 w-6" />
         </button>
       )}
       <h1 className="flex-1 truncate text-base font-semibold">{title}</h1>

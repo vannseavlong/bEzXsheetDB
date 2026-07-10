@@ -1,3 +1,4 @@
+import type { ElementType } from "react";
 import { Button } from "@/components/ui/button";
 
 export function EmptyState({
@@ -6,6 +7,12 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
+}: {
+  icon?: ElementType
+  title?: string
+  description?: string
+  actionLabel?: string
+  onAction?: () => void
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">

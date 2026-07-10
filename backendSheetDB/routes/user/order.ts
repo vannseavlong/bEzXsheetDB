@@ -257,7 +257,11 @@ export function createOrderRouter(adapter: SheetAdapter) {
 
       const built = await buildPreview(adapter, user.id as string, payload)
       const bulkOrderId = crypto.randomUUID()
+      // Validates the input, but the row must carry the ISO *string* — the adapter
+      // JSON.stringifies raw `Date` objects on write (no special-casing for `date` columns),
+      // which leaves literal quote characters embedded in the cell on read-back.
       const scheduleDate = new Date(payload.scheduleStartDate)
+      if (isNaN(scheduleDate.getTime())) throw new HttpError(400, 'Invalid scheduleStartDate')
 
       const baseRow = {
         bulk_order_id: bulkOrderId,
@@ -266,7 +270,7 @@ export function createOrderRouter(adapter: SheetAdapter) {
         customer_last_name: user.lastName,
         customer_phone: user.phone,
         profile_url: user.profileUrl ?? null,
-        schedule_date: scheduleDate,
+        schedule_date: scheduleDate.toISOString(),
         address: address.address,
         address_id: address._id,
         latitude: address.latitude,
@@ -449,8 +453,9 @@ export function createOrderRouter(adapter: SheetAdapter) {
       }
 
       const scheduleDate = new Date(scheduleStartDate)
+      if (isNaN(scheduleDate.getTime())) return res.status(400).json({ message: 'Invalid scheduleStartDate' })
       await Promise.all(rows.map((r) =>
-        ctx().table('orders').update({ where: { _id: r._id }, data: { schedule_date: scheduleDate } })
+        ctx().table('orders').update({ where: { _id: r._id }, data: { schedule_date: scheduleDate.toISOString() } })
       ))
       res.json({ data: { bulkOrderId: req.params.bulkOrderId, scheduleStartDate } })
     } catch (err) { next(err) }

@@ -21,7 +21,12 @@ const STATUS_MAP: Record<string, { variant: BadgeVariant; label: string }> = {
   DEDUCTION_PENDING:  { variant: "warning", label: "Deduction Pending" },
   SCHEDULED:          { variant: "warning", label: "Scheduled" },
   OTP_ACTIVE:         { variant: "warning", label: "Active" },
-  IN_PROGRESS:        { variant: "warning", label: "In Progress" },
+
+  // purple — bEasy variant (also below)
+  IN_PROGRESS:        { variant: "purple", label: "In Progress" },
+
+  // confirm (blue) — bEasy variant
+  ACCEPTED:           { variant: "confirm", label: "Accepted" },
 
   // reject (red) — bEasy variant
   INACTIVE:   { variant: "reject", label: "Inactive" },

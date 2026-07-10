@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -25,7 +24,6 @@ export function DateRangePicker({
   placeholder = "Select date range",
 }) {
   const [open, setOpen] = useState(false);
-  const [selecting, setSelecting] = useState(null);
 
   const selected =
     from || to
@@ -63,18 +61,13 @@ export function DateRangePicker({
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-0"
-        align="start"
-        sideOffset={4}
-      >
-        <DayPicker
+      <PopoverContent className="w-auto p-0" align="start" sideOffset={4}>
+        <Calendar
           mode="range"
           selected={selected}
           onSelect={handleSelect}
           numberOfMonths={2}
           defaultMonth={from ?? new Date()}
-          showOutsideDays
         />
         <div className="flex items-center justify-end gap-2 border-t px-4 py-2">
           <Button

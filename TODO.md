@@ -107,29 +107,47 @@ This must be completed before the admin portal is considered production-ready.
 ## Phase C — Admin Portal: Order Management
 
 > Start this phase **after reviewing the mini-app checkout flow** (Phase D) so the order data model and statuses are confirmed before building the admin view.
+>
+> **2026-07-10 scope call:** built directly against `routes/user/order.ts` (the actual source of
+> truth for what reaches the backend) instead of walking the mini-app screens — same result, less
+> drift risk. Direct Sale orders are explicitly excluded from this page (`type !== 'DIRECT_SALE'`
+> filtered server-side) — those stay in the Finance / Direct Sale Customer pages. Cleaner assignment
+> deferred: `cleaners` has a schema but no admin backend route yet (`CleanerList.tsx` still runs on
+> mock data), so there's nothing real to assign against.
 
 ### C1 — Understand the order model from mini-app
-- [ ] Review mini-app checkout flow screens and confirm fields that reach the backend
-- [ ] Confirm order statuses: `PENDING → ACCEPTED → IN_PROGRESS → COMPLETED / CANCELLED`
-- [ ] Confirm what data the operation team needs to see vs what finance team sees
+- [x] Confirmed fields that reach the backend by reading `routes/user/order.ts` directly (one `orders`
+  row per booked line, grouped by `bulk_order_id`, `is_primary` marks the line holding shared fields)
+- [x] Confirmed order statuses: `PENDING → ACCEPTED → IN_PROGRESS → COMPLETED / CANCELLED` — enforced
+  server-side now via an explicit transition map (`CANCELLED` reachable from any open state)
+- [ ] Confirm what data the operation team needs to see vs what finance team sees — not needed yet,
+  this page only covers ops; Finance › Orders is still its own unbuilt page
 
 ### C2 — Backend: order routes
-- [ ] `GET /admin/orders` — list orders (support filters: status, date range, category)
-- [ ] `GET /admin/orders/:id` — order detail
-- [ ] `PATCH /admin/orders/:id/status` — update status
-- [ ] `GET /admin/orders/:id/cleaners` — list assigned cleaners
-- [ ] `POST /admin/orders/:id/assign` — assign cleaner to order
+- [x] `GET /admin/orders` — list, one row per bulk order, filters: `status`, `dateFrom`/`dateTo`
+  (against `schedule_date`), `search` (customer name/phone/bulk order id), paginated
+- [x] `GET /admin/orders/:bulkOrderId` — full detail: primary fields + every line + its addons
+- [x] `PATCH /admin/orders/:bulkOrderId/status` — validates the transition, updates every line
+  sharing the bulk order together
+- [ ] `GET /admin/orders/:id/cleaners` — deferred, no cleaners backend yet
+- [ ] `POST /admin/orders/:id/assign` — deferred, no cleaners backend yet
 
 ### C3 — Admin Portal: Order list page (fresh UI)
-- [ ] Column definitions: `OrderColumns.tsx` (order ID, customer, service, date, status, cleaner, actions)
-- [ ] Header: date range filter + status filter + search
-- [ ] `OrderList.tsx` — fetch from backend, TanStack Table pattern (same as UserList)
-- [ ] Status badge: PENDING (yellow) / ACCEPTED (blue) / IN_PROGRESS (orange) / COMPLETED (green) / CANCELLED (red)
+- [x] `pages/order/OrderList.tsx` + `OrderCard.tsx` — **not** a TanStack Table; per updated
+  instructions this is a scrollable card list in a left sidebar (search bar + status `Select` +
+  `DateRangePicker`), matching bEasy's split-panel order screen rather than the table pattern used
+  by Users/Category/etc.
+- [x] Status badge: PENDING (yellow) / ACCEPTED (blue, new) / IN_PROGRESS (purple, recolored from
+  yellow so it's visually distinct from PENDING) / COMPLETED (green) / CANCELLED (red) — added the
+  missing `ACCEPTED` entry to the shared `StatusBadge` map, which had no PENDING/ACCEPTED distinction
+  before
 
 ### C4 — Admin Portal: Order detail / side panel
-- [ ] Order detail view — customer info, service details, schedule, address, assigned cleaner
-- [ ] Status update action (dropdown or buttons)
-- [ ] Cleaner assignment panel
+- [x] `pages/order/OrderDetail.tsx` — customer info, address, schedule/duration, services + addons,
+  full payment breakdown, remark
+- [x] Status update action — single forward-action button per status (Accept → Start → Complete) plus
+  a separate destructive Cancel button behind a confirm dialog; both gated on `ORDER:UPDATE`
+- [ ] Cleaner assignment panel — deferred (see scope note above)
 
 ---
 
