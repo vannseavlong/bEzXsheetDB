@@ -2,7 +2,7 @@ import OrderList from '@/components/common/orderlist';
 import useOrderQuery from '@/hooks/use-order-query';
 import HomeSkeleton from '@/components/common/home-skeleton';
 import { Link } from 'react-router';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import useTabStore from '@/hooks/store/use-tab-store';
 
 export default function BookingContent() {

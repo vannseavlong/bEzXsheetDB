@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/sheet';
 import TimeDialog from './time-dialog';
 import useScheduleQuery from '@/hooks/use-schedule-query';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { DateSelector, useDateSelector } from './date-selector';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';

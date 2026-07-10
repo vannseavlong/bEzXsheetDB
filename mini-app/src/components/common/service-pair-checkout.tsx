@@ -1,7 +1,7 @@
 import Icon from '@/assets/icons/icon-asset';
 import Qty from './qty';
 import type { ProductOptionV2 } from '@/types/api';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {

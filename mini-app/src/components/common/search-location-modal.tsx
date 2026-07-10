@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import Icon from '@/assets/icons/icon-asset';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface SearchLocationModalProps {
   isOpen: boolean;
@@ -70,12 +70,14 @@ const SearchLocationModal: React.FC<SearchLocationModalProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 bg-[#00000080] z-50 flex items-end transition-opacity duration-300 ${isAnimating ? 'bg-opacity-50' : 'bg-opacity-0'
-        }`}
+      className={`fixed inset-0 bg-[#00000080] z-50 flex items-end transition-opacity duration-300 ${
+        isAnimating ? 'bg-opacity-50' : 'bg-opacity-0'
+      }`}
       onClick={handleClose}>
       <div
-        className={`bg-white w-full h-[85vh] rounded-t-2xl overflow-hidden transition-transform duration-300 ease-out ${isAnimating ? 'translate-y-0' : 'translate-y-full'
-          }`}
+        className={`bg-white w-full h-[85vh] rounded-t-2xl overflow-hidden transition-transform duration-300 ease-out ${
+          isAnimating ? 'translate-y-0' : 'translate-y-full'
+        }`}
         onClick={(e) => e.stopPropagation()}>
         {/* Modal Content */}
         <div className="p-4 h-full overflow-y-auto ">

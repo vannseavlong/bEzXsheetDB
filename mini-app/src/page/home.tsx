@@ -4,7 +4,7 @@ import useTabStore from '@/hooks/store/use-tab-store';
 import useOrderState from '@/hooks/store/use-order-state';
 import useNavigationTitle from '@/hooks/use-navigation-title';
 import { useEffect, useRef } from 'react';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import BottomTabBar from '@/components/common/BottomTabBar';
 
 import * as pkg from 'web-bridge-gateway';

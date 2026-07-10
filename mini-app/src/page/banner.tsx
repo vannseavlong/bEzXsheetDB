@@ -1,7 +1,7 @@
 import useBannerDetailQuery from '@/hooks/use-banner-detail-query';
 import { useParams } from 'react-router';
 import useNavigationTitle from '@/hooks/use-navigation-title';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 export default function Banner() {
   const { t } = useTranslation();

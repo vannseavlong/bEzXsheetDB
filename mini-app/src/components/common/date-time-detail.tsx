@@ -2,7 +2,7 @@ import Icon from '@/assets/icons/icon-asset';
 import { useState } from 'react';
 import ScheduleDialog from './schedule-dialog';
 import useOrderDetailQuery from '@/hooks/use-order-detail-query';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { formatScheduleDateTime } from '@/lib/date-display';
 
 const DateTimePicker = ({ bulkOrderId }: { bulkOrderId?: string }) => {

@@ -3,7 +3,7 @@ import React from 'react';
 import useLanguage from '@/hooks/use-language';
 import type { ProductAttributes } from '@/types/api';
 import PrimaryButton from './primary-button';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   open: boolean;

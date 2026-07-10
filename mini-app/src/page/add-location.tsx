@@ -14,7 +14,7 @@ import { useLocationBridge } from '../components/add-location/use-location-bridg
 import { useLocationSearch } from '../components/add-location/use-location-search';
 import useNavigationTitle from '@/hooks/use-navigation-title';
 import { useAddressContext } from '@/context/AddressContext';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { useLocationDistanceGuard } from '@/hooks/use-location-distance-guard';
 import LocationDistanceDialog from '@/components/common/location-distance-dialog';
 

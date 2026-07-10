@@ -1,7 +1,7 @@
 import type { OrderDetail } from '@/types/api';
 import { Badge } from '../ui/badge';
 import { getPaymentStatus, getPaymentStatusVariant } from '@/lib/utils';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 export function PaymentDetail({ payment }: { payment: OrderDetail }) {
   const { t } = useTranslation();

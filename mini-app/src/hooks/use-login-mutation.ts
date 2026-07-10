@@ -1,13 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import api from '@/api/api';
-import { API_ENDPOINT } from '@/api/endpoint';
+import { loginApi } from '@/api/api';
 
 export function useLoginMutation() {
-  const mutationFn = async (payload: LoginRequest): Promise<LoginResponseProps> => {
-    return api.post(API_ENDPOINT.AUTO_LOGIN, payload);
-  };
-
   return useMutation({
-    mutationFn
+    mutationFn: (payload: LoginRequest): Promise<AuthResponseProps> => loginApi(payload)
   });
 }

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { createAuthRoutes } from './auth/index'
 import { createAdminRouter } from './admin/index'
-import { createAppRouter } from './app/index'
+import { createUserRouter } from './user/index'
 
 export function createRouter(adapter: SheetAdapter) {
   const router = Router()
@@ -11,7 +11,7 @@ export function createRouter(adapter: SheetAdapter) {
 
   router.use('/admin/auth', createAuthRoutes(adapter))
   router.use('/admin', createAdminRouter(adapter))
-  router.use('/app', createAppRouter(adapter))
+  router.use('/user', createUserRouter(adapter))
 
   return router
 }

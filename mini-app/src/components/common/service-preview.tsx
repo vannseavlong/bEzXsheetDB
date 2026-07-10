@@ -1,7 +1,7 @@
 import type { pairProduct } from '@/types/api';
 import React from 'react';
 import Icon from '@/assets/icons/icon-asset';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {
@@ -19,8 +19,9 @@ const ServicePreview: React.FC<Props> = ({ data, onClick, isActive, showPlusIcon
       onClick={onClick}>
       <div className="flex flex-col items-center justify-center">
         <div
-          className={`relative w-[64px] h-[64px] flex items-center justify-center rounded-lg border-2 ${isActive ? 'border-[#1B4CFA]' : 'border-transparent'
-            }`}>
+          className={`relative w-[64px] h-[64px] flex items-center justify-center rounded-lg border-2 ${
+            isActive ? 'border-[#1B4CFA]' : 'border-transparent'
+          }`}>
           <img
             src={data?.iconUrl || ''}
             className="w-[48px] h-[48px]"

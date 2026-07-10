@@ -1,7 +1,7 @@
 export const API_ENDPOINT = {
-  AUTO_LOGIN: 'auth/account/auto-login',
+  REGISTER: 'auth/register',
   LOGIN: 'auth/login',
-  PROFILE: 'user/info',
+  PROFILE: 'auth/me',
   LOGOUT: 'logout',
 
   CATEGORY: 'category/list',

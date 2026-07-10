@@ -8,7 +8,6 @@ import ServicePreviewSheet from '@/components/common/service-preview-sheet';
 import AdditionalInfo from '@/components/common/additional-info';
 import { OrderPayment } from '@/components/common/order-payment';
 import TotalPriceButton from '@/components/common/total-price-button';
-import ABAPayInterface from '@/components/common/payment-select-option';
 import useProductDetailQuery from '@/hooks/use-product-detail-query';
 import type { SelectedService } from '@/hooks/use-checkout-state';
 import type {
@@ -17,7 +16,7 @@ import type {
   pairProduct,
   ProductOptionV2
 } from '@/types/api';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface CustomerInfo {
   customerFirstName: string;
@@ -48,15 +47,11 @@ interface CheckoutContentProps {
   customerInfo: CustomerInfo;
   onCustomerUpdate: (data: CustomerInfo) => void;
   onNextClick: () => void;
-  onConfirmClick: (useDefault: boolean) => void;
   openSheet: boolean;
   setOpenSheet: React.Dispatch<React.SetStateAction<boolean>>;
   activePairId: string | null;
   setActivePairId: React.Dispatch<React.SetStateAction<string | null>>;
-  isAbaOpen: boolean;
-  setIsAbaOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isCreatingOrder: boolean;
-  isCheckingStatus: boolean;
   isPending: boolean;
   calculateServiceTotal: () => number;
   formatCurrency: (amount?: number) => string;
@@ -80,15 +75,11 @@ export default function CheckoutContent({
   note,
   onCustomerUpdate,
   onNextClick,
-  onConfirmClick,
   openSheet,
   setOpenSheet,
   activePairId,
   setActivePairId,
-  isAbaOpen,
-  setIsAbaOpen,
   isCreatingOrder,
-  isCheckingStatus,
   isPending,
   calculateServiceTotal,
   formatCurrency,
@@ -223,23 +214,11 @@ export default function CheckoutContent({
           totalPrice={formatCurrency(servicePairAddons?.totalPayableAmount)}
           originalPrice={formatCurrency(calculateServiceTotal())}
           buttonText={isCreatingOrder ? t('checkout.creatingOrder') : t('checkout.next')}
-          disabled={
-            !scheduleData.date ||
-            !selectedAddress ||
-            isCreatingOrder ||
-            isCheckingStatus ||
-            isPending
-          }
+          disabled={!scheduleData.date || !selectedAddress || isCreatingOrder || isPending}
           showPriceSection={true}
           onClick={onNextClick}
         />
       </div>
-      <ABAPayInterface
-        isOpen={isAbaOpen}
-        onClose={() => setIsAbaOpen(false)}
-        totalAmount={servicePairAddons?.totalPayableAmount || 0}
-        handleConfirmPaytClick={onConfirmClick}
-      />
     </>
   );
 }

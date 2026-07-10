@@ -109,6 +109,7 @@
     "pleaseSelectDate": "Please select a date before proceeding.",
     "pleaseProvidePhone": "Please provide your phone number.",
     "failedToCreateOrder": "Failed to create order. Please try again.",
+    "orderCreated": "Order created successfully",
     "yourBooking": "Your Booking",
     "oftenPairedWith": "Often paired with",
     "creatingOrder": "Creating Order...",

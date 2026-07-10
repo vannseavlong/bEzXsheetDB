@@ -1,6 +1,6 @@
 import React from 'react';
 import type { OrderListAttributes } from '@/types/api';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   order: OrderListAttributes;

@@ -9,7 +9,7 @@ import useDeleteAddressMutation from '../hooks/use-delete-address-mutation';
 import type { AddressAttributes } from '@/types/api';
 import { toast } from 'sonner';
 import useNavigationTitle from '@/hooks/use-navigation-title';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { useLocationDistanceGuard } from '@/hooks/use-location-distance-guard';
 import LocationDistanceDialog from '@/components/common/location-distance-dialog';
 

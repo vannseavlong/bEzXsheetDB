@@ -1,5 +1,5 @@
 import type { OrderPreviewResponse } from '@/types/api';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 export function OrderPayment({ payment }: { payment: OrderPreviewResponse }) {
   const { t } = useTranslation();

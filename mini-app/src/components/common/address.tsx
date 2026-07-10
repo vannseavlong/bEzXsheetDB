@@ -3,7 +3,7 @@ import { useAddressContext } from '@/context/AddressContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Location01Icon } from 'hugeicons-react';
 import Icon from '@/assets/icons/icon-asset';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface AddressProps {
   address?: string;

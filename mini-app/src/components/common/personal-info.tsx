@@ -3,7 +3,7 @@ import CustomerDetail from './customer-detail';
 import useAuthStore from '@/hooks/store/use-auth-store';
 import EditPersonal from './edit-personalInfo-sheet';
 import Icon from '@/assets/icons/icon-asset';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 type customerData = {
   customerFirstName: string;

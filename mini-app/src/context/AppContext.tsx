@@ -5,10 +5,17 @@ import { useAuth } from '@/hooks/use-auth';
 import { UnsupportedBrowser } from '@/components/common/unsupported-browser';
 import { isABAMobile, shouldCheckEnvironment } from '@/lib/env';
 
-const AppContext = createContext(undefined);
+interface AppContextValue {
+  user: UserResponseProps | null;
+  isLoggedIn: boolean;
+  isLoadingAuth: boolean;
+  logout: () => void;
+}
+
+const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const { authError } = useAuth();
+  const { user, isLoggedIn, isLoadingAuth, authError, logout } = useAuth();
   const isUnsupportedUA = !isABAMobile();
 
   if (shouldCheckEnvironment() && isUnsupportedUA) {
@@ -37,7 +44,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       </div>
     );
 
-  return <AppContext.Provider value={undefined}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={{ user, isLoggedIn, isLoadingAuth, logout }}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 export const useAppContext = () => {

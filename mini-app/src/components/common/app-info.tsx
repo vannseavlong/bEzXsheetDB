@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Phone, Mail, Globe, MapPin } from 'lucide-react';
 import Assets from '@/assets';
 import { useEffect } from 'react';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 export default function AppInfo() {
   const { t } = useTranslation();
@@ -37,8 +37,9 @@ export default function AppInfo() {
 
       {/* Popup (Bottom to Top Animation with Tailwind) */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 transform transition-transform duration-500 ${isOpen ? 'translate-y-0' : 'translate-y-full'
-          }`}>
+        className={`fixed bottom-0 left-0 right-0 z-50 transform transition-transform duration-500 ${
+          isOpen ? 'translate-y-0' : 'translate-y-full'
+        }`}>
         <div className="max-w-md mx-auto bg-gray-800 rounded-t-3xl overflow-hidden shadow-2xl relative">
           {/* Header Section */}
           <div>

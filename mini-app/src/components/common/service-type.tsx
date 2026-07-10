@@ -3,7 +3,7 @@ import React from 'react';
 import Icon from '@/assets/icons/icon-asset';
 import { InformationCircleIcon } from 'hugeicons-react';
 import Qty from './qty';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {

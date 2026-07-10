@@ -1,7 +1,7 @@
 import type { OrderDetailItem } from '@/types/api';
 import Icon from '@/assets/icons/icon-asset';
 import Qty from './qty';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 export function OrderService({ service }: { service: OrderDetailItem }) {

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import type { ProductAddonAttributes } from '@/types/api';
 import React, { useState, useMemo } from 'react';
 import QuantityControl from './quantity-control';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {
@@ -83,8 +83,9 @@ const ServiceAddonSheet: React.FC<Props> = ({
                     </div>
                     <div className="flex flex-col justify-center px-4">
                       <p
-                        className={`text-lg font-bold ${isActive ? 'text-[#1B4CFA]' : 'text-black'
-                          }`}>
+                        className={`text-lg font-bold ${
+                          isActive ? 'text-[#1B4CFA]' : 'text-black'
+                        }`}>
                         {getLocalizedName(addon, i18n.language)}
                       </p>
                       {addon.amount !== undefined && (

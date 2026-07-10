@@ -1,39 +1,33 @@
 type UserResponseProps = {
-  profileUrl: string;
-  referralCode?: string | null;
-  id: number;
-  username: string;
-  password: string | null;
+  id: string;
+  email: string;
   firstName: string;
   lastName: string;
-  balance: number;
-  language: string;
-  email: string;
+  phone: string;
+  profileUrl?: string | null;
   status: string;
-  type: string;
-  referrerCode?: string | null;
-  gender: string;
-  dob: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  count: number;
-  fcmToken: string;
-  deviceId: string;
+  role: string;
+  language?: string;
+  gender?: string | null;
+  dob?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
-type LoginResponseProps = {
+type AuthResponseProps = {
   token: string;
-  userInfo: UserResponseProps;
+  user: UserResponseProps;
 };
 
 interface LoginRequest {
-  username: string;
+  email: string;
+  password: string;
+}
+
+interface RegisterRequest {
+  email: string;
+  password: string;
   firstName: string;
   lastName: string;
-  referralCode?: string;
-  email?: string;
-  gender?: string;
-  dob?: string;
-  abaProfile?: GetProfile;
+  phone: string;
 }

@@ -6,7 +6,7 @@ import {
   AlertDialogTitle
 } from '../ui/alert-dialog';
 import { Button } from '../ui/button';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
 export function NetworkConnectionDialog() {

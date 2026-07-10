@@ -41,8 +41,6 @@ interface UseCheckoutStateReturn {
   setOpenSheet: React.Dispatch<React.SetStateAction<boolean>>;
   activePairId: string | null;
   setActivePairId: React.Dispatch<React.SetStateAction<string | null>>;
-  isAbaOpen: boolean;
-  setIsAbaOpen: React.Dispatch<React.SetStateAction<boolean>>;
   editPersonalInfoOpen: boolean;
   setEditPersonalInfoOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleCustomerUpdate: (updatedData: CustomerInfo) => void;
@@ -75,7 +73,6 @@ export function useCheckoutState(): UseCheckoutStateReturn {
   const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
   const [openSheet, setOpenSheet] = useState(false);
   const [activePairId, setActivePairId] = useState<string | null>(null);
-  const [isAbaOpen, setIsAbaOpen] = useState(false);
   const [note, setNote] = useState<string>('');
   const [editPersonalInfoOpen, setEditPersonalInfoOpen] = useState(false);
 
@@ -132,8 +129,6 @@ export function useCheckoutState(): UseCheckoutStateReturn {
     setOpenSheet,
     activePairId,
     setActivePairId,
-    isAbaOpen,
-    setIsAbaOpen,
     editPersonalInfoOpen,
     setEditPersonalInfoOpen,
     handleCustomerUpdate,

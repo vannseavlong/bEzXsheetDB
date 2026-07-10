@@ -8,7 +8,7 @@ import PaymentDetail from '@/components/common/payment-detail';
 import AddressInterface from '@/components/common/address';
 import DateTimePicker from '@/components/common/date-time-detail';
 import useNavigationTitle from '@/hooks/use-navigation-title';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderDetail() {
   const { t } = useTranslation();

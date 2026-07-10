@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { WheelPicker, WheelPickerWrapper } from '../wheel-picker';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface TimeDialogProps {
   isOpen: boolean;
@@ -74,12 +74,14 @@ export default function TimeDialog({ isOpen, onClose, onConfirm, selectedTime }:
 
   return (
     <div
-      className={`fixed inset-0 flex items-end justify-center z-[9999] transition-all duration-300 ease-out ${isAnimating ? 'bg-black/50 opacity-100' : 'bg-black/0 opacity-0'
-        }`}
+      className={`fixed inset-0 flex items-end justify-center z-[9999] transition-all duration-300 ease-out ${
+        isAnimating ? 'bg-black/50 opacity-100' : 'bg-black/0 opacity-0'
+      }`}
       onClick={handleBackdropClick}>
       <div
-        className={`bg-white rounded-t-3xl w-full max-w-md transition-all duration-300 ease-out ${isAnimating ? 'translate-y-0' : 'translate-y-full'
-          }`}>
+        className={`bg-white rounded-t-3xl w-full max-w-md transition-all duration-300 ease-out ${
+          isAnimating ? 'translate-y-0' : 'translate-y-full'
+        }`}>
         <div className="px-6 pb-6 pt-4">
           {/* Header */}
           <div className="flex items-center justify-center mb-6">

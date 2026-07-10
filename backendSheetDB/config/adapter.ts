@@ -26,6 +26,9 @@ import cleanersSchema from '../schemas/admin/cleaners'
 import blockedSchedulesSchema from '../schemas/admin/blocked_schedules'
 import ordersSchema from '../schemas/admin/orders'
 
+// User (customer) schemas
+import customerUsersSchema from '../schemas/user/users'
+
 export function createAdapter() {
   // Render (and other ephemeral-filesystem hosts) can't see the gitignored
   // token file, so allow passing it as a JSON env var in those environments.
@@ -78,6 +81,8 @@ export function createAdapter() {
   adapter.registerSchema(cleanersSchema)
   adapter.registerSchema(blockedSchedulesSchema)
   adapter.registerSchema(ordersSchema)
+
+  adapter.registerSchema(customerUsersSchema)
 
   return adapter
 }

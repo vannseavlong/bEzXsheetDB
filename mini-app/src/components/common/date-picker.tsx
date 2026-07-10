@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import clsx from 'clsx';
 import { Label } from '../ui/label';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 export type DatePickerProps = {
   date?: Date;

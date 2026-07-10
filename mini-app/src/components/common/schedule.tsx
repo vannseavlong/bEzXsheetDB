@@ -3,7 +3,7 @@ import { useState, useMemo, useRef } from 'react';
 import TimeDialog from './time-dialog';
 import { useEffect } from 'react';
 import useOrderState from '@/hooks/store/use-order-state';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import useScheduleQuery from '@/hooks/use-schedule-query';
 import { DateSelector, useDateSelector } from './date-selector';
 import { Button } from '@/components/ui/button';

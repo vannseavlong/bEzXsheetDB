@@ -1,7 +1,7 @@
 import { Badge } from '../ui/badge';
 import { getBadgeStatusVariant, getStatusDisplayText } from '@/lib/utils';
 import type { OrderDetail } from '@/types/api';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 const ORDER_STATUS_KEY_MAP: Record<string, string> = {
   PENDING: 'pending',

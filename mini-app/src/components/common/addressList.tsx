@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import type { AddressAttributes } from '@/types/api';
 import Icon from '@/assets/icons/icon-asset';
 import { Delete02Icon } from 'hugeicons-react';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface AddressDetailsCardProps extends AddressAttributes {
   onClick?: () => void;

@@ -1,13 +1,17 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { requireAuth, requireRole } from '../../middleware/auth'
+import { createUserAuthRouter } from './auth'
 
 /**
- * Mobile app routes — /api/app/*
- * All routes require a valid user JWT (role: 'user').
+ * Mobile app routes — /api/user/*
+ * Everything below /auth requires a valid user JWT (role: 'user').
  */
-export function createAppRouter(_adapter: SheetAdapter) {
+export function createUserRouter(adapter: SheetAdapter) {
   const router = Router()
+
+  // Public: register/login. GET /auth/me requires auth internally.
+  router.use('/auth', createUserAuthRouter(adapter))
 
   router.use(requireAuth, requireRole('user'))
 

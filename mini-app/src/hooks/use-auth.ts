@@ -1,63 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { meApi } from '@/api/api';
 import useAuthStore from '@/hooks/store/use-auth-store';
 import type { AxiosError } from 'axios';
-import { useLoginMutation } from './use-login-mutation';
-import { useEffect } from 'react';
-import type { GetProfile } from '@/types/aba-bridge';
-import * as pkg from 'web-bridge-gateway';
-import Cookies from 'node_modules/@types/js-cookie';
-import i18next from 'i18next';
-const { callHandler } = pkg;
-
-const ABA_LANG_TO_LOCALE: Record<string, string> = {
-  en: 'en',
-  km: 'km',
-  kh: 'km',
-  vi: 'vi',
-  tw: 'tw',
-  cn: 'cn',
-  zh: 'zh'
-};
+import Cookies from 'js-cookie';
 
 export const useAuth = () => {
   const { setUser, user } = useAuthStore((state) => state);
-
-  const { data: loginRes, mutate, error: errLogin, isPending } = useLoginMutation();
-
-  useEffect(() => {
-    // console.log('callHandler: ', callHandler('getProfile'));
-    callHandler('getProfile')
-      .then((data: GetProfile) => {
-        console.log('getProfile data: ', data);
-        const localeKey = ABA_LANG_TO_LOCALE[data.lang] || 'en';
-        i18next.changeLanguage(localeKey);
-        document.documentElement.lang = localeKey;
-
-        mutate({
-          username: data.phone,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          dob: data.dobFull,
-          abaProfile: data
-        });
-      })
-      .catch((err) => {
-        console.log('catch: ', err);
-        alert(err.message);
-      })
-      .finally(() => {
-        console.log('finally');
-      });
-  }, [mutate]);
-
-  useEffect(() => {
-    if (loginRes) {
-      Cookies.set('token', loginRes.token, { expires: 30 });
-      setUser(loginRes.userInfo);
-    }
-  }, [setUser, loginRes]);
+  const queryClient = useQueryClient();
 
   const token = Cookies.get('token');
 
@@ -67,13 +16,13 @@ export const useAuth = () => {
     queryFn: async () => {
       try {
         const response = await meApi({ skipErrorHandler: true });
-
-        setUser({ ...user, ...response });
-
-        return response;
+        Cookies.set('token', response.token, { expires: 30 });
+        setUser(response.user);
+        return response.user;
       } catch (err: unknown) {
         const axiosError = err as AxiosError;
         if (axiosError.response && axiosError.response.status === 401) {
+          Cookies.remove('token');
           setUser(null);
           return null;
         }
@@ -82,10 +31,17 @@ export const useAuth = () => {
     }
   });
 
+  const logout = () => {
+    Cookies.remove('token');
+    setUser(null);
+    queryClient.removeQueries({ queryKey: ['currentUser'] });
+  };
+
   return {
     user,
-    isLoadingAuth: isLoading || isPending,
-    authError: errLogin?.message || error?.message,
-    isLoggedIn: !!user
+    isLoadingAuth: Boolean(token) && isLoading,
+    authError: error?.message,
+    isLoggedIn: !!user,
+    logout
   };
 };

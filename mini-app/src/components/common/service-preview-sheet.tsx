@@ -11,7 +11,7 @@ import Qty from './qty';
 import type { pairProduct, ProductOptionV2 } from '@/types/api';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import ServicePreview from './service-preview';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {
@@ -168,10 +168,11 @@ const ServicePreviewSheet: React.FC<Props> = ({
                   <div
                     key={index}
                     onClick={() => handleAddonClick(addon)}
-                    className={`rounded-[6px] cursor-pointer mb-5 ${isActive
+                    className={`rounded-[6px] cursor-pointer mb-5 ${
+                      isActive
                         ? 'border-1 border-[#1B4CFA] bg-[#E8F0F7]'
                         : 'border-1 border-[#d7d5d5]'
-                      }`}>
+                    }`}>
                     <div className="flex flex-col p-3 rounded-lg">
                       <div className="flex flex-row justify-between w-full pb-[8px]">
                         <h3 className="text-lg font-semibold">{addonName}</h3>

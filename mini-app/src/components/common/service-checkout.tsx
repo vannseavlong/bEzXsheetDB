@@ -1,6 +1,6 @@
 import Icon from '@/assets/icons/icon-asset';
 import Qty from './qty';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { getLocalizedName, type MultiLanguageName } from '@/lib/language-helper';
 
 type ServiceCheckoutAddon = MultiLanguageName & {

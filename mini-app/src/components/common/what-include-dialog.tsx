@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import React from 'react';
 import useEquipmentQuery from '@/hooks/use-equipment-query';
 import PrimaryButton from './primary-button';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   open: boolean;

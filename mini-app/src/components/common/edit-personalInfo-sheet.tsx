@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '../ui/button';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { validatePhoneNumber, validateName, validateEmail } from '@/lib/utils/validation';
 
 type EditPersonalProps = {
@@ -129,8 +129,9 @@ export function EditPersonal({
               </label>
               <input
                 type="text"
-                className={`w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#1B4CFA] ${errors.customerFirstName ? 'border-red-500' : ''
-                  }`}
+                className={`w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#1B4CFA] ${
+                  errors.customerFirstName ? 'border-red-500' : ''
+                }`}
                 value={formData.customerFirstName}
                 onChange={(e) => {
                   updateField('customerFirstName', e.target.value);
@@ -160,8 +161,9 @@ export function EditPersonal({
             <label className="font-sm mb-2 text-[#707070]">{t('personalInfo.phone')}</label>
             <input
               type="tel"
-              className={`w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#1B4CFA] ${errors.customerPhone ? 'border-red-500' : ''
-                }`}
+              className={`w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#1B4CFA] ${
+                errors.customerPhone ? 'border-red-500' : ''
+              }`}
               value={formData.customerPhone}
               onChange={(e) => {
                 updateField('customerPhone', e.target.value);
@@ -179,8 +181,9 @@ export function EditPersonal({
             <label className="font-sm mb-2 text-[#707070]">{t('personalInfo.email')}</label>
             <input
               type="email"
-              className={`w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#1B4CFA] ${errors.customerEmail ? 'border-red-500' : ''
-                }`}
+              className={`w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-[#1B4CFA] ${
+                errors.customerEmail ? 'border-red-500' : ''
+              }`}
               value={formData.customerEmail}
               onChange={(e) => {
                 updateField('customerEmail', e.target.value);

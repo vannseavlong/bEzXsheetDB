@@ -1,29 +1,21 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupBy } from 'lodash-es';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { resetDateTime } from '@/components/common/schedule';
-import PaymentSuccessSheet, {
-  type PaymentSuccessSheetRef
-} from '@/components/common/payment-success-sheet';
-import { PaymentStatusDialog } from '@/components/common/payment-status-dialog';
 import useAddressQuery from '@/hooks/use-address-query';
 import useOrderState from '@/hooks/store/use-order-state';
 import { useOrderPreviewMutation } from '@/hooks/use-order-preview-mutation';
 import { useOrderCreateMutation } from '@/hooks/use-order-create-mutation';
-import { useCheckoutPayment } from '@/hooks/use-checkout-payment';
 import { useAddressContext } from '@/context/AddressContext';
 import { useCheckoutState } from '@/hooks/use-checkout-state';
 import type { AddressAttributes, ProductOptionDetail } from '@/types/api';
 import type { OrderCreateResponse } from '@/types/order-create';
-import * as pkg from 'web-bridge-gateway';
 import CheckoutContent from './checkout-content';
 import useNavigationTitle from '@/hooks/use-navigation-title';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 import { validatePhoneNumber, validateName } from '@/lib/utils/validation';
-
-const { callHandler } = pkg;
 
 export default function Checkout() {
   const { t } = useTranslation();
@@ -32,7 +24,6 @@ export default function Checkout() {
 
   // Set navigation bar title
   useNavigationTitle(t('checkout.checkout'));
-  const paymentSheetRef = useRef<PaymentSuccessSheetRef>(null);
 
   const { data: addressList } = useAddressQuery();
   const { selectedAddress } = useAddressContext();
@@ -50,8 +41,6 @@ export default function Checkout() {
     setOpenSheet,
     activePairId,
     setActivePairId,
-    isAbaOpen,
-    setIsAbaOpen,
     handleCustomerUpdate,
     editPersonalInfoOpen,
     setEditPersonalInfoOpen
@@ -155,26 +144,9 @@ export default function Checkout() {
   };
 
   // Order create mutation
-  const {
-    data: createOrderResponse,
-    mutate: createOrder,
-    isPending: isCreatingOrder
-  } = useOrderCreateMutation();
+  const { mutate: createOrder, isPending: isCreatingOrder } = useOrderCreateMutation();
 
-  // Use checkout payment hook for payment status handling
-  const {
-    isCheckingStatus,
-    statusDialogOpen,
-    statusDialogType,
-    retryCount,
-    handleRetry,
-    handleCloseDialog
-  } = useCheckoutPayment({
-    createOrderRes: createOrderResponse,
-    paymentSheetRef
-  });
-
-  // Handle next click
+  // Handle next click — validates, then creates the order directly (no ABA/payment step for now)
   const handleNextClick = () => {
     if (!scheduleData.date) {
       toast.error(t('checkout.pleaseSelectDate'));
@@ -193,23 +165,14 @@ export default function Checkout() {
       return;
     }
 
-    setIsAbaOpen(true);
-  };
-
-  // Handle confirm click (ABA payment)
-  const handleConfirmClick = (useDefault: boolean) => {
     const scheduleStartDate = formatScheduleDate();
-    const orderPayload = buildOrderPayload('aba_mini_app', scheduleStartDate);
-
-    console.log('Creating Order with payload:', orderPayload);
+    const orderPayload = buildOrderPayload('CASH', scheduleStartDate);
 
     createOrder(orderPayload, {
       onSuccess: (response: OrderCreateResponse) => {
-        console.log('Order created:', response);
-        callHandler('doPayment', { ...response.paymentResp, useDefault }).catch((err: Error) =>
-          alert(err)
-        );
         resetDateTime();
+        toast.success(t('checkout.orderCreated'));
+        navigate('/order');
       },
       onError: (error: Error) => {
         toast.error(t('checkout.failedToCreateOrder'));
@@ -228,7 +191,6 @@ export default function Checkout() {
     const scheduleStartDate = formatScheduleDate();
     const finalPayload = buildOrderPayload('CASH', scheduleStartDate);
 
-    console.log('Checkout Payload (Preview):', finalPayload);
     mutate(finalPayload);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -248,25 +210,14 @@ export default function Checkout() {
 
   return (
     <div className="bg-muted min-h-screen pb-28">
-      {(isCreatingOrder || (isCheckingStatus && !statusDialogOpen)) && (
+      {isCreatingOrder && (
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-3">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-lg font-medium text-white">{t('checkout.processingPayment')}</p>
+            <p className="text-lg font-medium text-white">{t('checkout.creatingOrder')}</p>
           </div>
         </div>
       )}
-
-      <PaymentSuccessSheet ref={paymentSheetRef} bulkOrderId={createOrderResponse?.bulkOrderId} />
-
-      <PaymentStatusDialog
-        open={statusDialogOpen}
-        type={statusDialogType}
-        retryCount={retryCount}
-        isRetrying={isCheckingStatus}
-        onRetry={handleRetry}
-        onClose={handleCloseDialog}
-      />
 
       <CheckoutContent
         productData={productData}
@@ -285,15 +236,11 @@ export default function Checkout() {
         customerInfo={customerInfo}
         onCustomerUpdate={handleCustomerUpdate}
         onNextClick={handleNextClick}
-        onConfirmClick={handleConfirmClick}
         openSheet={openSheet}
         setOpenSheet={setOpenSheet}
         activePairId={activePairId}
         setActivePairId={setActivePairId}
-        isAbaOpen={isAbaOpen}
-        setIsAbaOpen={setIsAbaOpen}
         isCreatingOrder={isCreatingOrder}
-        isCheckingStatus={isCheckingStatus}
         isPending={isPending}
         calculateServiceTotal={calculateServiceTotal}
         formatCurrency={formatCurrency}

@@ -1,5 +1,5 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
-import Cookies from 'node_modules/@types/js-cookie';
+import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 import { API_ENDPOINT } from './endpoint';
 
@@ -61,12 +61,16 @@ api.interceptors.response.use(
 
 // === Export API functions ===
 export const loginApi = (
-  username: string,
-  password: string,
+  payload: LoginRequest,
   config?: import('axios').AxiosRequestConfig
-): Promise<LoginResponseProps> => api.post(API_ENDPOINT.LOGIN, { username, password }, config);
+): Promise<AuthResponseProps> => api.post(API_ENDPOINT.LOGIN, payload, config);
 
-export const meApi = (config?: import('axios').AxiosRequestConfig): Promise<UserResponseProps> =>
+export const registerApi = (
+  payload: RegisterRequest,
+  config?: import('axios').AxiosRequestConfig
+): Promise<AuthResponseProps> => api.post(API_ENDPOINT.REGISTER, payload, config);
+
+export const meApi = (config?: import('axios').AxiosRequestConfig): Promise<AuthResponseProps> =>
   api.get(API_ENDPOINT.PROFILE, config);
 export const refreshToken = async (): Promise<string | null> => {
   try {

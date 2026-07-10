@@ -15,7 +15,7 @@ import useServiceDetailQuery from '@/hooks/use-service-query';
 import useProductDetailQuery from '@/hooks/use-product-detail-query';
 import useServiceAddonQuery from '@/hooks/use-service-addon';
 import useProductAddonQuery from '@/hooks/use-product-addon-query';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 import type { ProductAttributes, ServiceCategory } from '@/types/api';
 import useOrderState, { type ServiceAddon } from '@/hooks/store/use-order-state';

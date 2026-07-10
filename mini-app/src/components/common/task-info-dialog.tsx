@@ -4,7 +4,7 @@ import useLanguage from '@/hooks/use-language';
 import { getLocalizedTaskInfo } from '@/lib/language-helper';
 import Icon from '@/assets/icons/icon-asset';
 import useProductDetailWithCategoryQuery from '@/hooks/use-product-detail-with-taskinfo-query';
-import { useTranslation } from 'node_modules/react-i18next';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   open: boolean;
