@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
-import { callHandler } from 'web-bridge-gateway';
+import * as pkg from 'web-bridge-gateway';
+
+const { callHandler } = pkg;
 
 /**
  * Hook to set the navigation bar title dynamically
