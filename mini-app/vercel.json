@@ -1,0 +1,7 @@
+{
+  "buildCommand": "pnpm run build:prod",
+  "outputDirectory": "dist/client",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
