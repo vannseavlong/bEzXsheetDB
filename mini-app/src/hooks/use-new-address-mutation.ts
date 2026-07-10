@@ -1,25 +1,23 @@
 import { useMutation } from '@tanstack/react-query';
 import { API_ENDPOINT } from '@/api/endpoint';
-import type { NewAddressPayload } from '@/types/api';
+import type { AddressAttributes, NewAddressPayload } from '@/types/api';
 import api from '@/api/api';
 
-interface AddressOperationPayload extends NewAddressPayload {
-  id?: number;
+interface AddressOperationPayload extends Partial<NewAddressPayload> {
+  id?: string;
   isEditMode?: boolean;
 }
 
-const addressOperation = async (payload: AddressOperationPayload) => {
-  if (payload.isEditMode && payload.id) {
+const addressOperation = async (payload: AddressOperationPayload): Promise<AddressAttributes> => {
+  const { id, isEditMode, ...rest } = payload;
+
+  if (isEditMode && id) {
     // Update existing address
-    const response = await api.post(API_ENDPOINT.ADDRESS_UPDATE, payload);
-    console.log('Update Address Response:', response);
-    return response.data;
-  } else {
-    // Create new address
-    const response = await api.post(API_ENDPOINT.ADDRESS_CREATE, payload);
-    console.log('Create Address Response:', response);
-    return response.data;
+    return api.patch(API_ENDPOINT.ADDRESS_UPDATE(id), rest);
   }
+
+  // Create new address
+  return api.post(API_ENDPOINT.ADDRESS_CREATE, rest as NewAddressPayload);
 };
 
 export const useAddressMutation = () => {

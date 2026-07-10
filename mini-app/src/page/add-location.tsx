@@ -35,8 +35,8 @@ const AddLocation: React.FC = () => {
   const editAddressData = routeState?.addressData;
 
   const initialEditCoordinates = parseCoordinates(
-    editAddressData?.latitude,
-    editAddressData?.longitude
+    editAddressData?.latitude?.toString(),
+    editAddressData?.longitude?.toString()
   );
 
   const [marker, setMarker] = useState(initialEditCoordinates ?? INITIAL_CENTER);

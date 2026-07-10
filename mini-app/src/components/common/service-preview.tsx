@@ -1,11 +1,11 @@
-import type { pairProduct } from '@/types/api';
+import type { PairProduct } from '@/types/api';
 import React from 'react';
 import Icon from '@/assets/icons/icon-asset';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {
-  data: pairProduct;
+  data: PairProduct;
   onClick?: () => void;
   isActive?: boolean;
   showPlusIcon?: boolean;
@@ -23,7 +23,7 @@ const ServicePreview: React.FC<Props> = ({ data, onClick, isActive, showPlusIcon
             isActive ? 'border-[#1B4CFA]' : 'border-transparent'
           }`}>
           <img
-            src={data?.iconUrl || ''}
+            src={data?.thumbnailUrl || ''}
             className="w-[48px] h-[48px]"
             alt={getLocalizedName(data, i18n.language)}
             loading="lazy"

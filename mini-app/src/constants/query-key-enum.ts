@@ -1,20 +1,17 @@
 export enum QUERY_KEY_ENUM {
   PROFILE = 'profile',
-  CATEGORY = 'list-category',
-  MORE_CATEGORY = 'more-category',
-  CATEGORY_LIST = 'category',
-  PRODUCT = 'product',
-  PRODUCT_ADDON = 'product-addon',
-  PRODUCT_ADDON_DETAIL = 'product-addon-detail',
-  PRODUCT_ADDON_ITEM = 'product-addon-item',
+  CATEGORY_LIST = 'category-list',
+  CATEGORY_PRODUCTS = 'category-products',
+  CATEGORY_ADDONS = 'category-addons',
+  CATEGORY_ADDON_ITEMS = 'category-addon-items',
+  TASK_INFO = 'task-info',
   ORDER = 'order-list',
   ADDRESS_LIST = 'address-list',
-  ADDRESS_CREATE = 'address-create',
   EQUIPMENT = 'equipment',
   BANNER = 'list-banner',
   BANNER_DETAIL = 'banner-detail',
-  ORDER_SUMMARY = 'order-summary',
   NOTE = 'homepage',
   SCHEDULE = 'order-available-schedule',
-  EDIT_SCHEDULE = 'order-bulk-edit-schedule'
+  EDIT_SCHEDULE = 'order-bulk-edit-schedule',
+  COUPON = 'coupon-validate'
 }

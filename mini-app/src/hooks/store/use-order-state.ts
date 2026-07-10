@@ -13,7 +13,7 @@ type ServiceSelections = {
   selectedServiceId: string | null;
   selectedProductId: string | null;
   productQuantity: number;
-  selectedAddonItems: Map<number, number>;
+  selectedAddonItems: Map<string, number>;
 };
 
 type OrderItemProps = {

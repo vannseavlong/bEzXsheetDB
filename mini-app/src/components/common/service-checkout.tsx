@@ -1,28 +1,12 @@
-import Icon from '@/assets/icons/icon-asset';
 import Qty from './qty';
 import { useTranslation } from 'react-i18next';
-import { getLocalizedName, type MultiLanguageName } from '@/lib/language-helper';
-
-type ServiceCheckoutAddon = MultiLanguageName & {
-  id: number;
-  amount: number;
-  qty: number;
-};
-
-type BaseProduct = MultiLanguageName & {
-  id: number;
-  iconUrl: string;
-  amount: number;
-  hourCount?: string | null;
-  cleanerCount?: string | null;
-  floorCount?: string | null;
-  bedroomCount?: string | null;
-};
+import { getLocalizedName } from '@/lib/language-helper';
+import type { BookingLine, OrderPreviewAddOn } from '@/types/api';
 
 type ServiceCheckoutProps = {
-  product: BaseProduct;
+  product: BookingLine;
   quantity?: number;
-  addOns?: ServiceCheckoutAddon[];
+  addOns?: OrderPreviewAddOn[];
 };
 
 export default function ServiceCheckout({
@@ -31,22 +15,12 @@ export default function ServiceCheckout({
   addOns = []
 }: ServiceCheckoutProps) {
   const { t, i18n } = useTranslation();
-  const hasDisplayValue = (value?: string | null) => {
-    if (value == null) return false;
-    const normalized = String(value).trim().toLowerCase();
-    return normalized !== '' && normalized !== 'null' && normalized !== 'undefined';
-  };
-
-  const floorBedroomText = [
-    hasDisplayValue(product.floorCount) ? `${t('common.floors')}: ${product.floorCount}` : null,
-    hasDisplayValue(product.bedroomCount) ? `${t('common.bedroom')}: ${product.bedroomCount}` : null
-  ]
-    .filter((text): text is string => Boolean(text))
-    .join(' | ');
 
   if (!product) {
     return <div className="p-4">{t('serviceCheckout.noProductSelected')}</div>;
   }
+
+  const durationHours = product.duration > 0 ? Math.round(product.duration / 60) : null;
 
   return (
     <div className="bg-white">
@@ -54,7 +28,7 @@ export default function ServiceCheckout({
         {/* Icon */}
         <div className="flex-shrink-0">
           <img
-            src={product.iconUrl || product.iconUrl}
+            src={product.thumbnailUrl ?? undefined}
             alt={getLocalizedName(product, i18n.language)}
             className="w-16 h-16 object-contain"
           />
@@ -64,22 +38,15 @@ export default function ServiceCheckout({
             <p className="text-md font-semibold">{getLocalizedName(product, i18n.language)}</p>
             <div className="font-semibold text-gray-800">${product.amount.toFixed(2)}</div>
           </div>
-          {floorBedroomText && <p className="mb-2">{floorBedroomText}</p>}
           <div className="flex items-center justify-between text-[#3D3D3D]">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Icon name="clockIcon" />
-                <p className="text-sm text-[#3D3D3D]">
-                  {product.hourCount} {t('common.hours')}
-                </p>
-              </div>
-              <div className="flex items-center gap-1">
-                <Icon name="userGroupIcon" />
-                <p className="text-sm text-[#3D3D3D]">
-                  {product.cleanerCount}{' '}
-                  {Number(product.cleanerCount) > 1 ? t('common.cleaners') : t('common.cleaner')}
-                </p>
-              </div>
+              {durationHours !== null && (
+                <div className="flex items-center gap-1">
+                  <p className="text-sm text-[#3D3D3D]">
+                    {durationHours} {t('common.hours')}
+                  </p>
+                </div>
+              )}
             </div>
             {quantity > 0 && <Qty quantity={quantity} />}
           </div>

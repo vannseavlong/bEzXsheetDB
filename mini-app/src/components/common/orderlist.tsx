@@ -1,9 +1,9 @@
 import React from 'react';
-import type { OrderListAttributes } from '@/types/api';
+import type { OrderListItem } from '@/types/api';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
-  order: OrderListAttributes;
+  order: OrderListItem;
 };
 
 const OrderList: React.FC<Props> = ({ order }) => {
@@ -13,7 +13,7 @@ const OrderList: React.FC<Props> = ({ order }) => {
     <div className="w-full h-auto flex items-center justify-between p-4 bg-white border-b border-gray-100">
       <div className="flex items-center space-x-3">
         <img
-          src={order.thumbnailUrl}
+          src={order.thumbnailUrl ?? undefined}
           alt={`Order ${order.id}`}
           loading="lazy"
           decoding="async"
@@ -37,7 +37,7 @@ const OrderList: React.FC<Props> = ({ order }) => {
       </div>
 
       <div className="flex flex-col items-end justify-between h-full">
-        <p className="font-bold text-[16px]">{order.amountDisplay}</p>
+        <p className="font-bold text-[16px]">${order.totalPayableAmount.toFixed(2)}</p>
       </div>
     </div>
   );
@@ -49,7 +49,7 @@ const areEqual = (prevProps: Props, nextProps: Props) => {
     prevProps.order.thumbnailUrl === nextProps.order.thumbnailUrl &&
     prevProps.order.itemCount === nextProps.order.itemCount &&
     prevProps.order.createdAt === nextProps.order.createdAt &&
-    prevProps.order.amountDisplay === nextProps.order.amountDisplay
+    prevProps.order.totalPayableAmount === nextProps.order.totalPayableAmount
   );
 };
 

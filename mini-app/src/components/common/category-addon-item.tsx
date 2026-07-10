@@ -1,11 +1,11 @@
-import type { ServiceAddonAttributes } from '@/types/api';
+import type { CategoryAddon } from '@/types/api';
 import React from 'react';
 import Icon from '@/assets/icons/icon-asset';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {
-  data: ServiceAddonAttributes;
+  data: CategoryAddon;
   onClick: () => void;
   isSelected?: boolean;
   quantity?: number;
@@ -14,7 +14,7 @@ type Props = {
   onQuantityClick?: () => void;
 };
 
-const ServiceAddonItem: React.FC<Props> = ({
+const CategoryAddonItem: React.FC<Props> = ({
   data,
   onClick,
   isSelected = false,
@@ -30,16 +30,16 @@ const ServiceAddonItem: React.FC<Props> = ({
     action();
   };
 
+  const badge = i18n.language.startsWith('km') ? (data.badgeKm ?? data.badgeEn) : data.badgeEn;
+
   return (
     <div
       onClick={onClick}
       className="flex w-[100px] min-w-[100px] flex-col items-center cursor-pointer shrink-0">
       <div className="relative w-[100px] h-[100px]">
-        <img
-          src={data.imgUrl}
-          alt={getLocalizedName(data, i18n.language)}
-          className="w-full h-full object-cover rounded-md"
-        />
+        <div className="w-full h-full flex items-center justify-center rounded-md bg-gray-50 border border-gray-100 px-2 text-center">
+          <p className="text-xs font-semibold text-[#1B4CFA]">{badge}</p>
+        </div>
 
         {isSelected && quantity > 0 && (
           <div className="absolute -bottom-2 right-0 flex max-w-full rounded-full border border-blue-600 bg-white px-1 shadow-sm">
@@ -83,4 +83,4 @@ const ServiceAddonItem: React.FC<Props> = ({
   );
 };
 
-export default ServiceAddonItem;
+export default CategoryAddonItem;

@@ -20,12 +20,12 @@ export const formatPhoneNumber = (value: string) => {
 };
 
 export const getBadgeStatusVariant = (
-  status?: 'PENDING' | 'IN-PROGRESS' | 'COMPLETED' | 'ACCEPTED' | 'CANCELLED' | 'REJECTED'
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'ACCEPTED' | 'CANCELLED'
 ) => {
   switch (status) {
     case 'PENDING':
       return 'warning';
-    case 'IN-PROGRESS':
+    case 'IN_PROGRESS':
       return 'confirm';
     case 'ACCEPTED':
       return 'confirm';
@@ -33,20 +33,18 @@ export const getBadgeStatusVariant = (
       return 'approve';
     case 'CANCELLED':
       return 'destructive';
-    case 'REJECTED':
-      return 'destructive';
     default:
       return 'destructive';
   }
 };
 
 export const getStatusDisplayText = (
-  status?: 'PENDING' | 'IN-PROGRESS' | 'COMPLETED' | 'ACCEPTED' | 'CANCELLED' | 'REJECTED'
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'ACCEPTED' | 'CANCELLED'
 ) => {
   switch (status) {
     case 'PENDING':
       return 'Pending';
-    case 'IN-PROGRESS':
+    case 'IN_PROGRESS':
       return 'In Progress';
     case 'ACCEPTED':
       return 'Confirmed';
@@ -54,8 +52,6 @@ export const getStatusDisplayText = (
       return 'Completed';
     case 'CANCELLED':
       return 'Cancelled';
-    case 'REJECTED':
-      return 'Rejected';
     default:
       return 'Unknown';
   }

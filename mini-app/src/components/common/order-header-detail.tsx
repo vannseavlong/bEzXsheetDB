@@ -5,11 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 const ORDER_STATUS_KEY_MAP: Record<string, string> = {
   PENDING: 'pending',
-  'IN-PROGRESS': 'inProgress',
+  IN_PROGRESS: 'inProgress',
   ACCEPTED: 'confirmed',
   COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
-  REJECTED: 'rejected'
+  CANCELLED: 'cancelled'
 };
 
 export function OrderHeaderDetail({ order }: { order: OrderDetail }) {

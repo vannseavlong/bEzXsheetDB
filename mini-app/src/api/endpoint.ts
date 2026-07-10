@@ -1,37 +1,34 @@
+// Paths are relative to VITE_BASE_URL, which should point at backendSheetDB's /api/user.
 export const API_ENDPOINT = {
   REGISTER: 'auth/register',
   LOGIN: 'auth/login',
   PROFILE: 'auth/me',
   LOGOUT: 'logout',
 
-  CATEGORY: 'category/list',
-  CATEGORY_LIST: 'category',
+  CATEGORY_LIST: 'category/list',
+  CATEGORY_PRODUCTS: (categoryId: string) => `category/${categoryId}/products`,
+  CATEGORY_ADDONS: (categoryId: string) => `category/${categoryId}/addons`,
+  CATEGORY_ADDON_ITEMS: (addonId: string) => `category-addon/${addonId}/items`,
+  CATEGORY_TASK_INFO: (categoryId: string) => `category/${categoryId}/task-info`,
+  CATEGORY_ITEMS: (categoryId: string) => `category/${categoryId}/items`,
 
-  PRODUCT: 'product/v2',
-  PRODUCT_DETAIL: 'product',
-  PRODUCT_ADDON: 'category',
-  PRODUCT_ADDON_DETAIL: 'product/option',
+  BANNER_LIST: 'banner/list',
+  BANNER_DETAIL: (id: string) => `banner/${id}`,
+  HOMEPAGE: 'homepage',
 
   ADDRESS_LIST: 'address/list',
   ADDRESS_CREATE: 'address/create',
-  ADDRESS_UPDATE: 'address/update',
-  ADDRESS_DELETE: 'address/:id/delete',
+  ADDRESS_UPDATE: (id: string) => `address/${id}`,
+  ADDRESS_DELETE: (id: string) => `address/${id}`,
   ADDRESS_DISTANCE: 'address/check/distance',
 
-  ORDER: 'order',
-  ORDER_LIST: 'order/mini-app/list',
-  ORDER_DETAIL: 'order/mini-app/detail',
-  ORDER_PREVIEW: 'order/mini-app/preview',
-  ORDER_CREATE: 'order/mini-app/create',
-  ORDER_STATUS: 'order/:bulkOrderId/:tranId/payment-status',
+  ORDER_SCHEDULE: 'order/available-schedule',
+  ORDER_PREVIEW: 'order/preview',
+  ORDER_CREATE: 'order/create',
+  ORDER_LIST: 'order/list',
+  ORDER_DETAIL: (bulkOrderId: string) => `order/${bulkOrderId}`,
+  ORDER_EDIT_SCHEDULE: (bulkOrderId: string) => `order/${bulkOrderId}/schedule`,
+  ORDER_PAYMENT_STATUS: (bulkOrderId: string) => `order/${bulkOrderId}/payment-status`,
 
-  EQUIPMENT: 'category',
-  BANNER: 'banner/list',
-  BANNER_DETAIL: 'banner',
-
-  NOTE: 'homepage',
-  SCHEDULE: 'order/available-schedule',
-  EDIT_SCHEDULE: 'order/bulk/edit-schedule'
+  COUPON_VALIDATE: 'coupon/validate'
 };
-
-export type ApiEndpointProps = (typeof API_ENDPOINT)[keyof typeof API_ENDPOINT];

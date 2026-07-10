@@ -13,13 +13,11 @@ export default function Banner() {
 
   if (!data) return null;
 
-  const cleanHtml = data.contentEn?.replace(/\\"/g, '"').replace(/\\n/g, '').replace(/\\/g, '');
-
   return (
     <div className="p-4">
       <div className="mb-4">
         <img
-          src={data.imgUrlEn}
+          src={data.imgUrlEn ?? undefined}
           alt={data.name}
           className="w-full aspect-[16/9] object-cover rounded-lg"
           onError={(e) => {
@@ -27,7 +25,9 @@ export default function Banner() {
           }}
         />
 
-        <div className="mt-4" dangerouslySetInnerHTML={{ __html: cleanHtml || '' }} />
+        <div className="mt-4">
+          <p className="font-semibold">{data.titleEn}</p>
+        </div>
       </div>
     </div>
   );

@@ -1,23 +1,26 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router';
-import { useState, useEffect, useMemo, useRef } from 'react';
-import ServiceButton from '@/components/common/service-button';
-import ServiceType from '@/components/common/service-type';
-import ServiceAddonItem from '@/components/common/service-addon';
-import ServiceAddonSheet from '@/components/common/service-addon-sheet';
+import { useState, useEffect, useRef } from 'react';
+import CategoryButton from '@/components/common/category-button';
+import ProductCard from '@/components/common/product-card';
+import CategoryAddonItem from '@/components/common/category-addon-item';
+import CategoryAddonSheet from '@/components/common/category-addon-sheet';
 import TotalPriceButton from '@/components/common/total-price-button';
-// import Alert from '@/components/common/alert';
 import { SectionTitle } from '@/components/common/additional-info';
 import TaskInfoDialog from '@/components/common/task-info-dialog';
 import WhatIncludeDialog from '@/components/common/what-include-dialog';
 import InfoDialog from '@/components/common/info-dialog';
 import Assets from '@/assets';
-import useServiceDetailQuery from '@/hooks/use-service-query';
-import useProductDetailQuery from '@/hooks/use-product-detail-query';
-import useServiceAddonQuery from '@/hooks/use-service-addon';
-import useProductAddonQuery from '@/hooks/use-product-addon-query';
+import useCategoryQuery from '@/hooks/use-category-query';
+import useCategoryProductsQuery from '@/hooks/use-category-products-query';
+import useCategoryAddonsQuery from '@/hooks/use-category-addons-query';
+import useCategoryAddonItemsQuery from '@/hooks/use-category-addon-items-query';
 import { useTranslation } from 'react-i18next';
 
-import type { ProductAttributes, ServiceCategory } from '@/types/api';
+import type {
+  CategoryAddon,
+  CategoryAddonItem as CategoryAddonItemType,
+  CategoryProduct
+} from '@/types/api';
 import useOrderState, { type ServiceAddon } from '@/hooks/store/use-order-state';
 import Icon from '@/assets/icons/icon-asset';
 import useNavigationTitle from '@/hooks/use-navigation-title';
@@ -33,70 +36,88 @@ export function Service() {
 
   const { setAddon, setServiceSelections, serviceSelections } = useOrderState();
 
-  const { data: serviceCategories } = useServiceDetailQuery(id);
+  const { data: categories } = useCategoryQuery();
 
   const navigate = useNavigate();
 
-  // Use global state for persistence
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
-    serviceSelections.selectedServiceId
+  // Use global state for persistence — selectedServiceId holds the selected categoryId
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    serviceSelections.selectedServiceId ?? id ?? null
   );
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     serviceSelections.selectedProductId
   );
   const [productQuantity, setProductQuantity] = useState<number>(serviceSelections.productQuantity);
-  const [selectedAddonItems, setSelectedAddonItems] = useState<Map<number, number>>(
+  // itemId -> qty, flat across all addon groups
+  const [selectedAddonItems, setSelectedAddonItems] = useState<Map<string, number>>(
     serviceSelections.selectedAddonItems
   );
+  // local cache of fetched addon items, keyed by item id, used to derive group totals/pricing
+  const [itemsCache, setItemsCache] = useState<Map<string, CategoryAddonItemType>>(new Map());
 
-  const { data: productData } = useProductDetailQuery(selectedServiceId ?? '');
-  const [selectedAddonId, setSelectedAddonId] = useState<string | null>(null);
-  const { data: productAddon } = useServiceAddonQuery(id);
+  const { data: productData } = useCategoryProductsQuery(selectedCategoryId ?? undefined);
+  const [activeAddonId, setActiveAddonId] = useState<string | null>(null);
+  const [pendingSingleToggleAddonId, setPendingSingleToggleAddonId] = useState<string | null>(
+    null
+  );
+  const { data: categoryAddons } = useCategoryAddonsQuery(selectedCategoryId ?? undefined);
 
   const [openSheet, setOpenSheet] = useState(false);
-  const { data: selectedAddonData } = useProductAddonQuery(selectedAddonId ?? '');
+  const { data: activeAddonItems } = useCategoryAddonItemsQuery(activeAddonId);
 
   const [viewMore, setViewMore] = useState(false);
-  const selectedServiceTabRef = useRef<HTMLDivElement | null>(null);
+  const selectedCategoryTabRef = useRef<HTMLDivElement | null>(null);
 
-  const selectedServiceData = useMemo(
-    () => serviceCategories?.find((service) => service.id.toString() === selectedServiceId),
-    [serviceCategories, selectedServiceId]
-  );
-
-  const hasQty = selectedServiceData?.hasQty ?? true;
-  const hasServiceAddons = (productAddon?.length ?? 0) > 0;
-  const shouldShowAddonSection = Boolean(selectedProductId && hasServiceAddons);
+  const hasQty = true;
+  const hasCategoryAddons = (categoryAddons?.length ?? 0) > 0;
+  const shouldShowAddonSection = Boolean(selectedProductId && hasCategoryAddons);
 
   // Update global state whenever local state changes
   useEffect(() => {
     setServiceSelections({
-      selectedServiceId,
+      selectedServiceId: selectedCategoryId,
       selectedProductId,
       productQuantity,
       selectedAddonItems
     });
   }, [
-    selectedServiceId,
+    selectedCategoryId,
     selectedProductId,
     productQuantity,
     selectedAddonItems,
     setServiceSelections
   ]);
 
+  // Cache fetched addon items so group totals/pricing survive after the sheet closes
   useEffect(() => {
-    if (id && serviceSelections.selectedServiceId) {
-      const currentCategoryServices =
-        serviceCategories?.map((service) => service.id.toString()) || [];
-      if (!currentCategoryServices.includes(serviceSelections.selectedServiceId)) {
-        // Clear selections if persisted service doesn't belong to current category
-        setSelectedServiceId(null);
-        setSelectedProductId(null);
-        setProductQuantity(0);
-        setSelectedAddonItems(new Map());
+    if (!activeAddonItems) return;
+    setItemsCache((prev) => {
+      const next = new Map(prev);
+      activeAddonItems.forEach((item) => next.set(item.id, item));
+      return next;
+    });
+  }, [activeAddonItems]);
+
+  // For SINGLE-selection addons, toggle the (only) item directly once its data loads
+  useEffect(() => {
+    if (!pendingSingleToggleAddonId) return;
+    if (activeAddonId !== pendingSingleToggleAddonId) return;
+    if (!activeAddonItems) return;
+
+    const firstItem = activeAddonItems[0];
+    setPendingSingleToggleAddonId(null);
+    if (!firstItem) return;
+
+    setSelectedAddonItems((prev) => {
+      const next = new Map(prev);
+      if (next.has(firstItem.id)) {
+        next.delete(firstItem.id);
+      } else {
+        next.set(firstItem.id, 1);
       }
-    }
-  }, [id, serviceCategories, serviceSelections.selectedServiceId]);
+      return next;
+    });
+  }, [activeAddonItems, pendingSingleToggleAddonId, activeAddonId]);
 
   // Product quantity management functions
   const incrementProductQuantity = () => {
@@ -109,99 +130,82 @@ export function Service() {
 
   const handleProductClick = (productId: string) => {
     if (selectedProductId === productId) {
-      // If clicking the same product
       if (productQuantity === 0) {
         setProductQuantity(1);
       } else if (!hasQty) {
-        // If hasQty is false, do not increment, always set to 1
         setProductQuantity(1);
       } else {
-        // If hasQty is true, allow increment (if needed)
         setProductQuantity((prev) => prev + 1);
       }
     } else {
-      // If clicking a different product, select it and set quantity to 1
       setSelectedProductId(productId);
       setProductQuantity(1);
     }
   };
 
-  // Helper functions for quantity management
-  const getAddonQuantity = (addonId: number): number => {
-    return selectedAddonItems.get(addonId) || 0;
-  };
-
-  const updateAddonQuantity = (addonId: number, quantity: number) => {
-    setSelectedAddonItems((prev) => {
-      const newMap = new Map(prev);
-      if (quantity <= 0) {
-        newMap.delete(addonId);
-      } else {
-        newMap.set(addonId, quantity);
-      }
-      return newMap;
+  const getAddonGroupQuantity = (addonId: string): number => {
+    let total = 0;
+    selectedAddonItems.forEach((qty, itemId) => {
+      if (itemsCache.get(itemId)?.addonId === addonId) total += qty;
     });
+    return total;
   };
 
-  const incrementAddon = (addonId: number) => {
-    const currentQty = getAddonQuantity(addonId);
-    updateAddonQuantity(addonId, currentQty + 1);
-  };
-
-  const decrementAddon = (addonId: number) => {
-    const currentQty = getAddonQuantity(addonId);
-    if (currentQty > 0) {
-      updateAddonQuantity(addonId, currentQty - 1);
-    }
-  };
-
-  const toggleAddonSelection = (addonId: number) => {
-    const currentQty = getAddonQuantity(addonId);
-    if (currentQty === 0) {
-      updateAddonQuantity(addonId, 1);
+  const handleAddonClick = (addon: CategoryAddon) => {
+    if (addon.selectionType === 'MULTIPLE') {
+      setActiveAddonId(addon.id);
+      setOpenSheet(true);
     } else {
-      updateAddonQuantity(addonId, 0);
+      setActiveAddonId(addon.id);
+      setPendingSingleToggleAddonId(addon.id);
     }
+  };
+
+  const handleSheetConfirm = (selections: { itemId: string; qty: number }[]) => {
+    setSelectedAddonItems((prev) => {
+      const next = new Map(prev);
+      // Remove any existing selections for the addon group currently being edited
+      for (const itemId of Array.from(next.keys())) {
+        if (itemsCache.get(itemId)?.addonId === activeAddonId) {
+          next.delete(itemId);
+        }
+      }
+      selections.forEach(({ itemId, qty }) => {
+        if (qty > 0) next.set(itemId, qty);
+      });
+      return next;
+    });
+    setOpenSheet(false);
   };
 
   // Dialogs
   const [openTaskInfoDialog, setOpenTaskInfoDialog] = useState(false);
   const [openWhatsIncludedDialog, setOpenWhatsIncludedDialog] = useState(false);
   const [openInfoDialog, setOpenInfoDialog] = useState(false);
-  const [selectedProductForInfo, setSelectedProductForInfo] = useState<ProductAttributes | null>(
+  const [selectedProductForInfo, setSelectedProductForInfo] = useState<CategoryProduct | null>(
     null
   );
 
   const handleNextClick = () => {
-    if (!selectedProduct || !selectedServiceData || productQuantity === 0) return;
+    if (!selectedProduct || !selectedCategoryId || productQuantity === 0) return;
 
-    const ServiceAddonPayload: ServiceAddon[] = Array.from(selectedAddonItems).map(([id, qty]) => ({
-      id: id.toString(),
+    const addonPayload: ServiceAddon[] = Array.from(selectedAddonItems).map(([itemId, qty]) => ({
+      id: itemId,
       qty
     }));
 
-    setAddon(ServiceAddonPayload);
+    setAddon(addonPayload);
 
-    console.log('Payload going to checkout:', {
-      productId: selectedProductId,
-      serviceId: selectedServiceId,
-      productQuantity: productQuantity, // Send actual quantity for both cases
-      addons: ServiceAddonPayload,
-      hasQty: hasQty
-    });
-
-    navigate(`/checkout/${selectedProductId}/${selectedServiceId}`);
+    navigate(`/checkout/${selectedProductId}/${selectedCategoryId}`);
   };
 
-  const handleProductInfoClick = (product: ProductAttributes) => {
+  const handleProductInfoClick = (product: CategoryProduct) => {
     setSelectedProductForInfo(product);
     setOpenInfoDialog(true);
   };
 
-  // Find selected product + service
-  const selectedProduct = productData?.find(
-    (product) => product.id.toString() === selectedProductId
-  );
+  // Find selected product
+  const selectedProduct = productData?.find((product) => product.id === selectedProductId);
 
   const formatCurrency = (amount: number) => {
     return `$${amount.toFixed(2)}`;
@@ -210,135 +214,110 @@ export function Service() {
   const calculateServiceTotal = () => {
     if (!selectedProduct) return 0;
 
-    // Base service price
     let total = selectedProduct.amount;
 
-    // Add selected addon prices with quantities
-    if (productAddon) {
-      productAddon.forEach((addon) => {
-        const quantity = getAddonQuantity(addon.id);
-        if (quantity > 0) {
-          total += addon.amount * quantity;
-        }
-      });
-    }
+    selectedAddonItems.forEach((qty, itemId) => {
+      const item = itemsCache.get(itemId);
+      if (item) total += item.amount * qty;
+    });
 
     return total;
   };
 
+  // Initialize / reset selected category from route param or productId query param
   useEffect(() => {
-    if (!serviceCategories || !id || serviceCategories.length === 0) return;
+    if (!categories || categories.length === 0) return;
 
-    const currentServiceIds = serviceCategories.map((s) => s.id.toString());
+    const currentCategoryIds = categories.map((c) => c.id);
     const isCurrentSelectionValid =
-      selectedServiceId && currentServiceIds.includes(selectedServiceId);
+      selectedCategoryId && currentCategoryIds.includes(selectedCategoryId);
 
-    if (productIdFromUrl && !serviceSelections.selectedServiceId) {
-      // First, check if productId matches a service
-      const matchedService = serviceCategories.find(
-        (service) => service.id.toString() === productIdFromUrl
-      );
-      if (matchedService) {
-        setSelectedServiceId(matchedService.id.toString());
-        return;
-      }
-      // Second, productId might be a product - we need productData to check
-      return;
-    }
-
-    // No productId in URL: reset to first service when switching categories or no selection
     if (!isCurrentSelectionValid) {
-      setSelectedServiceId(serviceCategories[0].id.toString());
+      const fallback = (id && currentCategoryIds.includes(id) ? id : categories[0].id) ?? null;
+      setSelectedCategoryId(fallback);
     }
-  }, [serviceCategories, id, productIdFromUrl, selectedServiceId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories, id]);
 
+  // Reset product selection when switching category, or select product matching productId param
   useEffect(() => {
-    if (!selectedServiceId || !productData) return;
+    if (!selectedCategoryId || !productData) return;
 
-    const isSelectedProductInList = productData.some((p) => p.id.toString() === selectedProductId);
+    const isSelectedProductInList = productData.some((p) => p.id === selectedProductId);
     if (!isSelectedProductInList) {
+      if (productIdFromUrl) {
+        const matched = productData.find(
+          (p) => p.id === productIdFromUrl || p.productId === productIdFromUrl
+        );
+        if (matched) {
+          setSelectedProductId(matched.id);
+          setProductQuantity(1);
+          return;
+        }
+      }
+
       if (productData.length > 0) {
-        setSelectedProductId(productData[0].id.toString());
-        // Only set quantity to 1 if we're actively resetting it due to invalidity
+        setSelectedProductId(productData[0].id);
         setProductQuantity(1);
       } else {
         setSelectedProductId(null);
         setProductQuantity(0);
       }
     }
-  }, [selectedServiceId, productData, selectedProductId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategoryId, productData]);
 
   useEffect(() => {
-    if (!selectedServiceTabRef.current) return;
-    selectedServiceTabRef.current.scrollIntoView({
+    if (!selectedCategoryTabRef.current) return;
+    selectedCategoryTabRef.current.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
       inline: 'center'
     });
-  }, [selectedServiceId, serviceCategories]);
+  }, [selectedCategoryId, categories]);
 
   useEffect(() => {
     if (!shouldShowAddonSection) {
       setOpenSheet(false);
-      setSelectedAddonId(null);
+      setActiveAddonId(null);
     }
   }, [shouldShowAddonSection]);
 
-  if (!serviceCategories) return null;
+  if (!categories) return null;
 
   return (
     <>
       <div className="bg-muted min-h-screen space-y-4 pb-50">
-        {/* Service Selection */}
+        {/* Category Selection */}
         <div className="bg-white shadow-sm flex items-start py-6 px-4 overflow-x-auto scroll-smooth space-x-4">
-          {/* <p className="font-bold pb-2 text-[16px]">Service</p> */}
-          {/* <div className="flex items-start py-4"> */}
-          {serviceCategories.map((service: ServiceCategory) => {
-            if (!service.nameEn) return null;
+          {categories.map((category) => {
             return (
               <div
-                key={service.id}
-                ref={selectedServiceId === service.id.toString() ? selectedServiceTabRef : null}>
-                <ServiceButton
-                  service={service}
-                  isActive={selectedServiceId === service.id.toString()}
-                  onClick={() => {
-                    // DEBUG: Log service name and ID
-                    console.log('Selected Service:', service.nameEn, 'ID:', service.id.toString());
-                    setSelectedServiceId(service.id.toString());
-                  }}
+                key={category.id}
+                ref={selectedCategoryId === category.id ? selectedCategoryTabRef : null}>
+                <CategoryButton
+                  category={category}
+                  isActive={selectedCategoryId === category.id}
+                  onClick={() => setSelectedCategoryId(category.id)}
                 />
               </div>
             );
           })}
-          {/* </div> */}
         </div>
 
-        {/* Service Types */}
+        {/* Products */}
         <div className="bg-white p-4">
           <p className="font-bold pb-6 text-[16px]">{t('service.serviceType')}</p>
           <div className="space-y-5 items-center justify-center">
             {productData?.slice(0, viewMore ? undefined : 5).map((product) => {
-              // // Debug logging
-              // console.log(
-              //   'Service:',
-              //   selectedServiceData?.nameEn,
-              //   'hasQty:',
-              //   hasQty,
-              //   'Product:',
-              //   product.nameEn
-              // );
-
               return (
-                <ServiceType
+                <ProductCard
                   key={product.id}
-                  service={product}
-                  isActive={selectedProductId === product.id.toString()}
-                  onClick={() => handleProductClick(product.id.toString())}
+                  product={product}
+                  isActive={selectedProductId === product.id}
+                  onClick={() => handleProductClick(product.id)}
                   onInfoClick={() => handleProductInfoClick(product)}
-                  quantity={
-                    hasQty && selectedProductId === product.id.toString() ? productQuantity : 0
-                  }
+                  quantity={hasQty && selectedProductId === product.id ? productQuantity : 0}
                 />
               );
             })}
@@ -369,48 +348,32 @@ export function Service() {
             </div>
 
             <div className="mb-4 flex flex-nowrap gap-[24px] overflow-x-auto overflow-y-hidden px-4 pb-2 scrollbar-hide sm:flex-wrap sm:overflow-visible">
-              {productAddon?.map((addon) => {
-                const quantity = getAddonQuantity(addon.id);
+              {categoryAddons?.map((addon) => {
+                const quantity = getAddonGroupQuantity(addon.id);
                 const isSelected = quantity > 0;
 
                 return (
-                  <ServiceAddonItem
+                  <CategoryAddonItem
                     key={addon.id}
                     data={addon}
                     isSelected={isSelected}
                     quantity={quantity}
-                    onIncrement={() => incrementAddon(addon.id)}
-                    onDecrement={() => decrementAddon(addon.id)}
-                    onClick={() => {
-                      if (addon.type === 'MULTIPLE') {
-                        console.log('Selected Addon:', addon.nameEn, 'ID:', addon.id.toString());
-                        setSelectedAddonId(addon.id.toString());
-                        setOpenSheet(true);
-                      } else {
-                        console.log('Toggling Addon:', addon.nameEn, 'ID:', addon.id);
-                        toggleAddonSelection(addon.id);
-                      }
-                    }}
+                    onClick={() => handleAddonClick(addon)}
                   />
                 );
               })}
 
-              <ServiceAddonSheet
-                data={selectedAddonData ?? []}
+              <CategoryAddonSheet
+                data={activeAddonItems}
                 open={openSheet}
                 onOpenChange={setOpenSheet}
-                addonId={selectedAddonId}
-                onConfirm={(id) => {
-                  setSelectedAddonId(id);
-                  setOpenSheet(false);
-                }}
+                addonId={activeAddonId}
+                initialQuantities={Object.fromEntries(selectedAddonItems)}
+                onConfirm={handleSheetConfirm}
               />
             </div>
           </div>
         )}
-
-        {/* Alerts */}
-        {/* {selectedProductId && <Alert />} */}
 
         {/* Info Sections */}
         <SectionTitle
@@ -448,13 +411,14 @@ export function Service() {
       <TaskInfoDialog
         open={openTaskInfoDialog}
         onOpenChange={setOpenTaskInfoDialog}
-        productId={selectedServiceId || undefined}
+        categoryId={selectedCategoryId || undefined}
+        productId={selectedProduct?.productId}
       />
 
       <WhatIncludeDialog
         open={openWhatsIncludedDialog}
         onOpenChange={setOpenWhatsIncludedDialog}
-        categoryId={id || undefined}
+        categoryId={selectedCategoryId || undefined}
       />
 
       <InfoDialog

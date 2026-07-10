@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupBy } from 'lodash-es';
 import { toast } from 'sonner';
@@ -10,8 +10,7 @@ import { useOrderPreviewMutation } from '@/hooks/use-order-preview-mutation';
 import { useOrderCreateMutation } from '@/hooks/use-order-create-mutation';
 import { useAddressContext } from '@/context/AddressContext';
 import { useCheckoutState } from '@/hooks/use-checkout-state';
-import type { AddressAttributes, ProductOptionDetail } from '@/types/api';
-import type { OrderCreateResponse } from '@/types/order-create';
+import type { AddressAttributes, OrderCreateResponse, OrderPreviewRequest } from '@/types/api';
 import CheckoutContent from './checkout-content';
 import useNavigationTitle from '@/hooks/use-navigation-title';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +27,8 @@ export default function Checkout() {
   const { data: addressList } = useAddressQuery();
   const { selectedAddress } = useAddressContext();
   const { serviceAddons, productQuantity } = useOrderState();
+
+  const [couponCode, setCouponCode] = useState<string | undefined>(undefined);
 
   // Use custom hook for state management
   const {
@@ -49,9 +50,8 @@ export default function Checkout() {
   // Order preview mutation
   const { data: servicePairAddons, error, isPending, mutate } = useOrderPreviewMutation();
 
-  const productData = servicePairAddons?.productOptions;
   const pairProductObj = useMemo(
-    () => groupBy(servicePairAddons?.pairProducts, 'id'),
+    () => groupBy(servicePairAddons?.pairProducts, 'categoryProductId'),
     [servicePairAddons?.pairProducts]
   );
   const pairProductKeys = Object.keys(pairProductObj);
@@ -59,32 +59,10 @@ export default function Checkout() {
   // Format currency helper
   const formatCurrency = (amount?: number): string => `$${(amount ?? 0).toFixed(2)}`;
 
-  // Calculate service total
+  // Calculate service total (pre-fee, pre-discount subtotal for products + addons)
   const calculateServiceTotal = (): number => {
-    if (!productData) return 0;
-
-    const productsAmount = productData
-      .filter(
-        (product: ProductOptionDetail) =>
-          product.id.toString() === productId || product.id.toString() === serviceId
-      )
-      .reduce(
-        (sum: number, product: ProductOptionDetail) =>
-          sum + (product.amount ?? 0) * productQuantity,
-        0
-      );
-
-    const selectedServicesAmount = selectedServices.reduce(
-      (sum: number, s) => sum + (s.amount ?? 0) * (s.qty ?? 1),
-      0
-    );
-
-    const serviceAddonsAmount = serviceAddons.reduce((sum: number, addon) => {
-      const matchingService = selectedServices.find((s) => s.id.toString() === addon.id);
-      return sum + (matchingService?.amount ?? 0) * addon.qty;
-    }, 0);
-
-    return productsAmount + selectedServicesAmount + serviceAddonsAmount;
+    if (!servicePairAddons) return 0;
+    return (servicePairAddons.amount ?? 0) + (servicePairAddons.addOnAmount ?? 0);
   };
 
   // Format schedule date helper
@@ -113,33 +91,32 @@ export default function Checkout() {
     return `${year}-${month}-${day} ${hourStr}:${minuteStr}:00`;
   };
 
-  // Build order payload
-  const buildOrderPayload = (paymentMethod: string, scheduleStartDate: string) => {
-    const selectedAddressObj = addressList?.find(
-      (addr: AddressAttributes) => addr.address === selectedAddress
-    );
+  const selectedAddressObj = addressList?.find(
+    (addr: AddressAttributes) => addr.address === selectedAddress
+  );
+
+  // Build order payload (also used for /order/preview, which shares the same shape)
+  const buildOrderPayload = (
+    paymentMethod: string,
+    scheduleStartDate: string
+  ): OrderPreviewRequest | null => {
+    if (!productId || !selectedAddressObj) return null;
 
     return {
-      paymentMethod,
-      productOption: { id: parseInt(productId || serviceId || '', 10), qty: productQuantity },
-      pairOptions: selectedServices.map(({ id, qty }: { id: number; qty?: number }) => ({
-        id,
-        qty: qty ?? 1
+      line: {
+        categoryProductOptionId: productId,
+        qty: productQuantity,
+        addonItems: serviceAddons.map((addon) => ({ id: addon.id, qty: addon.qty }))
+      },
+      pairLines: selectedServices.map((s) => ({
+        categoryProductOptionId: s.id,
+        qty: s.qty ?? 1
       })),
-      productAddOns: serviceAddons.map((addon) => ({
-        id: Number(addon.id),
-        qty: Number(addon.qty)
-      })),
-      addressId: selectedAddressObj?.id ?? 0,
-      address: selectedAddressObj?.address ?? '',
-      floorNum: selectedAddressObj?.floorNum ?? '',
-      roomNum: selectedAddressObj?.roomNum ?? '',
+      addressId: selectedAddressObj.id,
       scheduleStartDate,
       note: (document.getElementById('additional-info') as HTMLInputElement)?.value || note || '',
-      customerFirstName: customerInfo.customerFirstName,
-      customerLastName: customerInfo.customerLastName,
-      customerPhone: customerInfo.customerPhone,
-      customerEmail: customerInfo.customerEmail
+      couponCode,
+      paymentMethod
     };
   };
 
@@ -167,9 +144,11 @@ export default function Checkout() {
 
     const scheduleStartDate = formatScheduleDate();
     const orderPayload = buildOrderPayload('CASH', scheduleStartDate);
+    if (!orderPayload) return;
 
     createOrder(orderPayload, {
       onSuccess: (response: OrderCreateResponse) => {
+        void response;
         resetDateTime();
         toast.success(t('checkout.orderCreated'));
         navigate('/order');
@@ -188,8 +167,14 @@ export default function Checkout() {
       return;
     }
 
+    // Don't fire a preview request until an address has actually been selected
+    if (!selectedAddressObj) {
+      return;
+    }
+
     const scheduleStartDate = formatScheduleDate();
     const finalPayload = buildOrderPayload('CASH', scheduleStartDate);
+    if (!finalPayload) return;
 
     mutate(finalPayload);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -201,9 +186,10 @@ export default function Checkout() {
     productQuantity,
     scheduleData.date,
     scheduleData.time,
+    couponCode,
     mutate,
     navigate,
-    addressList
+    selectedAddressObj
   ]);
 
   if (error) return <p className="text-red-500">{t('checkout.failedToLoadServices')}</p>;
@@ -220,11 +206,9 @@ export default function Checkout() {
       )}
 
       <CheckoutContent
-        productData={productData}
         servicePairAddons={servicePairAddons}
         pairProductObj={pairProductObj}
         pairProductKeys={pairProductKeys}
-        productQuantity={productQuantity}
         productId={productId}
         serviceId={serviceId}
         selectedServices={selectedServices}
@@ -246,6 +230,7 @@ export default function Checkout() {
         formatCurrency={formatCurrency}
         openEditSheet={editPersonalInfoOpen}
         onEditSheetClose={() => setEditPersonalInfoOpen(false)}
+        onCouponApplied={(code) => setCouponCode(code)}
       />
     </div>
   );

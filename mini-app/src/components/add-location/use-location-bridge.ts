@@ -69,7 +69,10 @@ export const useLocationBridge = ({
       return;
     }
 
-    const editCoordinates = parseCoordinates(editAddressData.latitude, editAddressData.longitude);
+    const editCoordinates = parseCoordinates(
+      editAddressData.latitude?.toString(),
+      editAddressData.longitude?.toString()
+    );
 
     if (!editCoordinates) {
       return;

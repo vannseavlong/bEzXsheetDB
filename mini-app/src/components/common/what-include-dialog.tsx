@@ -2,6 +2,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import React from 'react';
 import useEquipmentQuery from '@/hooks/use-equipment-query';
 import PrimaryButton from './primary-button';
+import Icon from '@/assets/icons/icon-asset';
+import { getLocalizedName } from '@/lib/language-helper';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
@@ -11,24 +13,8 @@ type Props = {
 };
 
 const WhatIncludeDialog: React.FC<Props> = ({ open, onOpenChange, categoryId }) => {
-  const { t } = useTranslation();
-  const { data: equipment, isLoading, isError, error } = useEquipmentQuery(categoryId);
-
-  // Debug logging for equipment issues
-  React.useEffect(() => {
-    console.log('WhatIncludeDialog - Equipment Query Debug:', {
-      categoryId: categoryId,
-      categoryIdNote: 'This should be the route ID from URL (e.g., /service/1)',
-      equipmentEndpoint: `category/${categoryId}/equipments`,
-      isLoading,
-      isError,
-      equipment,
-      equipmentCount: equipment?.length || 0,
-      error: error?.message || 'No error',
-      queryEnabled: !!categoryId,
-      timestamp: new Date().toISOString()
-    });
-  }, [categoryId, isLoading, isError, equipment, error]);
+  const { t, i18n } = useTranslation();
+  const { data: equipment, isLoading } = useEquipmentQuery(categoryId);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -54,17 +40,11 @@ const WhatIncludeDialog: React.FC<Props> = ({ open, onOpenChange, categoryId }) 
                     key={item.id}
                     className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col items-center">
                     <div className="w-16 h-16 mb-3 flex items-center justify-center bg-gray-50 rounded-lg">
-                      <img
-                        src={item.imgUrl}
-                        alt={item.name}
-                        className="w-full h-full object-contain rounded-lg"
-                        onError={(e) => {
-                          // Hide broken images gracefully
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
+                      <Icon name="starIcon" />
                     </div>
-                    <p className="text-xs text-gray-700 text-center leading-tight">{item.name}</p>
+                    <p className="text-xs text-gray-700 text-center leading-tight">
+                      {getLocalizedName(item, i18n.language)}
+                    </p>
                   </div>
                 ))}
               </div>

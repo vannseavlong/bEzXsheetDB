@@ -21,7 +21,7 @@ interface ScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit?: (data: { date: Date | null; time: string }) => void;
-  serviceId?: number;
+  bulkOrderId?: string;
   initialDate?: string;
 }
 
@@ -29,11 +29,11 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   open,
   onOpenChange,
   onSubmit,
-  serviceId,
+  bulkOrderId,
   initialDate
 }) => {
   const { t } = useTranslation();
-  const { data: schedule } = useScheduleQuery({ serviceId });
+  const { data: schedule } = useScheduleQuery();
   useDateSelector();
 
   useEffect(() => {
@@ -163,22 +163,16 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                 disabled={!confirmedDate || !isTimeSelected || editScheduleMutation.isPending}
                 onClick={async () => {
                   if (confirmedDate && isTimeSelected) {
-                    let bulkOrderId = '';
-                    if (serviceId !== undefined && serviceId !== null) {
-                      bulkOrderId = String(serviceId).padStart(10, '0');
-                    }
                     if (!bulkOrderId) {
-                      console.warn('Cannot update schedule: bulkOrderId (serviceId) is missing.');
+                      console.warn('Cannot update schedule: bulkOrderId is missing.');
                       onOpenChange(false);
                       return;
                     }
                     try {
                       const payload = {
                         bulkOrderId,
-                        scheduleStartDate: `${confirmedDate.toISOString().split('T')[0]} ${selectedTime}`,
-                        isEditMode: true
+                        scheduleStartDate: `${confirmedDate.toISOString().split('T')[0]} ${selectedTime}`
                       };
-                      console.log('Calling editScheduleMutation with:', payload);
                       await editScheduleMutation.mutateAsync(payload);
                     } catch (error) {
                       console.error('Edit schedule error:', error);

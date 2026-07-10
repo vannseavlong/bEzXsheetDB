@@ -54,7 +54,10 @@ const AddLocationMap: React.FC<AddLocationMapProps> = ({
             return;
           }
 
-          const coordinates = parseCoordinates(editAddressData.latitude, editAddressData.longitude);
+          const coordinates = parseCoordinates(
+            editAddressData.latitude?.toString(),
+            editAddressData.longitude?.toString()
+          );
 
           if (!coordinates) {
             return;

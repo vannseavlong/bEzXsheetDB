@@ -25,9 +25,12 @@ import itemsSchema from '../schemas/admin/items'
 import cleanersSchema from '../schemas/admin/cleaners'
 import blockedSchedulesSchema from '../schemas/admin/blocked_schedules'
 import ordersSchema from '../schemas/admin/orders'
+import productPairingsSchema from '../schemas/admin/product_pairings'
+import orderAddonsSchema from '../schemas/admin/order_addons'
 
 // User (customer) schemas
-import customerUsersSchema from '../schemas/user/users'
+import customersSchema from '../schemas/user/customers'
+import addressesSchema from '../schemas/user/addresses'
 
 export function createAdapter() {
   // Render (and other ephemeral-filesystem hosts) can't see the gitignored
@@ -81,8 +84,11 @@ export function createAdapter() {
   adapter.registerSchema(cleanersSchema)
   adapter.registerSchema(blockedSchedulesSchema)
   adapter.registerSchema(ordersSchema)
+  adapter.registerSchema(productPairingsSchema)
+  adapter.registerSchema(orderAddonsSchema)
 
-  adapter.registerSchema(customerUsersSchema)
+  adapter.registerSchema(customersSchema)
+  adapter.registerSchema(addressesSchema)
 
   return adapter
 }

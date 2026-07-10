@@ -25,4 +25,9 @@ export const env = {
   SUPER_ADMIN_EMAIL: get('SUPER_ADMIN_EMAIL'),
   SHEET_DB_TOKENS: process.env.SHEET_DB_TOKENS,
   ON_SCHEMA_MISMATCH: get('ON_SCHEMA_MISMATCH', 'warn') as 'warn' | 'error' | 'auto-sync',
+  // Straight-line service area check for the mini-app's address distance guard.
+  // Defaults are Phnom Penh city center — replace with the real business origin.
+  SERVICE_ORIGIN_LAT: parseFloat(get('SERVICE_ORIGIN_LAT', '11.5564')),
+  SERVICE_ORIGIN_LNG: parseFloat(get('SERVICE_ORIGIN_LNG', '104.9282')),
+  MAX_SERVICE_DISTANCE_KM: parseFloat(get('MAX_SERVICE_DISTANCE_KM', '25')),
 }

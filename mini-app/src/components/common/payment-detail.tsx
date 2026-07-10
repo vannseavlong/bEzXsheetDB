@@ -12,7 +12,7 @@ export function PaymentDetail({ payment }: { payment: OrderDetail }) {
 
       <div className="grid grid-cols-2 gap-y-4 pt-4">
         <p className="text-gray-600">{t('payment.service')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.amountDisplay}</p>
+        <p className="text-right font-medium text-[#3D3D3D]">${payment.amount.toFixed(2)}</p>
 
         {payment.couponCode && (
           <>
@@ -22,29 +22,28 @@ export function PaymentDetail({ payment }: { payment: OrderDetail }) {
         )}
 
         <p className="text-gray-600">{t('payment.discount')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.discountDisplay}</p>
+        <p className="text-right font-medium text-[#3D3D3D]">${payment.discount.toFixed(2)}</p>
 
         <p className="text-gray-600">{t('payment.serviceFee')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.serviceFeeDisplay}</p>
+        <p className="text-right font-medium text-[#3D3D3D]">${payment.serviceFee.toFixed(2)}</p>
 
         <p className="text-gray-600">{t('payment.transportFee')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.transportFeeDisplay}</p>
-
-        <p className="text-gray-600">{t('payment.subtotal')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.subTotalDisplay}</p>
+        <p className="text-right font-medium text-[#3D3D3D]">${payment.transportFee.toFixed(2)}</p>
 
         <div className="col-span-2 border-t border-dashed border-gray-300 my-2"></div>
 
         <p className="text-gray-600">{t('payment.vat')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.vatFeeDisplay}</p>
+        <p className="text-right font-medium text-[#3D3D3D]">${payment.vatFee.toFixed(2)}</p>
 
         <p className="text-gray-600">{t('payment.total')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.totalPayableAmountDisplay}</p>
+        <p className="text-right font-medium text-[#3D3D3D]">
+          ${payment.totalPayableAmount.toFixed(2)}
+        </p>
 
         <div className="col-span-2 border-t border-dashed border-gray-300 my-2"></div>
 
         <p className="text-gray-600">{t('payment.paymentMethod')}:</p>
-        <p className="text-right font-medium text-[#3D3D3D]">{payment.paymentMethodDisplay}</p>
+        <p className="text-right font-medium text-[#3D3D3D]">{payment.paymentMethod}</p>
 
         <p className="text-gray-600">{t('payment.paymentStatus')}:</p>
         <div className="flex justify-end">

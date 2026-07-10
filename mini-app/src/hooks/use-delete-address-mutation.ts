@@ -3,11 +3,8 @@ import { API_ENDPOINT } from '@/api/endpoint';
 import { QUERY_KEY_ENUM } from '@/constants/query-key-enum';
 import api from '@/api/api';
 
-const deleteAddress = async (addressId: number) => {
-  const endpoint = API_ENDPOINT.ADDRESS_DELETE.replace(':id', addressId.toString());
-  const response = await api.post(endpoint);
-  console.log('Delete Address Response:', response);
-  return response.data;
+const deleteAddress = async (addressId: string): Promise<void> => {
+  return api.delete(API_ENDPOINT.ADDRESS_DELETE(addressId));
 };
 
 export function useDeleteAddressMutation() {

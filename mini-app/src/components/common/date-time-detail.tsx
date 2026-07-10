@@ -50,7 +50,7 @@ const DateTimePicker = ({ bulkOrderId }: { bulkOrderId?: string }) => {
       <ScheduleDialog
         open={openDialog}
         onOpenChange={setOpenDialog}
-        serviceId={bulkOrderId ? Number(bulkOrderId) : undefined}
+        bulkOrderId={bulkOrderId}
         onSubmit={() => refetch()}
       />
     </div>

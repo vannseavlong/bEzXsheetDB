@@ -15,16 +15,16 @@ interface ScheduleData {
   time?: string;
 }
 
-// Simplified service type for selected services in checkout
+// A pair line the user added from "often paired with" — id is the chosen
+// PairProductOption's categoryProductOptionId, productId is the parent
+// PairProduct's categoryProductId (used to group/look up its thumbnail).
 export interface SelectedService {
-  id: number;
+  id: string;
+  productId: string;
   qty?: number;
   amount?: number;
-  productId?: number;
   nameEn?: string;
-  hourCount?: string | null;
-  cleanerCount?: string | null;
-  iconUrl?: string;
+  nameKm?: string;
   [key: string]: unknown;
 }
 
@@ -61,7 +61,7 @@ export function useCheckoutState(): UseCheckoutStateReturn {
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     customerFirstName: user?.firstName || '',
     customerLastName: user?.lastName || '',
-    customerPhone: user?.username || '',
+    customerPhone: user?.phone || '',
     customerEmail: user?.email || ''
   });
 
@@ -82,7 +82,7 @@ export function useCheckoutState(): UseCheckoutStateReturn {
       setCustomerInfo({
         customerFirstName: user.firstName || '',
         customerLastName: user.lastName || '',
-        customerPhone: user.username || '',
+        customerPhone: user.phone || '',
         customerEmail: user.email || ''
       });
     }

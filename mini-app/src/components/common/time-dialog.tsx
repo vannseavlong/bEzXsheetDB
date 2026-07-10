@@ -94,7 +94,7 @@ export default function TimeDialog({ isOpen, onClose, onConfirm, selectedTime }:
               <WheelPicker
                 options={timeSlots}
                 value={currentTime}
-                onValueChange={handleTimeChange}
+                onValueChange={(value) => handleTimeChange(String(value))}
               />
             </WheelPickerWrapper>
           </div>

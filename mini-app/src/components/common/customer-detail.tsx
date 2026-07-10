@@ -11,22 +11,18 @@ type CheckoutCustomer = {
 
 type CustomerData = OrderDetail | CheckoutCustomer;
 
+const isOrderDetail = (customer: CustomerData): customer is OrderDetail => 'fullname' in customer;
+
 export function CustomerDetail({ customer }: { customer: CustomerData }) {
   const { t } = useTranslation();
-  const fullname =
-    'fullname' in customer && customer.fullname
-      ? customer.fullname
-      : `${(customer as CheckoutCustomer).customerFirstName || ''} ${(customer as CheckoutCustomer).customerLastName || ''}`.trim();
+  const fullname = isOrderDetail(customer)
+    ? customer.fullname
+    : `${customer.customerFirstName || ''} ${customer.customerLastName || ''}`.trim();
 
-  const phone =
-    'phone' in customer && customer.phone
-      ? customer.phone
-      : (customer as CheckoutCustomer).customerPhone || '';
+  const phone = isOrderDetail(customer) ? customer.phone : customer.customerPhone || '';
 
-  const email =
-    'email' in customer && customer.email
-      ? customer.email
-      : (customer as CheckoutCustomer).customerEmail || '';
+  // OrderDetail has no email field — only the local checkout draft carries one.
+  const email = isOrderDetail(customer) ? '' : customer.customerEmail || '';
 
   return (
     <div className="bg-white">

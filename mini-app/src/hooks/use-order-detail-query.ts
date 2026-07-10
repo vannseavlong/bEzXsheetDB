@@ -2,15 +2,13 @@ import api from '@/api/api';
 import { API_ENDPOINT } from '@/api/endpoint';
 import { QUERY_KEY_ENUM } from '@/constants/query-key-enum';
 import { useQuery } from '@tanstack/react-query';
-import type { OrderDetail, OrderDetailApiResponse } from '@/types/api';
+import type { OrderDetail } from '@/types/api';
 
 export default function useOrderDetailQuery(bulkOrderId?: string) {
   const queryFn = async (): Promise<OrderDetail | null> => {
     if (!bulkOrderId) return null;
 
-    const res: OrderDetailApiResponse = await api.get(
-      `${API_ENDPOINT.ORDER_DETAIL}/${bulkOrderId}`
-    );
+    const res: OrderDetail = await api.get(API_ENDPOINT.ORDER_DETAIL(bulkOrderId));
 
     return res ?? null;
   };

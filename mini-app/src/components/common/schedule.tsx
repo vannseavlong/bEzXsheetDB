@@ -45,13 +45,12 @@ export function resetBooking() {
 }
 
 interface DateTimePickerProps {
-  serviceId?: number;
   onSubmit?: (data: { date: Date; time: string }) => void;
 }
 
-export default function DateTimePicker({ serviceId, onSubmit }: DateTimePickerProps) {
+export default function DateTimePicker({ onSubmit }: DateTimePickerProps) {
   const { t } = useTranslation();
-  const { data: schedule } = useScheduleQuery({ serviceId });
+  const { data: schedule } = useScheduleQuery();
   useDateSelector();
 
   const availabilityMap = useMemo(() => {

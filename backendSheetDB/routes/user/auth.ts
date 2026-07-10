@@ -60,11 +60,11 @@ export function createUserGoogleAuthHandler(adapter: SheetAdapter): RequestHandl
       // fall through to a bare-profile token (no id/role) rather than provisioning it.
       if (profile.email_verified === false) return null
 
-      let user = await ctx().table('users').findOne({ where: { email: profile.email } }) as Record<string, any> | null
+      let user = await ctx().table('customers').findOne({ where: { email: profile.email } }) as Record<string, any> | null
 
       if (!user) {
         const [firstName, ...restName] = profile.name.trim().split(/\s+/)
-        user = await ctx().table('users').create({
+        user = await ctx().table('customers').create({
           email: profile.email,
           first_name: firstName,
           last_name: restName.join(' ') || firstName,
@@ -98,15 +98,15 @@ export function createUserAuthRouter(adapter: SheetAdapter) {
       if (!valid) return res.status(400).json({ message: errors.join('. ') })
 
       const [existingEmail, existingPhone] = await Promise.all([
-        ctx().table('users').findOne({ where: { email } }),
-        ctx().table('users').findOne({ where: { phone } }),
+        ctx().table('customers').findOne({ where: { email } }),
+        ctx().table('customers').findOne({ where: { phone } }),
       ])
       if (existingEmail) return res.status(409).json({ message: 'A user with this email already exists' })
       if (existingPhone) return res.status(409).json({ message: 'A user with this phone already exists' })
 
       const password_hash = await hashPassword(password)
 
-      const user = await ctx().table('users').create({
+      const user = await ctx().table('customers').create({
         email,
         password_hash,
         first_name: firstName,
@@ -128,7 +128,7 @@ export function createUserAuthRouter(adapter: SheetAdapter) {
         return res.status(400).json({ message: 'Email and password are required' })
       }
 
-      const user = await ctx().table('users').findOne({ where: { email } }) as Record<string, any> | null
+      const user = await ctx().table('customers').findOne({ where: { email } }) as Record<string, any> | null
       if (!user || user.status !== 'active') {
         return res.status(401).json({ message: 'Invalid email or password' })
       }
@@ -149,7 +149,7 @@ export function createUserAuthRouter(adapter: SheetAdapter) {
       const id = req.user?.id as string | undefined
       if (!id) return res.status(401).json({ message: 'Invalid or expired token' })
 
-      const user = await ctx().table('users').findOne({ where: { _id: id } }) as Record<string, any> | null
+      const user = await ctx().table('customers').findOne({ where: { _id: id } }) as Record<string, any> | null
       if (!user || user.status !== 'active') {
         return res.status(401).json({ message: 'Account is no longer active' })
       }

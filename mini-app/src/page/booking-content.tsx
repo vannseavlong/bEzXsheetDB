@@ -11,8 +11,12 @@ export default function BookingContent() {
   const { data: ordersData, isFetching } = useOrderQuery();
 
   const ShowLoading = !ordersData && isFetching;
-  const inProgressData = ordersData?.['IN-PROGRESS'] ?? [];
-  const completedData = ordersData?.['COMPLETED'] ?? [];
+  const inProgressData = [
+    ...(ordersData?.PENDING ?? []),
+    ...(ordersData?.ACCEPTED ?? []),
+    ...(ordersData?.IN_PROGRESS ?? [])
+  ];
+  const completedData = [...(ordersData?.COMPLETED ?? []), ...(ordersData?.CANCELLED ?? [])];
 
   if (ShowLoading) return <HomeSkeleton />;
 

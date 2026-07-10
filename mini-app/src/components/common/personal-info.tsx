@@ -28,7 +28,7 @@ const PersonalInfo = ({
   const [customerData, setCustomerData] = useState({
     customerFirstName: user?.firstName || '',
     customerLastName: user?.lastName || '',
-    customerPhone: user?.username || '',
+    customerPhone: user?.phone || '',
     customerEmail: user?.email || ''
   });
 
@@ -44,12 +44,12 @@ const PersonalInfo = ({
     const initialData = {
       customerFirstName: user?.firstName || '',
       customerLastName: user?.lastName || '',
-      customerPhone: user?.username || '',
+      customerPhone: user?.phone || '',
       customerEmail: user?.email || ''
     };
     setCustomerData(initialData);
     onCustomerUpdate?.(initialData);
-  }, [user?.firstName, user?.lastName, user?.username, user?.email]);
+  }, [user?.firstName, user?.lastName, user?.phone, user?.email]);
 
   const handleUpdateCustomer = (updatedData: {
     customerFirstName: string;
@@ -64,7 +64,7 @@ const PersonalInfo = ({
         ...user,
         firstName: updatedData.customerFirstName,
         lastName: updatedData.customerLastName,
-        username: updatedData.customerPhone,
+        phone: updatedData.customerPhone,
         email: updatedData.customerEmail
       });
     }

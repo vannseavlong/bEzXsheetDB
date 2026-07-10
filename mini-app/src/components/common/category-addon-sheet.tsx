@@ -1,45 +1,61 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import type { ProductAddonAttributes } from '@/types/api';
-import React, { useState, useMemo } from 'react';
+import type { CategoryAddonItem } from '@/types/api';
+import React, { useEffect, useState, useMemo } from 'react';
 import QuantityControl from './quantity-control';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedName } from '@/lib/language-helper';
 
 type Props = {
-  data: ProductAddonAttributes[] | undefined;
+  data: CategoryAddonItem[] | undefined;
   loading?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   addonId?: string | null;
-  onConfirm: (addonId: string) => void;
+  initialQuantities?: Record<string, number>;
+  onConfirm: (selections: { itemId: string; qty: number }[]) => void;
 };
 
 const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
 
-const ServiceAddonSheet: React.FC<Props> = ({
+const CategoryAddonSheet: React.FC<Props> = ({
   data,
   loading,
   open,
   onOpenChange,
   addonId,
+  initialQuantities,
   onConfirm
 }) => {
   const { t, i18n } = useTranslation();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  const handleQuantityChange = (id: number, value: number) => {
-    setQuantities((prev) => ({ ...prev, [id.toString()]: value }));
+  useEffect(() => {
+    if (open) {
+      setQuantities(initialQuantities ?? {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, addonId]);
+
+  const handleQuantityChange = (id: string, value: number) => {
+    setQuantities((prev) => ({ ...prev, [id]: value }));
   };
 
   const total = useMemo(() => {
     if (!data || data.length === 0) return 0;
-    return data.reduce((sum, addon) => {
-      const qty = quantities[addon.id.toString()] || 0;
-      const price = addon.amount ?? 0;
+    return data.reduce((sum, item) => {
+      const qty = quantities[item.id] || 0;
+      const price = item.amount ?? 0;
       return sum + qty * price;
     }, 0);
   }, [data, quantities]);
+
+  const handleConfirm = () => {
+    const selections = Object.entries(quantities)
+      .filter(([, qty]) => qty > 0)
+      .map(([itemId, qty]) => ({ itemId, qty }));
+    onConfirm(selections);
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -49,12 +65,14 @@ const ServiceAddonSheet: React.FC<Props> = ({
         className="max-h-[80%] h-auto rounded-t-2xl flex flex-col">
         <div className="px-4 overflow-y-auto flex-1">
           <SheetHeader className="sticky top-0 bg-white z-10">
-            <SheetTitle className="text-center text-lg font-bold py-4">What’s Included</SheetTitle>
+            <SheetTitle className="text-center text-lg font-bold py-4">
+              {t('service.serviceAddon')}
+            </SheetTitle>
           </SheetHeader>
 
           {loading && (
             <div className="mt-6 text-center text-gray-500">
-              <p>Loading add-ons...</p>
+              <p>{t('common.loading')}</p>
             </div>
           )}
 
@@ -66,18 +84,19 @@ const ServiceAddonSheet: React.FC<Props> = ({
 
           {!loading && data && data.length > 0 && (
             <div className="mt-4 space-y-4">
-              {data.map((addon) => {
-                const isActive = addonId === addon.id.toString();
+              {data.map((item) => {
+                const qty = quantities[item.id] || 0;
+                const isActive = qty > 0;
 
                 return (
                   <div
-                    key={addon.id}
-                    className={`flex items-center pb-4 p-2 rounded-lg border transition 
+                    key={item.id}
+                    className={`flex items-center pb-4 p-2 rounded-lg border transition
                       ${isActive ? 'border-[#1B4CFA] bg-blue-50' : 'border-gray-200 bg-white'}`}>
                     <div className="border-2 p-2 rounded-lg">
                       <img
-                        src={addon.imgUrl ?? '/fallback-image.png'}
-                        alt={addon.nameEn || 'Service add-on'}
+                        src={item.imgUrl ?? '/fallback-image.png'}
+                        alt={item.nameEn || 'Add-on'}
                         className="w-[73px] h-[73px] rounded-lg object-cover"
                       />
                     </div>
@@ -86,16 +105,16 @@ const ServiceAddonSheet: React.FC<Props> = ({
                         className={`text-lg font-bold ${
                           isActive ? 'text-[#1B4CFA]' : 'text-black'
                         }`}>
-                        {getLocalizedName(addon, i18n.language)}
+                        {getLocalizedName(item, i18n.language)}
                       </p>
-                      {addon.amount !== undefined && (
-                        <p className="text-sm font-semibold text-gray-600">${addon.amount}</p>
+                      {item.amount !== undefined && (
+                        <p className="text-sm font-semibold text-gray-600">${item.amount}</p>
                       )}
                     </div>
                     <div className="ml-auto">
                       <QuantityControl
-                        initialQuantity={quantities[addon.id.toString()] || 0}
-                        onChange={(value) => handleQuantityChange(addon.id, value)}
+                        initialQuantity={qty}
+                        onChange={(value) => handleQuantityChange(item.id, value)}
                       />
                     </div>
                   </div>
@@ -109,12 +128,8 @@ const ServiceAddonSheet: React.FC<Props> = ({
           <div className="p-4 flex items-center justify-between">
             <SheetClose asChild>
               <Button
-                onClick={() => {
-                  if (addonId) {
-                    onConfirm(addonId);
-                  }
-                }}
-                className="h-[51px] text-xl w-full flex justify-between items-center 
+                onClick={handleConfirm}
+                className="h-[51px] text-xl w-full flex justify-between items-center
                           bg-gradient-to-r from-[#102C90] to-[#1B4CFA] rounded-2xl">
                 <span className="text-white">{formatCurrency(total)}</span>
                 <span className="text-white">{t('addon.addon')}</span>
@@ -127,4 +142,4 @@ const ServiceAddonSheet: React.FC<Props> = ({
   );
 };
 
-export default ServiceAddonSheet;
+export default CategoryAddonSheet;

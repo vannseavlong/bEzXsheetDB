@@ -1,7 +1,7 @@
-import { defineTable, string, date, boolean } from 'longcelot-sheet-db'
+import { defineTable, string, date } from 'longcelot-sheet-db'
 
 export default defineTable({
-  name: 'users',
+  name: 'customers',
   actor: 'user',
   timestamps: true,
   columns: {
@@ -13,7 +13,9 @@ export default defineTable({
     last_name: string().required(),
     phone: string().unique(),
     profile_url: string(),
-    status: boolean().default(true),
+    // String enum (not boolean) to match what routes/user/auth.ts actually writes/reads
+    // ('active' on register/Google sign-up, `!== 'active'` on login/me).
+    status: string().enum(['active', 'inactive']).default('active'),
     language: string().default('en'),
     gender: string().enum(['MALE', 'FEMALE', 'OTHER']),
     dob: date(),

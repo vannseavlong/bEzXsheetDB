@@ -157,6 +157,57 @@ straight through to `findMany` again.
 
 ---
 
+## 📬 Feature Request / Feedback — Table Names Aren't Actor-Scoped (submitted 2026-07-10)
+
+Discovered while adding the mini-app's customer-facing `user` actor schemas to `backendSheetDB`
+(same integration test bed as every section above). We'd named the customer table `users` — same
+name as the pre-existing admin-actor staff/RBAC table, also `users` — since each actor is a
+separate Google Sheet and we assumed the name was actor-scoped, the same way two tables in
+different Postgres schemas can share a name.
+
+### 17. `validate`, `erdiagram`, and (by extension) `export --prisma`/`--sql` treat table names as globally unique across actors, with no collision warning until `validate`
+
+**Current behaviour:**
+`lsdb validate` does flag it —
+
+```
+❌ Validation errors:
+   - Duplicate table name: users
+```
+
+— but only as a late, easy-to-miss check, and only in `validate`. `lsdb status`/`sync`/the runtime
+`adapter.table()` calls all work correctly and actor-scope by sheet, so the duplicate is invisible
+until someone happens to run `validate`. Worse: `lsdb erdiagram` doesn't catch it at all — it
+silently rendered **two separate `users { ... }` entity blocks with entirely different columns**
+(admin: `role_id`, `actor_sheet_id`; user: `first_name`, `phone`, `gender`, `dob`) under the same
+Mermaid entity name in one generated diagram, with no warning.
+
+**Problem:**
+Per-actor Sheets make same-name tables across actors a reasonable thing to reach for (it *is* a
+different spreadsheet, after all) right up until `export --prisma`/`--sql` — a single production
+Prisma schema or SQL database requires globally-unique model/table names, so exporting a project in
+this state would either fail outright on the duplicate or silently let one definition clobber the
+other, with no error surfaced until that late migration step. We caught this by luck (a `validate`
+run before ever touching `export`), not because anything guided us to it.
+
+**Requested change:**
+- Have `validate` run by default as part of `sync` (or at minimum print a highly visible warning
+  right there), not only on-demand — this is exactly the kind of check someone runs once early and
+  then never again.
+- Have `erdiagram` detect same-named tables across actors and either namespace them in the diagram
+  (`admin.users` / `user.users`) or fail loudly instead of merging them into one ambiguous block.
+- Have `export --prisma`/`--sql` refuse to generate output (clear error naming the colliding actors)
+  rather than silently producing a broken or clobbered schema, until the caller resolves the naming
+  collision on their end (as we did — renamed our customer table to `customers`).
+
+### Summary
+
+| # | Issue | Type | Impact |
+|---|---|---|---|
+| 17 | Table names aren't actor-scoped in `validate`/`erdiagram`/`export`; collision only surfaces late (`validate`) or not at all (`erdiagram`, `export`) | Bug / Missing feature | High — silently broken or failing production migration for any project with same-named tables across actors |
+
+---
+
 ## 🗺️ Owner Roadmap (not yet shipped)
 
 | Item | Priority |

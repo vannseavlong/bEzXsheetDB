@@ -1,59 +1,36 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import React from 'react';
-import useLanguage from '@/hooks/use-language';
-import { getLocalizedTaskInfo } from '@/lib/language-helper';
+import { getLocalizedName } from '@/lib/language-helper';
 import Icon from '@/assets/icons/icon-asset';
-import useProductDetailWithCategoryQuery from '@/hooks/use-product-detail-with-taskinfo-query';
+import useTaskInfoQuery from '@/hooks/use-task-info-query';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  categoryId?: string;
   productId?: string;
 };
 
-const TaskInfoDialog: React.FC<Props> = ({ open, onOpenChange, productId }) => {
-  const { t } = useTranslation();
-  const { currentLang } = useLanguage();
+const TaskInfoDialog: React.FC<Props> = ({ open, onOpenChange, categoryId, productId }) => {
+  const { t, i18n } = useTranslation();
   const [selectedTabIndex, setSelectedTabIndex] = React.useState(0);
 
-  const { data: productDetail, isLoading } = useProductDetailWithCategoryQuery(productId ?? '');
+  const { data: taskInfoList, isLoading } = useTaskInfoQuery(categoryId, productId);
 
-  const taskInfo = React.useMemo(() => {
-    if (!productDetail) return undefined;
-
-    if (productDetail.taskInfoEn && productDetail.taskInfoEn.length > 0) {
-      return {
-        taskInfoEn: productDetail.taskInfoEn,
-        taskInfoKm: productDetail.taskInfoKm || [],
-        taskInfoCn: productDetail.taskInfoCn || [],
-        taskInfoTw: productDetail.taskInfoTw || [],
-        taskInfoVi: productDetail.taskInfoVi || []
-      };
-    }
-
-    if (productDetail.category?.taskInfoEn && productDetail.category.taskInfoEn.length > 0) {
-      return {
-        taskInfoEn: productDetail.category.taskInfoEn,
-        taskInfoKm: productDetail.category.taskInfoKm || [],
-        taskInfoCn: productDetail.category.taskInfoCn || [],
-        taskInfoTw: productDetail.category.taskInfoTw || [],
-        taskInfoVi: productDetail.category.taskInfoVi || []
-      };
-    }
-
-    return undefined;
-  }, [productDetail]);
-
-  const currentTaskInfo = React.useMemo(() => {
-    return taskInfo ? getLocalizedTaskInfo(taskInfo, currentLang) : [];
-  }, [taskInfo, currentLang]);
+  const sections = React.useMemo(() => {
+    if (!taskInfoList) return [];
+    return taskInfoList.map((task) => ({
+      key: getLocalizedName({ nameEn: task.titleEn, nameKm: task.titleKm }, i18n.language),
+      value: i18n.language.startsWith('km') ? task.descriptionKm : task.descriptionEn
+    }));
+  }, [taskInfoList, i18n.language]);
 
   React.useEffect(() => {
     if (open) {
       setSelectedTabIndex(0);
     }
-  }, [open, currentTaskInfo]);
+  }, [open, sections]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -69,10 +46,10 @@ const TaskInfoDialog: React.FC<Props> = ({ open, onOpenChange, productId }) => {
             <div className="text-center py-8 flex-1 overflow-y-auto">
               <p className="text-gray-500">{t('common.loading')}</p>
             </div>
-          ) : currentTaskInfo.length > 0 ? (
+          ) : sections.length > 0 ? (
             <div className="flex flex-col flex-1 min-h-0">
               <div className="flex space-x-4 mt-4 mb-6 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden flex-shrink-0">
-                {currentTaskInfo.map((section, index) => (
+                {sections.map((section, index) => (
                   <div key={index} className="relative">
                     {selectedTabIndex === index ? (
                       <div className="p-[1px] rounded-full bg-gradient-to-r from-[#102C90] to-[#1B4CFA]">
@@ -95,9 +72,9 @@ const TaskInfoDialog: React.FC<Props> = ({ open, onOpenChange, productId }) => {
                 ))}
               </div>
 
-              {currentTaskInfo[selectedTabIndex] && (
+              {sections[selectedTabIndex] && (
                 <div className="space-y-3 overflow-y-auto pb-[50px] flex-1">
-                  {currentTaskInfo[selectedTabIndex].value.map((item, itemIndex) => (
+                  {sections[selectedTabIndex].value.map((item, itemIndex) => (
                     <div
                       key={itemIndex}
                       className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">

@@ -1,15 +1,12 @@
 import api from '@/api/api';
 import { API_ENDPOINT } from '@/api/endpoint';
 import { QUERY_KEY_ENUM } from '@/constants/query-key-enum';
-import type { OrderListAttributes } from '@/types/api';
+import type { OrderListResponse } from '@/types/api';
 import { useQuery } from '@tanstack/react-query';
 
-type Props = {
-  [key: string]: OrderListAttributes[];
-};
 export default function useOrderQuery() {
-  const apiFn = (): Promise<Props> => {
-    return api.get(`${API_ENDPOINT.ORDER_LIST}`);
+  const apiFn = (): Promise<OrderListResponse> => {
+    return api.get(API_ENDPOINT.ORDER_LIST);
   };
 
   const query = useQuery({

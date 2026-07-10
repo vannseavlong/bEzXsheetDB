@@ -2,6 +2,10 @@ import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { requireAuth, requireRole } from '../../middleware/auth'
 import { createUserAuthRouter } from './auth'
+import { createCatalogRouter } from './catalog'
+import { createAddressRouter } from './address'
+import { createOrderRouter } from './order'
+import { createCouponRouter } from './coupon'
 
 /**
  * Mobile app routes — /api/user/*
@@ -15,10 +19,10 @@ export function createUserRouter(adapter: SheetAdapter) {
 
   router.use(requireAuth, requireRole('user'))
 
-  // Placeholder — add app-facing endpoints here
-  // e.g. router.get('/categories', ...)
-  //      router.get('/products', ...)
-  //      router.post('/bookings', ...)
+  router.use(createCatalogRouter(adapter))
+  router.use('/address', createAddressRouter(adapter))
+  router.use('/order', createOrderRouter(adapter))
+  router.use('/coupon', createCouponRouter(adapter))
 
   return router
 }

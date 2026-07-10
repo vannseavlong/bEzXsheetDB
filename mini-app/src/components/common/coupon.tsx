@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import type { CouponResponse } from '@/types/api';
 import Icon from '@/assets/icons/icon-asset';
 import { useTranslation } from 'react-i18next';
+import { useCouponMutation } from '@/hooks/use-coupon-mutation';
 
 interface CouponProps {
   onCouponApplied?: (couponData: CouponResponse) => void;
@@ -15,7 +16,7 @@ const Coupon: React.FC<CouponProps> = ({ onCouponApplied }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [promoCode, setPromoCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutateAsync: validateCoupon, isPending: isLoading } = useCouponMutation();
 
   const handleSubmit = async () => {
     if (!promoCode.trim()) {
@@ -23,29 +24,21 @@ const Coupon: React.FC<CouponProps> = ({ onCouponApplied }) => {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // Create a mock coupon response for now
-      // The actual validation will happen in the order preview
-      const mockCouponResponse: CouponResponse = {
-        id: promoCode.trim(),
-        code: promoCode.trim(),
-        discount: 10, // This should come from the order preview response
-        discountType: 'percentage',
-        isValid: true,
-        message: 'Coupon applied successfully'
-      };
+      const couponResponse = await validateCoupon(promoCode.trim());
 
-      // Handle successful coupon application
-      toast.success(t('coupon.couponAppliedSuccess'));
-      onCouponApplied?.(mockCouponResponse);
+      if (!couponResponse.isValid) {
+        toast.error(couponResponse.message || t('coupon.invalidCoupon'));
+        return;
+      }
+
+      toast.success(couponResponse.message || t('coupon.couponAppliedSuccess'));
+      onCouponApplied?.(couponResponse);
       setOpen(false);
       setPromoCode(''); // Reset the input
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Invalid coupon code';
       toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   };
 

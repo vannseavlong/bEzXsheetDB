@@ -1,35 +1,21 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import React from 'react';
-import useLanguage from '@/hooks/use-language';
-import type { ProductAttributes } from '@/types/api';
+import type { CategoryProduct } from '@/types/api';
 import PrimaryButton from './primary-button';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  product?: ProductAttributes;
+  product?: CategoryProduct;
 };
 
-const InfoDialog: React.FC<Props> = ({ open, onOpenChange, product }) => {
+// The new schema has no per-product remark/info field (the legacy infoEn/infoKm
+// columns don't exist on category_product_option). This dialog always renders
+// its empty state until the backend exposes such a field — known gap, not a bug.
+const InfoDialog: React.FC<Props> = ({ open, onOpenChange }) => {
   const { t } = useTranslation();
-  const { currentLang } = useLanguage();
-
-  const getLocalizedInfo = (product: ProductAttributes) => {
-    switch (currentLang) {
-      case 'en':
-        return product.infoEn;
-      case 'km':
-        return product.infoKm;
-      case 'vi':
-      case 'cn':
-      case 'tw':
-      default:
-        return product.infoEn;
-    }
-  };
-
-  const info = product ? getLocalizedInfo(product) : null;
+  const info: string | null = null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

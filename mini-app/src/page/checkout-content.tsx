@@ -6,16 +6,11 @@ import ServicePairCheckout from '@/components/common/service-pair-checkout';
 import ServicePreview from '@/components/common/service-preview';
 import ServicePreviewSheet from '@/components/common/service-preview-sheet';
 import AdditionalInfo from '@/components/common/additional-info';
+import Coupon from '@/components/common/coupon';
 import { OrderPayment } from '@/components/common/order-payment';
 import TotalPriceButton from '@/components/common/total-price-button';
-import useProductDetailQuery from '@/hooks/use-product-detail-query';
 import type { SelectedService } from '@/hooks/use-checkout-state';
-import type {
-  ProductOptionDetail,
-  OrderPreviewResponse,
-  pairProduct,
-  ProductOptionV2
-} from '@/types/api';
+import type { CouponResponse, OrderPreviewResponse, PairProduct, PairProductOption } from '@/types/api';
 import { useTranslation } from 'react-i18next';
 
 interface CustomerInfo {
@@ -31,11 +26,9 @@ interface ScheduleData {
 }
 
 interface CheckoutContentProps {
-  productData: ProductOptionDetail[] | undefined;
   servicePairAddons: OrderPreviewResponse | undefined;
-  pairProductObj: Record<string, pairProduct[]>;
+  pairProductObj: Record<string, PairProduct[]>;
   pairProductKeys: string[];
-  productQuantity: number;
   productId: string | undefined;
   serviceId: string | undefined;
   selectedServices: SelectedService[];
@@ -57,16 +50,13 @@ interface CheckoutContentProps {
   formatCurrency: (amount?: number) => string;
   openEditSheet?: boolean;
   onEditSheetClose?: () => void;
+  onCouponApplied?: (code: string | undefined) => void;
 }
 
 export default function CheckoutContent({
-  productData,
   servicePairAddons,
   pairProductObj,
   pairProductKeys,
-  productQuantity,
-  productId,
-  serviceId,
   selectedServices,
   setSelectedServices,
   scheduleData,
@@ -84,36 +74,50 @@ export default function CheckoutContent({
   calculateServiceTotal,
   formatCurrency,
   openEditSheet,
-  onEditSheetClose
+  onEditSheetClose,
+  onCouponApplied
 }: CheckoutContentProps) {
   const { t } = useTranslation();
-  const { data: selectedAddonData } = useProductDetailQuery(activePairId ?? '');
 
   const handleServicePreviewClick = (pairId: string) => {
     setActivePairId(pairId);
     setOpenSheet(true);
   };
 
-  const handleAddAddon = (addon: ProductOptionV2, quantity: number) => {
+  const handleConfirmPairOption = (
+    option: PairProductOption,
+    quantity: number,
+    categoryProductId: string
+  ) => {
     setSelectedServices((prev) => {
       let updated: SelectedService[];
-      const exists = prev.find((s) => s.id === addon.id);
+      const exists = prev.find((s) => s.id === option.id);
       if (exists) {
-        if (quantity > 0) {
-          updated = prev.map((s) =>
-            s.id === addon.id ? { ...s, qty: (s.qty ?? 0) + quantity } : s
-          );
-        } else {
-          updated = prev.filter((s) => s.id !== addon.id);
-        }
+        updated = prev.map((s) =>
+          s.id === option.id ? { ...s, qty: (s.qty ?? 0) + quantity } : s
+        );
       } else {
-        updated = [...prev, { ...addon, qty: quantity }];
+        updated = [
+          ...prev,
+          {
+            id: option.id,
+            productId: categoryProductId,
+            qty: quantity,
+            amount: option.amount,
+            nameEn: option.nameEn ?? undefined,
+            nameKm: option.nameKm ?? undefined
+          }
+        ];
       }
       localStorage.setItem('selectedServices', JSON.stringify(updated));
       return updated;
     });
     setOpenSheet(false);
     setActivePairId(null);
+  };
+
+  const handleCouponApplied = (couponData: CouponResponse) => {
+    onCouponApplied?.(couponData.isValid ? couponData.code : undefined);
   };
 
   return (
@@ -141,37 +145,25 @@ export default function CheckoutContent({
       <div className="bg-white p-4 mt-4">
         <h1 className="text-base font-bold mb-4">{t('checkout.yourBooking')}</h1>
 
-        {productData
-          ?.filter(
-            (service) => service.id.toString() === productId || service.id.toString() === serviceId
-          )
-          .map((service) => {
-            const addOnQty = selectedServices
-              .filter((s) => s.id === service.id)
-              .reduce((sum, s) => sum + (s.qty ?? 0), 0);
+        {servicePairAddons?.line && (
+          <ServiceCheckout
+            product={servicePairAddons.line}
+            quantity={servicePairAddons.line.qty}
+            addOns={servicePairAddons.addOns ?? []}
+          />
+        )}
+
+        <div className="mt-4">
+          {selectedServices?.map((pair) => {
             return (
-              <ServiceCheckout
-                key={service.id}
-                product={service}
-                quantity={productQuantity + addOnQty}
-                addOns={servicePairAddons?.productAddOn ?? []}
+              <ServicePairCheckout
+                pairImage={pairProductObj[pair.productId]?.[0]?.thumbnailUrl ?? ''}
+                key={pair.id}
+                service={pair}
+                quantity={pair.qty || 1}
               />
             );
           })}
-
-        <div className="mt-4">
-          {selectedServices
-            ?.filter((pair) => pair.id.toString() !== productId && pair.id.toString() !== serviceId)
-            .map((pair) => {
-              return (
-                <ServicePairCheckout
-                  pairImage={pairProductObj[pair.productId?.toString() ?? '']?.[0]?.iconUrl || ''}
-                  key={`${pair.id}`}
-                  service={pair as ProductOptionV2}
-                  quantity={pair.qty || 1}
-                />
-              );
-            })}
         </div>
       </div>
 
@@ -189,16 +181,19 @@ export default function CheckoutContent({
             ))}
 
             <ServicePreviewSheet
-              data={selectedAddonData as ProductOptionV2[]}
               open={openSheet}
               onOpenChange={setOpenSheet}
-              onConfirm={handleAddAddon}
+              onConfirm={handleConfirmPairOption}
               pairProductObj={pairProductObj}
               pairProductKeys={pairProductKeys}
               activePairId={activePairId}
             />
           </div>
         </div>
+      </div>
+
+      <div className="bg-white mt-4">
+        <Coupon onCouponApplied={handleCouponApplied} />
       </div>
 
       <div className="space-y-4 mt-4">

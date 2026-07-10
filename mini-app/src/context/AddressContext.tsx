@@ -1,6 +1,10 @@
-import type { AddressContextType } from '@/types/api';
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+
+type AddressContextType = {
+  selectedAddress: string | null;
+  setSelectedAddress: (address: string) => void;
+};
 
 const AddressContext = createContext<AddressContextType | undefined>(undefined);
 
