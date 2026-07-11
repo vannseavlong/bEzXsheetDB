@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { mockCleaners } from '@/data/cleaners'
+import { useCleaner, useCreateCleaner, useUpdateCleaner } from '@/api/cleaners'
 
 const DAYS = [
   { label: 'Monday', value: 'Monday' },
@@ -39,29 +39,32 @@ export default function CleanerForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isEdit = !!id && id !== 'new'
-  const existing = isEdit ? mockCleaners.find((c) => c.id === id) : null
 
-  const [name, setName] = useState(existing?.name ?? '')
-  const [gender, setGender] = useState(existing?.gender ?? 'Female')
-  const [role, setRole] = useState(existing?.role ?? 'MEMBER')
-  const [status, setStatus] = useState(existing?.status ? 'Active' : 'Inactive')
-  const [autoAssign, setAutoAssign] = useState(existing?.autoAssign ?? false)
-  const [joinedDate, setJoinedDate] = useState(existing?.joinedDate ?? '')
-  const [expertises, setExpertises] = useState<string[]>(existing?.expertises ?? [])
-  const [dayOffs, setDayOffs] = useState<string[]>(existing?.cleanerWeeklyOffs ?? [])
+  const { data: existing } = useCleaner(isEdit ? id : undefined)
+
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [gender, setGender] = useState('Female')
+  const [role, setRole] = useState('MEMBER')
+  const [status, setStatus] = useState('Active')
+  const [autoAssign, setAutoAssign] = useState(false)
+  const [joinedDate, setJoinedDate] = useState('')
+  const [expertises, setExpertises] = useState<string[]>([])
+  const [dayOffs, setDayOffs] = useState<string[]>([])
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (existing) {
-      setName(existing.name)
-      setGender(existing.gender)
-      setRole(existing.role)
-      setStatus(existing.status ? 'Active' : 'Inactive')
-      setAutoAssign(existing.autoAssign)
-      setJoinedDate(existing.joinedDate)
-      setExpertises(existing.expertises)
-      setDayOffs(existing.cleanerWeeklyOffs)
-    }
-  }, [])
+    if (!existing) return
+    setName(existing.name)
+    setPhone(existing.phone ?? '')
+    setGender(existing.gender)
+    setRole(existing.role)
+    setStatus(existing.status ? 'Active' : 'Inactive')
+    setAutoAssign(existing.auto_assign)
+    setJoinedDate(existing.joined_date?.slice(0, 10) ?? '')
+    setExpertises(existing.expertises ? JSON.parse(existing.expertises) : [])
+    setDayOffs(existing.weekly_offs ? JSON.parse(existing.weekly_offs) : [])
+  }, [existing])
 
   const toggleExpertise = (e: string) => {
     setExpertises((prev) =>
@@ -75,9 +78,35 @@ export default function CleanerForm() {
     )
   }
 
-  const handleSave = () => {
-    console.log('Save cleaner:', { name, gender, role, status, autoAssign, joinedDate, expertises, dayOffs })
-    navigate('/cleaner')
+  const createCleaner = useCreateCleaner()
+  const updateCleaner = useUpdateCleaner()
+
+  const handleSave = async () => {
+    if (!name.trim() || !joinedDate) return
+    setSaving(true)
+    try {
+      const payload = {
+        name: name.trim(),
+        phone: phone.trim() || undefined,
+        gender,
+        role,
+        status: status === 'Active',
+        auto_assign: autoAssign,
+        joined_date: joinedDate,
+        expertises: JSON.stringify(expertises),
+        weekly_offs: JSON.stringify(dayOffs),
+      }
+      if (isEdit) {
+        await updateCleaner.mutateAsync({ id: id!, data: payload })
+      } else {
+        await createCleaner.mutateAsync(payload)
+      }
+      navigate('/cleaner')
+    } catch (err) {
+      console.error('CleanerForm save failed:', err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -89,9 +118,9 @@ export default function CleanerForm() {
           </Button>
           <h1 className="text-base font-semibold">{isEdit ? 'Edit Cleaner' : 'New Cleaner'}</h1>
         </div>
-        <Button size="sm" onClick={handleSave}>
+        <Button size="sm" onClick={handleSave} disabled={saving}>
           <Save className="h-4 w-4 mr-1" />
-          Save
+          {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>
 
@@ -112,6 +141,11 @@ export default function CleanerForm() {
                 <div className="flex flex-col gap-1.5">
                   <Label>Name</Label>
                   <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Cleaner name" />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label>Phone</Label>
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone number" />
                 </div>
 
                 <div className="flex flex-col gap-1.5">

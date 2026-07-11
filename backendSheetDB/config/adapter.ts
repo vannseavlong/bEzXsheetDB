@@ -27,6 +27,7 @@ import blockedSchedulesSchema from '../schemas/admin/blocked_schedules'
 import ordersSchema from '../schemas/admin/orders'
 import productPairingsSchema from '../schemas/admin/product_pairings'
 import orderAddonsSchema from '../schemas/admin/order_addons'
+import activityLogsSchema from '../schemas/admin/activity_logs'
 
 // User (customer) schemas
 import customersSchema from '../schemas/user/customers'
@@ -86,6 +87,7 @@ export function createAdapter() {
   adapter.registerSchema(ordersSchema)
   adapter.registerSchema(productPairingsSchema)
   adapter.registerSchema(orderAddonsSchema)
+  adapter.registerSchema(activityLogsSchema)
 
   adapter.registerSchema(customersSchema)
   adapter.registerSchema(addressesSchema)

@@ -1,18 +1,28 @@
 import { useState } from 'react'
-import { ArrowLeft, MapPin, PackageOpen, Phone, Ticket } from 'lucide-react'
+import { ArrowLeft, MapPin, PackageOpen, Phone, Ticket, UserCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { WarningDialog } from '@/components/shared/WarningDialog'
-import { useOrderDetail, useUpdateOrderStatus } from '@/api/orders'
+import { useOrderDetail, useUpdateOrderStatus, useAssignCleaner } from '@/api/orders'
+import { useCleaners } from '@/api/cleaners'
 import { usePermission } from '@/hooks/use-permission'
 import { ACTIONS, MODULES } from '@/lib/permission-registry'
 import { formatDateSafe } from '@/lib/utils'
 import type { OrderStatus } from '@/types'
+
+const UNASSIGNED = '__unassigned__'
 
 function initials(name: string) {
   return name
@@ -39,9 +49,12 @@ interface Props {
 export function OrderDetail({ bulkOrderId, onBack }: Props) {
   const { data: order, isLoading, isFetching } = useOrderDetail(bulkOrderId || undefined)
   const { mutateAsync: updateStatus, isPending } = useUpdateOrderStatus()
+  const { mutateAsync: assignCleaner, isPending: isAssigning } = useAssignCleaner()
+  const { data: cleanersResult } = useCleaners({ status: true })
   const [cancelOpen, setCancelOpen] = useState(false)
   const { hasPermission } = usePermission()
   const canUpdate = hasPermission(MODULES.ORDER, ACTIONS.UPDATE)
+  const canAssign = hasPermission(MODULES.ORDER, ACTIONS.ASSIGN)
 
   if (!bulkOrderId) {
     return (
@@ -80,6 +93,13 @@ export function OrderDetail({ bulkOrderId, onBack }: Props) {
   const handleCancel = async () => {
     await updateStatus({ bulkOrderId: order.bulkOrderId, status: 'CANCELLED' })
     setCancelOpen(false)
+  }
+
+  const cleaners = cleanersResult?.data ?? []
+  const assignedCleaner = cleaners.find((c) => c.id === String(order.assignedCleanerId))
+
+  const handleAssign = async (value: string) => {
+    await assignCleaner({ bulkOrderId: order.bulkOrderId, cleanerId: value === UNASSIGNED ? null : value })
   }
 
   return (
@@ -162,6 +182,31 @@ export function OrderDetail({ bulkOrderId, onBack }: Props) {
                 <p className="text-sm">{order.note}</p>
               </div>
             </>
+          )}
+        </Card>
+
+        <Card className="p-5">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
+            <UserCog className="h-4 w-4" /> Assigned Cleaner
+          </h3>
+          {canAssign ? (
+            <Select
+              value={assignedCleaner?.id ?? UNASSIGNED}
+              onValueChange={handleAssign}
+              disabled={isAssigning}
+            >
+              <SelectTrigger className="w-full sm:w-64">
+                <SelectValue placeholder="Unassigned" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                {cleaners.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <p className="text-sm text-muted-foreground">{assignedCleaner?.name ?? 'Unassigned'}</p>
           )}
         </Card>
 

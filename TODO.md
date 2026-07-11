@@ -100,7 +100,7 @@ This must be completed before the admin portal is considered production-ready.
 - [x] `ProtectedRoute`: accepts optional `requiredRole` prop; redirects to `/not-authorised` if role mismatch
 - [x] Created `NotAuthorised.tsx` page (403 with dashboard link)
 - [x] RBAC and Users routes wrapped with `<ProtectedRoute requiredRole="super_admin" />`
-- [ ] Action buttons (Edit, Delete, Create): wrap with `hasPermission` — hide or disable if not granted (deferred — backend enforces it; frontend refinement in next pass)
+- [x] Action buttons (Edit, Delete, Create): wrapped with `hasPermission`/`canUpdate`/`canDelete` in column defs across `ProductList.tsx`, `CategoryList.tsx`, `ItemList.tsx`, `RoleList.tsx`, `UserList.tsx`, `BlockedScheduleList.tsx`, `CategoryAddonList.tsx`, `ProductOptionList.tsx`, `PopularServiceList.tsx`, `CleanerList.tsx`
 
 ---
 
@@ -147,7 +147,35 @@ This must be completed before the admin portal is considered production-ready.
   full payment breakdown, remark
 - [x] Status update action — single forward-action button per status (Accept → Start → Complete) plus
   a separate destructive Cancel button behind a confirm dialog; both gated on `ORDER:UPDATE`
-- [ ] Cleaner assignment panel — deferred (see scope note above)
+- [x] Cleaner assignment panel — built, see C5 below
+
+### C5 — Cleaner Management (CRUD, assignment, activity log) ✅ done 2026-07-11
+> Closes the two items deferred earlier in this phase (`GET/POST .../cleaners`, assignment panel) plus
+> two new asks (2026-07-11): cleaners are admin/operation-managed data only, not real user accounts —
+> no login, no RBAC actor for them. Assignment logic kept deliberately simple (manual pick only, no
+> availability/auto-assign optimizer — the `auto_assign` flag on each cleaner stays informational).
+- [x] Backend: `cleaners` CRUD routes (`backendSheetDB/routes/admin/cleaners.ts`, mounted at
+  `/admin/cleaners`, gated `CLEANER:VIEW`) against the existing `schemas/admin/cleaners.ts` schema —
+  mirrors the `blocked-schedules.ts` route pattern exactly (DTO-mapped list, raw-row detail/create/update)
+- [x] Admin Portal: `pages/cleaner/CleanerList.tsx` + `CleanerForm.tsx` — `mockCleaners` removed
+  (`data/cleaners.ts` deleted), wired to real `api/cleaners.ts` hooks (server-side search/pagination/status
+  filter, create/edit/delete all persist); added a `phone` field to the form since the schema already had
+  the column but the old mock UI never surfaced it
+- [x] Backend: `PATCH /admin/orders/:bulkOrderId/assign-cleaner` (`{ cleanerId: string | null }`) —
+  mirrors the existing `/status` handler, updates every line sharing the bulk order, validates the
+  cleaner exists and is active, gated on the (pre-existing, previously unused) `ORDER:ASSIGN` permission.
+  No availability-slot logic — manual assignment only, per scope.
+- [x] Admin Portal: "Assigned Cleaner" panel on `OrderDetail.tsx` — dropdown of active cleaners,
+  gated on `ORDER:ASSIGN`, shows "Unassigned" or the current assignee otherwise
+- [x] Activity log: new `activity_logs` schema + a generic `logActivity` middleware
+  (`backendSheetDB/middleware/activity-log.ts`) mounted once on the whole `/admin/*` router — auto-logs
+  every successful mutating (POST/PATCH/PUT/DELETE) request with an auto-generated `detail` summary, no
+  per-route instrumentation needed. GETs intentionally not logged (read cache + write-quota cost).
+  `pages/ActivityLog.tsx` wired to the new `GET /admin/activity-log` (mock data file deleted).
+- [x] Verified end-to-end: backend routes exercised directly (CRUD round-trip, assignment + invalid/
+  inactive-cleaner rejection, permission-gate 403s, activity-log entries with correct module/detail) and
+  the actual admin-portal UI driven with Playwright (create/edit/delete a cleaner, assign a cleaner from
+  the order detail panel, confirm the row appears in Activity Log) — all working, no console errors
 
 ---
 
@@ -156,62 +184,62 @@ This must be completed before the admin portal is considered production-ready.
 The mini-app currently uses `useFakeAuth` with a hardcoded JWT and points to the old bEasy backend.
 This phase replaces all of that with the `backendSheetDB` API.
 
-### D1 — Auth: replace fake auth with real login
-- [ ] Remove `useFakeAuth` — currently sets a hardcoded token and user in the cookie/store
-- [ ] Wire `use-login-mutation.ts` to `backendSheetDB` `POST /auth/login` (email + password)
-- [ ] Wire ABA bridge auth (`callHandler('getProfile')`) if still needed — confirm with client
-- [ ] Store JWT from response in cookie; attach to all API calls via Axios interceptor (already exists, just point to new base URL)
-- [ ] Wire `meApi` to `GET /api/user/profile` on backendSheetDB (or confirm existing profile endpoint)
+### D1 — Auth: replace fake auth with real login ✅ done 2026-07-10
+- [x] Removed `useFakeAuth` entirely — zero references left in `mini-app/src`
+- [x] `use-login-mutation.ts` → `loginApi` (`api.ts`) → `POST auth/login`, matches
+  `backendSheetDB/routes/user/auth.ts` `POST /login`
+- [x] ABA bridge auth dropped for login — no `callHandler('getProfile')` calls remain; real login fully
+  replaces it (remaining `callHandler` uses are unrelated: `confirmOnClose`, `requestCurrentLocation`, `setBarTitle`)
+- [x] JWT stored via `Cookies` in `api.ts`; Axios interceptor attaches `Authorization: Bearer` on every call
+- [x] `meApi` wired to `GET auth/me` (not `/api/user/profile` as originally guessed — path differs but is
+  real and functional) → `backendSheetDB/routes/user/auth.ts` `GET /me`
 
 ### D2 — Update API base URL
-- [ ] Update `.env.dev` / `.env.uat` `VITE_BASE_URL` to point to `backendSheetDB` server
-- [ ] Confirm all existing `API_ENDPOINT` keys still map to valid backendSheetDB routes; update any that don't
-- [ ] **Backend: implement `/api/user/*` app-facing routes** — `routes/user/index.ts` currently only
-  mounts `/auth`; everything else (`category`, `product`, `order`, `address`, `banner`, `homepage`,
-  `profile`) is an unimplemented placeholder comment. Confirmed via 404 on
-  `GET /api/user/category/list/detail` after sign-up. Mirror the read-only shape of
-  `routes/admin/categories.ts` for the user-facing category endpoints.
+- [ ] `.env.dev` / `.env.uat` still don't exist in the repo — only `.env.example` is set up
+  (`VITE_BASE_URL=http://localhost:3000/api/user`); need real dev/uat env files before those builds work
+- [x] Existing `API_ENDPOINT` keys confirmed mapped to valid backendSheetDB routes (see D3)
+- [x] **Backend: `/api/user/*` app-facing routes are implemented** — `routes/user/index.ts` mounts `auth`,
+  `catalog` (category/product/addon/banner/homepage/task-info), `address`, `order`, `coupon`. No longer
+  placeholder stubs.
 
-### D3 — Wire each screen to real backend
-- [ ] **Home screen** (`home.tsx` + `home-content.tsx`):
-  - `use-banner-query.ts` → `GET /banner/list`
-  - `use-category-query.ts` → `GET /category/list`
-  - `use-homepage.ts` → `GET /homepage` (note/announcement)
-- [ ] **Service screen** (`service.tsx`):
-  - `use-service-query.ts` → `GET /product/v2`
-  - `use-product-detail-query.ts` → `GET /product/:id`
-  - `use-equipment-query.ts` → `GET /category/:id` (equipment/addons)
-- [ ] **Checkout flow** (`checkout.tsx` + `checkout-content.tsx`):
-  - `use-checkout-services.ts` / `use-checkout-state.ts` — confirm state shape matches new API
-  - `use-order-preview-mutation.ts` → `POST /order/mini-app/preview`
-  - `use-order-summary-mutation.ts` / `use-bulk-order-price-mutation.ts` — wire to correct endpoints
-  - `use-schedule-query.ts` → `GET /order/available-schedule`
-  - Review and adjust checkout flow — confirm steps match what backend expects
-- [ ] **Location screens** (`location.tsx` + `add-location.tsx`):
-  - `use-address-query.ts` → `GET /address/list`
-  - `use-new-address-mutation.ts` → `POST /address/create`
-  - `use-location-distance-guard.ts` → `GET /address/check/distance`
-- [ ] **Order creation**:
-  - `use-order-create-mutation.ts` → `POST /order/mini-app/create`
-  - `use-order-recommended-mutation.ts` — confirm endpoint
-- [ ] **Order list + detail** (`booking-content.tsx`, `order-detail.tsx`):
-  - `use-order-query.ts` → `GET /order/mini-app/list`
-  - `use-order-detail-query.ts` → `GET /order/mini-app/detail`
-  - `use-order-check-status-query.ts` → `GET /order/:bulkOrderId/:tranId/payment-status`
-  - `use-edit-schedule-mutation.ts` → `PUT /order/bulk/edit-schedule`
-- [ ] **Purchase success screen** (`purchase-success-screen.tsx`) — currently commented out in router; confirm if needed
+### D3 — Wire each screen to real backend ✅ done 2026-07-10 (hooks renamed/split differently than originally planned, but functionally complete)
+- [x] **Home screen**: `use-banner-query.ts` → `GET banner/list`, `use-category-query.ts` → `GET category/list`,
+  `use-homepage.ts` → `GET homepage`
+- [x] **Service screen** — actual hooks differ from the names guessed below but cover the same surface:
+  `use-category-products-query.ts` → `GET category/:id/products`, `use-category-addons-query.ts`,
+  `use-category-addon-items-query.ts`, `use-task-info-query.ts`, `use-equipment-query.ts` → `GET category/:id/items`
+- [x] **Checkout flow**: `use-checkout-state.ts` holds real state; `use-order-preview-mutation.tsx` →
+  `POST order/preview` (pricing/summary now computed server-side in the preview response, so the separately
+  planned `use-order-summary-mutation.ts` / `use-bulk-order-price-mutation.ts` were never needed);
+  `use-schedule-query.ts` → `GET order/available-schedule`
+- [x] **Location screens**: `use-address-query.ts` → `GET address/list`, `use-new-address-mutation.ts`
+  (handles create + edit) → `POST address/create`, `use-location-distance-guard.ts` → `POST address/check/distance`
+  (backend ended up POST, not GET as originally noted), plus an untracked `use-delete-address-mutation.ts`
+- [x] **Order creation**: `use-order-create-mutation.ts` → `POST order/create`
+- [ ] `use-order-recommended-mutation.ts` — never built, no "recommended" feature exists anywhere; drop
+  from scope unless product asks for it
+- [x] **Order list + detail**: `use-order-query.ts` → `GET order/list`, `use-order-detail-query.ts` →
+  `GET order/:bulkOrderId`, `use-edit-schedule-mutation.ts` → `PATCH order/:bulkOrderId/schedule`
+- [ ] `use-order-check-status-query.ts` — backend endpoint exists (`GET order/:bulkOrderId/payment-status`,
+  no `tranId` segment as originally assumed) but no frontend hook calls it yet
+- [ ] **Purchase success screen** — `purchase-success-screen.tsx` doesn't exist at all (not even commented
+  out); post-order flow currently redirects straight to order list/detail. Needs an explicit decision on
+  whether a dedicated success screen is still wanted.
 
 ### D4 — Checkout flow adjustment
-- [ ] Walk through the full checkout flow on device/emulator end-to-end
+- [ ] Walk through the full checkout flow on device/emulator end-to-end — no record of this QA pass yet
 - [ ] Identify any steps that don't match the new backend's expected payload shape
 - [ ] Fix field mapping mismatches (field names, date formats, address structure, etc.)
 - [ ] Confirm payment flow — is ABA payment still involved, or replaced?
-- [ ] Confirm post-order redirect behaviour (success screen vs order list)
+- [ ] Confirm post-order redirect behaviour (success screen vs order list) — see D3 purchase-success note
 
 ### D5 — User registration / profile
-- [ ] Confirm if the mini-app supports self-registration or users are created by admin only
-- [ ] If admin-created: ensure login works with credentials set by admin portal Users page
-- [ ] Wire profile page / user info display if it exists
+- [x] Self-registration is supported — `POST /register` in `backendSheetDB/routes/user/auth.ts` (password
+  strength + duplicate email/phone checks) wired to `use-register-mutation.ts` + `page/register.tsx` in
+  the mini-app. Admin-created-only login still works too (same `/auth/login` path either way).
+- [~] Profile: no dedicated profile page yet, but editing works — `personal-info.tsx` uses
+  `useUpdateProfileMutation` (`PATCH auth/me`) inline inside the checkout flow. Standalone profile
+  page/display still not built.
 
 ---
 
@@ -225,6 +253,44 @@ Once all phases are complete, verify the full flow works together:
 - [ ] Admin updates order status → status reflects correctly in mini-app order detail
 - [ ] Run `export --prisma` → confirm generated schema covers all tables used by all three apps
 - [ ] Run `export-data` (or renamed migrate) → confirm all data can be read out cleanly
+
+---
+
+## Phase F — Production Hardening & Handoff
+
+Starts only once B, C (incl. C5 cleaner flow), D, and E above are all done — i.e. once every integrated
+feature is confirmed working end-to-end on the Sheets backend. This phase is about making the stack
+production-safe and completing the real migration off Sheets, not adding more product features.
+
+### F1 — Observability: Sentry error logging
+- [ ] `backendSheetDB`: install Sentry, capture unhandled errors + failed requests (wire into the existing
+  Express error middleware rather than adding a parallel one)
+- [ ] `admin-portal`: install Sentry (React), capture render errors + failed API calls
+- [ ] `mini-app`: install Sentry (React/mobile webview context), capture render errors + failed API calls
+- [ ] Confirm all three send to the same Sentry project (or clearly separated projects) with environment
+  tags (`dev`/`uat`/`prod`) so errors are attributable
+
+### F2 — CI/CD: staging Sheets → production Postgres on Render
+> Purpose: prove the `longcelot-sheet-db` adapter swap and data migration actually work end-to-end
+> against a real database, not just via manual `export`/`export-data` runs (Phase A2).
+- [ ] Provision a Postgres instance on Render for production
+- [ ] Swap `SheetAdapter` for the Postgres/Prisma adapter in a way that's config-driven (staging stays on
+  Sheets, production points at Postgres) — confirm what the package actually supports here first
+- [ ] Build the CI/CD pipeline: on merge/tag, run `export --prisma` → `prisma migrate` → `export-data` (or
+  equivalent) against the Render Postgres instance
+- [ ] Migrate current staging Sheet data into the new Postgres DB once, verify row counts/relations match
+- [ ] Document the cutover steps so it's repeatable, not a one-off manual migration
+
+### F3 — OWASP Top 10 security review
+- [ ] Run through the OWASP Top 10 against `backendSheetDB`, `admin-portal`, `mini-app` (injection, auth,
+  data exposure, access control, misconfig, etc.) — use the `/security-review` skill/command as a starting
+  pass, then manually verify anything it flags
+- [ ] File and fix (or explicitly accept/defer with reasoning) each finding
+
+### F4 — Limitations & challenges summary
+- [ ] Write a markdown doc summarizing known limitations and challenges hit across the project — package
+  quirks (see `PACKAGE_IMPROVEMENT.md`), Sheets-as-DB constraints, anything deferred or simplified for
+  time (e.g. cleaner auto-assign kept simple, activity log scope), and open risks going into production
 
 ---
 
@@ -242,9 +308,11 @@ Package A3 stable
 D3-D4 checkout flow confirmed
     └── C1 order model understood
             └── C2-C4 order management (admin-portal)
+                    └── C5 cleaner management (CRUD, assign, activity log)
 
-B + C + D all done
+B + C (incl. C5) + D all done
     └── E end-to-end smoke test
+            └── F production hardening (Sentry, Render CI/CD, OWASP review, limitations doc)
 ```
 
 ---
@@ -253,4 +321,14 @@ B + C + D all done
 
 - **Order management (Phase C) intentionally comes after mini-app checkout review (Phase D)** — the admin order UI should reflect exactly what the client sends, so client-side flow must be confirmed first
 - **RBAC modules** — current `SYSTEM_MODULE_ACTIONS` on the backend is a hand-maintained copy of the frontend's `MODULE_ACTIONS`; these must stay in sync until the package provides a shared mechanism (filed as future feedback)
-- **Mini-app auth** — `useFakeAuth` is the only thing keeping the mini-app runnable right now; don't remove it until the real login endpoint is confirmed working end-to-end
+- **Mini-app auth** — `useFakeAuth` has been removed (2026-07-10); real login/register against `backendSheetDB` is live end-to-end
+- **Cleaner flow (C5)** — cleaners are admin/operation-managed records, not user accounts; no login or
+  RBAC actor needed for them. Keep auto-assign simple (basic availability filter or the existing
+  `auto_assign` flag) rather than building a scheduling optimizer.
+- **Phase F is deliberately last** — Sentry, the Render Postgres CI/CD cutover, the OWASP pass, and the
+  limitations write-up only make sense once the product surface (B, C, D, E) has stopped moving
+- **Untracked features shipped alongside Phase D** (not previously listed as TODO items, verified 2026-07-11):
+  coupon system (`backendSheetDB/routes/user/coupon.ts` + `coupon-logic.ts`, `use-coupon-mutation.ts`,
+  `POST coupon/validate`); Google OAuth login for mini-app users (`createUserGoogleAuthHandler` in
+  `routes/user/auth.ts`); product pairing / "often paired with" (`product_pairings` table,
+  `loadPairProductCatalog` in `order.ts`); address delete flow (`use-delete-address-mutation.ts`)

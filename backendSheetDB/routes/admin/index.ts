@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { requireAuth, requirePermission, requireAnyPermission } from '../../middleware/auth'
+import { logActivity } from '../../middleware/activity-log'
 import { createUsersRouter } from './users'
 import { createRbacRouter } from './rbac'
 import { createCategoriesRouter } from './categories'
@@ -15,6 +16,8 @@ import { createItemsRouter } from './items'
 import { createBlockedSchedulesRouter } from './blocked-schedules'
 import { createUploadRouter } from './upload'
 import { createOrdersRouter } from './orders'
+import { createCleanersRouter } from './cleaners'
+import { createActivityLogRouter } from './activity-log'
 
 /**
  * All /api/admin/* routes.
@@ -25,6 +28,7 @@ export function createAdminRouter(adapter: SheetAdapter) {
   const router = Router()
 
   router.use(requireAuth)
+  router.use(logActivity(adapter))
 
   router.use('/users', requirePermission('ADMIN_USERS', 'VIEW'), createUsersRouter(adapter))
   router.use('/rbac', requirePermission('RBAC', 'VIEW'), createRbacRouter(adapter))
@@ -42,6 +46,8 @@ export function createAdminRouter(adapter: SheetAdapter) {
   router.use('/items', requirePermission('SETUP-ITEM', 'VIEW'), createItemsRouter(adapter))
   router.use('/blocked-schedules', requirePermission('SETUP-SCHEDULE', 'VIEW'), createBlockedSchedulesRouter(adapter))
   router.use('/orders', requirePermission('ORDER', 'VIEW'), createOrdersRouter(adapter))
+  router.use('/cleaners', requirePermission('CLEANER', 'VIEW'), createCleanersRouter(adapter))
+  router.use('/activity-log', requirePermission('ACTIVITY_LOG', 'VIEW'), createActivityLogRouter(adapter))
   router.use('/upload', createUploadRouter(adapter))
 
   return router

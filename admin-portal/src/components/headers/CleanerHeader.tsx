@@ -1,4 +1,3 @@
-import type { Table } from '@tanstack/react-table'
 import { Plus } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -12,23 +11,23 @@ import {
 } from '@/components/ui/select'
 import { usePermission } from '@/hooks/use-permission'
 import { ACTIONS, MODULES } from '@/lib/permission-registry'
-import type { Cleaner } from '@/types'
 
-type Props = {
-  table: Table<Cleaner>
+interface Props {
+  search: string
+  setSearch: (v: string) => void
   statusFilter: string
-  setStatusFilter: (value: string) => void
+  setStatusFilter: (v: string) => void
 }
 
-export function CleanerHeader({ table, statusFilter, setStatusFilter }: Props) {
+export function CleanerHeader({ search, setSearch, statusFilter, setStatusFilter }: Props) {
   const { hasPermission } = usePermission()
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
       <SearchBar
         placeholder="Search for cleaner..."
-        value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-        onChange={(val) => table.getColumn('name')?.setFilterValue(val)}
+        value={search}
+        onChange={setSearch}
       />
       <div className="flex flex-row gap-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}>

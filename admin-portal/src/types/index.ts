@@ -82,6 +82,7 @@ export interface Cleaner {
   id: string
   name: string
   image: string | null
+  phone: string | null
   gender: Gender
   role: CleanerRole
   status: boolean

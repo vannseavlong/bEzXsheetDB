@@ -70,6 +70,7 @@ export interface OrderDetail {
   paymentStatus: PaymentStatus
   status: OrderStatus
   type: OrderType
+  assignedCleanerId: string | number | null
   createdAt: string | null
   items: OrderItem[]
 }
@@ -91,6 +92,28 @@ export function useUpdateOrderStatus() {
       qc.invalidateQueries({ queryKey: ['orders', 'list'] })
       qc.invalidateQueries({ queryKey: ['orders', 'detail', vars.bulkOrderId] })
       toast({ title: 'Success', description: 'Order status updated' })
+    },
+    onError: (error: unknown) => {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Something went wrong',
+        variant: 'destructive',
+      })
+    },
+  })
+}
+
+export function useAssignCleaner() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ bulkOrderId, cleanerId }: { bulkOrderId: string; cleanerId: string | null }) =>
+      apiClient
+        .patch<{ data: { bulkOrderId: string; assignedCleanerId: string | null } }>(`${BASE}/${bulkOrderId}/assign-cleaner`, { cleanerId })
+        .then((r) => r.data),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['orders', 'list'] })
+      qc.invalidateQueries({ queryKey: ['orders', 'detail', vars.bulkOrderId] })
+      toast({ title: 'Success', description: 'Cleaner assignment updated' })
     },
     onError: (error: unknown) => {
       toast({

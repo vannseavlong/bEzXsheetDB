@@ -12,10 +12,12 @@ import { Badge } from '@/components/ui/badge'
 import type { Cleaner } from '@/types'
 
 interface CleanerColumnsOptions {
+  onDelete?: (id: string) => void
   canUpdate?: boolean
+  canDelete?: boolean
 }
 
-export const cleanerColumns = ({ canUpdate = false }: CleanerColumnsOptions = {}): ColumnDef<Cleaner>[] => [
+export const cleanerColumns = ({ onDelete, canUpdate = false, canDelete = false }: CleanerColumnsOptions = {}): ColumnDef<Cleaner>[] => [
   {
     accessorKey: 'name',
     header: 'Name',
@@ -94,7 +96,7 @@ export const cleanerColumns = ({ canUpdate = false }: CleanerColumnsOptions = {}
     id: 'actions',
     header: '',
     cell: ({ row }) => {
-      if (!canUpdate) return null
+      if (!canUpdate && !canDelete) return null
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -103,12 +105,22 @@ export const cleanerColumns = ({ canUpdate = false }: CleanerColumnsOptions = {}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <NavLink to={`/cleaner/${row.original.id}`} className="flex items-center gap-2 text-blue-600">
-                <Pen className="h-3 w-3" />
-                Edit
-              </NavLink>
-            </DropdownMenuItem>
+            {canUpdate && (
+              <DropdownMenuItem asChild>
+                <NavLink to={`/cleaner/${row.original.id}`} className="flex items-center gap-2 text-blue-600">
+                  <Pen className="h-3 w-3" />
+                  Edit
+                </NavLink>
+              </DropdownMenuItem>
+            )}
+            {canDelete && (
+              <DropdownMenuItem
+                className="text-red-600 focus:text-red-600"
+                onClick={() => onDelete?.(row.original.id)}
+              >
+                Delete
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )

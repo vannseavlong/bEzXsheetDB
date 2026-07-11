@@ -1,18 +1,17 @@
-import type { Table } from '@tanstack/react-table'
 import { SearchBar } from '@/components/shared/SearchBar'
-import type { ActivityLog } from '@/types'
 
 interface Props {
-  table: Table<ActivityLog>
+  search: string
+  setSearch: (v: string) => void
 }
 
-export function ActivityLogHeader({ table }: Props) {
+export function ActivityLogHeader({ search, setSearch }: Props) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center p-4 sm:justify-between gap-4">
       <SearchBar
         placeholder="Search by user, module or action..."
-        value={(table.getState().globalFilter as string) ?? ''}
-        onChange={(val) => table.setGlobalFilter(val)}
+        value={search}
+        onChange={setSearch}
       />
     </div>
   )

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import type { SheetAdapter } from 'longcelot-sheet-db'
 import { groupBy } from '../../utils/group-by'
+import { requirePermission } from '../../middleware/auth'
 
 const STATUS_VALUES = ['PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const
 type OrderStatus = (typeof STATUS_VALUES)[number]
@@ -174,6 +175,7 @@ export function createOrdersRouter(adapter: SheetAdapter) {
           paymentStatus: primary.payment_status,
           status: primary.status,
           type: primary.type,
+          assignedCleanerId: primary.assigned_cleaner_id ?? null,
           createdAt: cleanDate(primary._created_at),
           items,
         },
@@ -205,6 +207,34 @@ export function createOrdersRouter(adapter: SheetAdapter) {
         rows.map((r) => ctx().table('orders').update({ where: { _id: r._id }, data: { status } }))
       )
       res.json({ data: { bulkOrderId: req.params.bulkOrderId, status } })
+    } catch (err) { next(err) }
+  })
+
+  // PATCH /api/admin/orders/:bulkOrderId/assign-cleaner — assigns (or unassigns, cleanerId: null)
+  // every line sharing the bulk order together. Manual assignment only — no availability logic.
+  router.patch('/:bulkOrderId/assign-cleaner', requirePermission('ORDER', 'ASSIGN'), async (req, res, next) => {
+    try {
+      const { cleanerId } = req.body as { cleanerId?: string | null }
+
+      if (cleanerId) {
+        const cleaner = await ctx().table('cleaners').findOne({ where: { _id: cleanerId } })
+        if (!cleaner || cleaner.status !== true) {
+          return res.status(400).json({ message: 'Cleaner not found or inactive' })
+        }
+      }
+
+      const rows = (await ctx().table('orders').findMany({
+        where: { bulk_order_id: req.params.bulkOrderId },
+      })) as Record<string, unknown>[]
+      if (rows.length === 0) return res.status(404).json({ message: 'Not found' })
+
+      const primary = rows.find((r) => r.is_primary) ?? rows[0]
+      if (primary.type === 'DIRECT_SALE') return res.status(404).json({ message: 'Not found' })
+
+      await Promise.all(
+        rows.map((r) => ctx().table('orders').update({ where: { _id: r._id }, data: { assigned_cleaner_id: cleanerId ?? null } }))
+      )
+      res.json({ data: { bulkOrderId: req.params.bulkOrderId, assignedCleanerId: cleanerId ?? null } })
     } catch (err) { next(err) }
   })
 
