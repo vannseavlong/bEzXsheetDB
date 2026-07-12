@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { groupBy } from '../../utils/group-by'
 import { requirePermission } from '../../middleware/auth'
 
@@ -67,7 +67,7 @@ function toOrderSummaryDto(primary: Record<string, unknown>, lines: Record<strin
  * sharing `bulk_order_id` (see routes/user/order.ts). The admin list/detail views
  * operate on the whole bulk order, so every handler here groups by that id.
  */
-export function createOrdersRouter(adapter: SheetAdapter) {
+export function createOrdersRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

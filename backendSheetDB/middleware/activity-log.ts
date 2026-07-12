@@ -1,5 +1,5 @@
 import type { Response, NextFunction } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import type { AuthRequest } from './auth'
 
 const LOGGED_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
@@ -23,7 +23,7 @@ function summarize(method: string, body: unknown, params: Record<string, string>
  * cache, and writing a log row on every read would burn write-quota for no
  * benefit. Only requests that actually succeeded (status < 400) are recorded.
  */
-export function logActivity(adapter: SheetAdapter) {
+export function logActivity(adapter: DatabaseAdapter) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!LOGGED_METHODS.has(req.method)) return next()
 

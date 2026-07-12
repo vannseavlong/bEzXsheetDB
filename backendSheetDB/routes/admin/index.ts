@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter, SheetAdapter } from 'longcelot-sheet-db'
 import { requireAuth, requirePermission, requireAnyPermission } from '../../middleware/auth'
 import { logActivity } from '../../middleware/activity-log'
 import { createUsersRouter } from './users'
@@ -24,7 +24,7 @@ import { createActivityLogRouter } from './activity-log'
  * requireAuth is applied at this level — every sub-router inherits it.
  * Role granularity (e.g. super_admin only for /users) is handled per-router.
  */
-export function createAdminRouter(adapter: SheetAdapter) {
+export function createAdminRouter(adapter: DatabaseAdapter, storage: SheetAdapter) {
   const router = Router()
 
   router.use(requireAuth)
@@ -48,7 +48,7 @@ export function createAdminRouter(adapter: SheetAdapter) {
   router.use('/orders', requirePermission('ORDER', 'VIEW'), createOrdersRouter(adapter))
   router.use('/cleaners', requirePermission('CLEANER', 'VIEW'), createCleanersRouter(adapter))
   router.use('/activity-log', requirePermission('ACTIVITY_LOG', 'VIEW'), createActivityLogRouter(adapter))
-  router.use('/upload', createUploadRouter(adapter))
+  router.use('/upload', createUploadRouter(storage))
 
   return router
 }

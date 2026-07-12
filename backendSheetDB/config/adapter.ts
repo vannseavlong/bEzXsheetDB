@@ -1,7 +1,23 @@
 import fs from 'fs'
 import path from 'path'
-import { createSheetAdapter, DriveStorageAdapter } from 'longcelot-sheet-db'
+import {
+  createDatabaseAdapter,
+  createSheetAdapter,
+  DriveStorageAdapter,
+  DatabaseAdapter,
+  SheetAdapter,
+  SheetAdapterConfig,
+  TableSchema,
+} from 'longcelot-sheet-db'
 import { env } from './env'
+
+/**
+ * `registerSchema` is implemented by every adapter kind (SheetAdapter, SQLAdapterBase,
+ * PrismaAdapterBase) but isn't part of the shared `DatabaseAdapter` interface — a gap in the
+ * package's public types, not a real capability difference. Worth filing as package feedback;
+ * cast locally until then.
+ */
+type RegistrableAdapter = DatabaseAdapter & { registerSchema(schema: TableSchema): void }
 
 // Admin schemas
 import usersSchema from '../schemas/admin/users'
@@ -33,7 +49,7 @@ import activityLogsSchema from '../schemas/admin/activity_logs'
 import customersSchema from '../schemas/user/customers'
 import addressesSchema from '../schemas/user/addresses'
 
-export function createAdapter() {
+function sheetsAdapterConfig(): SheetAdapterConfig {
   // Render (and other ephemeral-filesystem hosts) can't see the gitignored
   // token file, so allow passing it as a JSON env var in those environments.
   const tokenFile = fs.existsSync(path.join(process.cwd(), '.lsdb-tokens.json'))
@@ -43,7 +59,7 @@ export function createAdapter() {
     env.SHEET_DB_TOKENS ?? fs.readFileSync(path.join(process.cwd(), tokenFile), 'utf-8')
   )
 
-  const adapter = createSheetAdapter({
+  return {
     adminSheetId: env.ADMIN_SHEET_ID,
     credentials: {
       clientId: env.GOOGLE_CLIENT_ID,
@@ -60,37 +76,64 @@ export function createAdapter() {
       },
     },
     storage: new DriveStorageAdapter({ folder: 'uploads' }),
-  })
+  }
+}
+
+export interface AppAdapter {
+  /** All CRUD/withContext/table() calls go through this — Sheets locally/staging, Postgres in production. */
+  adapter: DatabaseAdapter
+  /**
+   * File uploads (routes/admin/upload.ts) always ride on Google Drive via a Sheets-backed
+   * client, independent of DB_DRIVER — the SQL adapters have no upload/storage concept of
+   * their own. Same underlying OAuth client/instance as `adapter` when driver is 'sheets'
+   * (avoids a second live client); a dedicated one otherwise.
+   */
+  storage: SheetAdapter
+}
+
+export function createAdapter(): AppAdapter {
+  // Sheets locally/staging, Render Postgres in production — see env.DB_DRIVER for the
+  // NODE_ENV-derived default (overridable).
+  const driver = env.DB_DRIVER
+  const sheets = driver === 'sheets' ? createSheetAdapter(sheetsAdapterConfig()) : undefined
+
+  const adapter: DatabaseAdapter =
+    sheets ?? createDatabaseAdapter({ driver })
+  // Reuse the same client when it's already a SheetAdapter; otherwise spin up a dedicated one
+  // purely for Drive uploads (DriveStorageAdapter can only get a live client via
+  // createSheetAdapter() — see driveStorageAdapter.ts's `_setClient`).
+  const storage: SheetAdapter = sheets ?? createSheetAdapter(sheetsAdapterConfig())
 
   // ── Schema registry ────────────────────────────────────────────────────────
   // This is the single migration point: swap adapter above → all routes work.
-  adapter.registerSchema(usersSchema)
-  adapter.registerSchema(rolesSchema)
-  adapter.registerSchema(modulesSchema)
-  adapter.registerSchema(actionsSchema)
-  adapter.registerSchema(rolePermissionsSchema)
-  adapter.registerSchema(categoriesSchema)
-  adapter.registerSchema(platformsSchema)
-  adapter.registerSchema(productsSchema)
-  adapter.registerSchema(categoryAddonsSchema)
-  adapter.registerSchema(categoryAddonItemsSchema)
-  adapter.registerSchema(productOptionsSchema)
-  adapter.registerSchema(popularServicesSchema)
-  adapter.registerSchema(categoryProductsSchema)
-  adapter.registerSchema(categoryProductOptionsSchema)
-  adapter.registerSchema(categoryCategoryAddonsSchema)
-  adapter.registerSchema(popularServiceItemsSchema)
-  adapter.registerSchema(taskInfoSchema)
-  adapter.registerSchema(itemsSchema)
-  adapter.registerSchema(cleanersSchema)
-  adapter.registerSchema(blockedSchedulesSchema)
-  adapter.registerSchema(ordersSchema)
-  adapter.registerSchema(productPairingsSchema)
-  adapter.registerSchema(orderAddonsSchema)
-  adapter.registerSchema(activityLogsSchema)
+  const registrable = adapter as RegistrableAdapter
+  registrable.registerSchema(usersSchema)
+  registrable.registerSchema(rolesSchema)
+  registrable.registerSchema(modulesSchema)
+  registrable.registerSchema(actionsSchema)
+  registrable.registerSchema(rolePermissionsSchema)
+  registrable.registerSchema(categoriesSchema)
+  registrable.registerSchema(platformsSchema)
+  registrable.registerSchema(productsSchema)
+  registrable.registerSchema(categoryAddonsSchema)
+  registrable.registerSchema(categoryAddonItemsSchema)
+  registrable.registerSchema(productOptionsSchema)
+  registrable.registerSchema(popularServicesSchema)
+  registrable.registerSchema(categoryProductsSchema)
+  registrable.registerSchema(categoryProductOptionsSchema)
+  registrable.registerSchema(categoryCategoryAddonsSchema)
+  registrable.registerSchema(popularServiceItemsSchema)
+  registrable.registerSchema(taskInfoSchema)
+  registrable.registerSchema(itemsSchema)
+  registrable.registerSchema(cleanersSchema)
+  registrable.registerSchema(blockedSchedulesSchema)
+  registrable.registerSchema(ordersSchema)
+  registrable.registerSchema(productPairingsSchema)
+  registrable.registerSchema(orderAddonsSchema)
+  registrable.registerSchema(activityLogsSchema)
 
-  adapter.registerSchema(customersSchema)
-  adapter.registerSchema(addressesSchema)
+  registrable.registerSchema(customersSchema)
+  registrable.registerSchema(addressesSchema)
 
-  return adapter
+  return { adapter, storage }
 }

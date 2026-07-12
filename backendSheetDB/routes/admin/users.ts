@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import { hashPassword, validatePasswordStrength } from 'longcelot-sheet-db'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { requireRole } from '../../middleware/auth'
 import { listResource } from '../../utils/list-query'
 
-export function createUsersRouter(adapter: SheetAdapter) {
+export function createUsersRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

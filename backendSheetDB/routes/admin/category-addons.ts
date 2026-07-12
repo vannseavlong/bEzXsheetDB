@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 import { countBy, groupBy } from '../../utils/group-by'
 
@@ -16,7 +16,7 @@ function toCategoryAddonDto(r: Record<string, unknown>, categoryNames: string[],
   }
 }
 
-export function createCategoryAddonsRouter(adapter: SheetAdapter) {
+export function createCategoryAddonsRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

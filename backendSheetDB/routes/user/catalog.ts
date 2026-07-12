@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { adminCtx } from './context'
 
 function toCategoryDto(r: Record<string, unknown>) {
@@ -57,7 +57,7 @@ function toBannerDto(r: Record<string, unknown>) {
   }
 }
 
-export function createCatalogRouter(adapter: SheetAdapter) {
+export function createCatalogRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adminCtx(adapter)
 

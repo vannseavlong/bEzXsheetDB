@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 
 function toCleanerDto(r: Record<string, unknown>) {
@@ -18,7 +18,7 @@ function toCleanerDto(r: Record<string, unknown>) {
   }
 }
 
-export function createCleanersRouter(adapter: SheetAdapter) {
+export function createCleanersRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

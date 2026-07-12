@@ -1,4 +1,4 @@
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 
 // role/module/action/role_permissions reads happen on every login, every /me refresh,
 // and every RBAC page load — each one is a full-sheet read against the Sheets API
@@ -7,7 +7,7 @@ import type { SheetAdapter } from 'longcelot-sheet-db'
 // window (or once per write, via invalidateRbacCache) instead of once per request.
 const TTL_MS = 60_000
 
-function ctx(adapter: SheetAdapter) {
+function ctx(adapter: DatabaseAdapter) {
   return adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 }
 
@@ -25,23 +25,23 @@ async function cached<T>(slot: Cached<T> | null, load: () => Promise<T>, set: (c
   return value
 }
 
-export const getRoles = (adapter: SheetAdapter) =>
+export const getRoles = (adapter: DatabaseAdapter) =>
   cached(rolesCache, () => ctx(adapter).table('roles').findMany({}) as Promise<any[]>, (c) => { rolesCache = c })
 
-export const getModules = (adapter: SheetAdapter) =>
+export const getModules = (adapter: DatabaseAdapter) =>
   cached(modulesCache, () => ctx(adapter).table('modules').findMany({}) as Promise<any[]>, (c) => { modulesCache = c })
 
-export const getActions = (adapter: SheetAdapter) =>
+export const getActions = (adapter: DatabaseAdapter) =>
   cached(actionsCache, () => ctx(adapter).table('actions').findMany({}) as Promise<any[]>, (c) => { actionsCache = c })
 
-export const getRolePermissions = (adapter: SheetAdapter) =>
+export const getRolePermissions = (adapter: DatabaseAdapter) =>
   cached(
     rolePermissionsCache,
     () => ctx(adapter).table('role_permissions').findMany({}) as Promise<any[]>,
     (c) => { rolePermissionsCache = c }
   )
 
-export async function getCatalog(adapter: SheetAdapter) {
+export async function getCatalog(adapter: DatabaseAdapter) {
   const [modules, actions] = await Promise.all([getModules(adapter), getActions(adapter)])
   return {
     modules,

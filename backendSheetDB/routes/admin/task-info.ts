@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 
-export function createTaskInfoRouter(adapter: SheetAdapter) {
+export function createTaskInfoRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

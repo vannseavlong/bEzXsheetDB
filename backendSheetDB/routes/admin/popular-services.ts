@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 import { countBy } from '../../utils/group-by'
 
@@ -14,7 +14,7 @@ function toPopularServiceDto(r: Record<string, unknown>, itemCount: number) {
   }
 }
 
-export function createPopularServicesRouter(adapter: SheetAdapter) {
+export function createPopularServicesRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

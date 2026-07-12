@@ -4,7 +4,9 @@ import type { SheetAdapter } from 'longcelot-sheet-db'
 
 const upload = multer({ storage: multer.memoryStorage() })
 
-export function createUploadRouter(adapter: SheetAdapter) {
+// Always backed by Drive (via a Sheets-authenticated client), independent of DB_DRIVER — see
+// config/adapter.ts's `storage` and the `AppAdapter` doc comment for why.
+export function createUploadRouter(storage: SheetAdapter) {
   const router = Router()
 
   router.post('/', upload.single('file'), async (req, res) => {
@@ -14,7 +16,7 @@ export function createUploadRouter(adapter: SheetAdapter) {
       return
     }
 
-    const url = await adapter.upload(file.buffer, {
+    const url = await storage.upload(file.buffer, {
       filename: file.originalname,
       mimeType: file.mimetype,
       public: true,

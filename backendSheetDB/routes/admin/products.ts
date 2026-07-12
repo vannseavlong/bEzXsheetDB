@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 import { groupBy } from '../../utils/group-by'
 
@@ -15,7 +15,7 @@ function toProductDto(r: Record<string, unknown>, categoryNames: string[]) {
   }
 }
 
-export function createProductsRouter(adapter: SheetAdapter) {
+export function createProductsRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

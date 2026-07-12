@@ -1,4 +1,4 @@
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { adminCtx } from './context'
 
 export interface CouponCheckResult {
@@ -8,7 +8,7 @@ export interface CouponCheckResult {
 }
 
 /** Shared by POST /coupon/validate and the order preview/create pricing pipeline. */
-export async function checkCoupon(adapter: SheetAdapter, code: string, userId: string): Promise<CouponCheckResult> {
+export async function checkCoupon(adapter: DatabaseAdapter, code: string, userId: string): Promise<CouponCheckResult> {
   const ctx = adminCtx(adapter)
   const coupon = await ctx.table('coupons').findOne({ where: { code } }) as Record<string, unknown> | null
   if (!coupon || !coupon.status) return { valid: false, message: 'Coupon not found' }

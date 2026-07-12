@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 
 function toActivityLogDto(r: Record<string, unknown>) {
@@ -14,7 +14,7 @@ function toActivityLogDto(r: Record<string, unknown>) {
   }
 }
 
-export function createActivityLogRouter(adapter: SheetAdapter) {
+export function createActivityLogRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

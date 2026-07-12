@@ -273,13 +273,30 @@ production-safe and completing the real migration off Sheets, not adding more pr
 ### F2 — CI/CD: staging Sheets → production Postgres on Render
 > Purpose: prove the `longcelot-sheet-db` adapter swap and data migration actually work end-to-end
 > against a real database, not just via manual `export`/`export-data` runs (Phase A2).
-- [ ] Provision a Postgres instance on Render for production
-- [ ] Swap `SheetAdapter` for the Postgres/Prisma adapter in a way that's config-driven (staging stays on
-  Sheets, production points at Postgres) — confirm what the package actually supports here first
-- [ ] Build the CI/CD pipeline: on merge/tag, run `export --prisma` → `prisma migrate` → `export-data` (or
-  equivalent) against the Render Postgres instance
+> **2026-07-12:** unblocked by package v0.1.32 (Phase 16 — pluggable SQL adapters, `createDatabaseAdapter`,
+> `lsdb migrate --apply`, `lsdb migrate-data --run`).
+- [x] Swap `SheetAdapter` for a config-driven adapter (staging/local stays on Sheets, production points at
+  Postgres) — `config/adapter.ts` now calls `createDatabaseAdapter({ driver: env.DB_DRIVER })`;
+  `env.DB_DRIVER` (`config/env.ts`) defaults to `'sheets'` everywhere except `NODE_ENV=production`, where
+  it defaults to `'postgres'` (`$DATABASE_URL`), overridable via `$DB_DRIVER`. All ~30 route/middleware
+  files were retyped from the concrete `SheetAdapter` class to the shared `DatabaseAdapter` interface so
+  the same code works against either engine.
+  File uploads (`routes/admin/upload.ts`) are a deliberate exception: they always ride on Google Drive via
+  a dedicated always-on Sheets-backed client (`storage` in `config/adapter.ts`), independent of
+  `DB_DRIVER` — the SQL adapters have no upload/storage concept of their own.
+- [x] Build the CI/CD pipeline: `.github/workflows/deploy.yml` — on push to `main`, runs
+  `lsdb migrate --sql --apply` against `$PRODUCTION_DATABASE_URL` (idempotent), then optionally pings a
+  Render deploy hook; on a `v*` tag (or manual `workflow_dispatch`), also runs
+  `lsdb migrate-data --run --all-users --driver postgres` for the one-time (or dual-write-window-repeated)
+  Sheets → Postgres data cutover. Modeled on the package's own reference pipeline (README.md).
+- [ ] Provision a Postgres instance on Render for production — needs Render dashboard access (not done
+  from here); once created, set `PRODUCTION_DATABASE_URL`, `SHEET_DB_TOKENS`, and (optional)
+  `RENDER_DEPLOY_HOOK_URL` as GitHub Actions repo secrets to activate the pipeline above.
 - [ ] Migrate current staging Sheet data into the new Postgres DB once, verify row counts/relations match
-- [ ] Document the cutover steps so it's repeatable, not a one-off manual migration
+  — blocked on the Postgres instance existing; `schema.sql`/`schema.prisma` (repo root, generated via
+  `lsdb migrate --sql` / `--prisma`) are ready to review/apply in the meantime.
+- [ ] Document the cutover steps end-to-end (this repo's specific secrets/env, not just the package's
+  generic docs) once a real cutover has actually been run once
 
 ### F3 — OWASP Top 10 security review
 - [ ] Run through the OWASP Top 10 against `backendSheetDB`, `admin-portal`, `mini-app` (injection, auth,

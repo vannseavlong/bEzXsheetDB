@@ -1,6 +1,6 @@
 import { Router, type RequestHandler } from 'express'
 import { hashPassword, comparePassword, validatePasswordStrength, createAuthRouter } from 'longcelot-sheet-db'
-import type { SheetAdapter, GoogleProfile } from 'longcelot-sheet-db'
+import type { DatabaseAdapter, SheetAdapter, GoogleProfile } from 'longcelot-sheet-db'
 import { env } from '../../config/env'
 import { signJwt } from '../../utils/jwt'
 import { requireAuth, requireRole, type AuthRequest } from '../../middleware/auth'
@@ -41,11 +41,15 @@ function toJwtPayload(user: Record<string, any>) {
 // Must be mounted on the root app (not inside a sub-router) so req.path is not stripped,
 // and given its own oauthConfig — otherwise it would default to GOOGLE_REDIRECT_URI and
 // Google would bounce mini-app users back into the admin callback instead.
-export function createUserGoogleAuthHandler(adapter: SheetAdapter): RequestHandler {
+export function createUserGoogleAuthHandler(adapter: DatabaseAdapter): RequestHandler {
   const ctx = () => adapter.withContext({ userId: 'auth', actor: 'user', actorSheetId: env.DEV_USER_SHEET_ID })
 
   const googleAuth = createAuthRouter({
-    adapter,
+    // createAuthRouter's `adapter`/`onUser` params are typed against the concrete SheetAdapter
+    // class even though it only ever calls the common withContext()/table() surface (verified
+    // against the package source) — a type-annotation gap, not a real dependency, so this cast
+    // is safe for any DatabaseAdapter implementation.
+    adapter: adapter as SheetAdapter,
     basePath: '/api/user',
     jwtSecret: env.JWT_SECRET,
     frontendUrl: `${env.MINI_APP_FRONTEND_URL}/#/auth/callback`,
@@ -79,7 +83,7 @@ export function createUserGoogleAuthHandler(adapter: SheetAdapter): RequestHandl
   return googleAuth.handler as RequestHandler
 }
 
-export function createUserAuthRouter(adapter: SheetAdapter) {
+export function createUserAuthRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'auth', actor: 'user', actorSheetId: env.DEV_USER_SHEET_ID })
 

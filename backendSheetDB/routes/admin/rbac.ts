@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 import { getCatalog, getActions, getRolePermissions, invalidateRbacCache } from '../../utils/rbac-cache'
 
-export function createRbacRouter(adapter: SheetAdapter) {
+export function createRbacRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

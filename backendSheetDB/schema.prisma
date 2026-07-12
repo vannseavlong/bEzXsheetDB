@@ -1,0 +1,677 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model actions {
+  key  String  @unique
+  label  String
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  role_permissions_action_id_rel  role_permissions[]
+}
+
+model activity_logs {
+  username  String?
+  method  String?
+  url  String?
+  module  String?
+  detail  String?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum BannersTypeEnum {
+  HOME_BANNER
+  PRODUCT_BUNDLE
+  COUPON_BANNER
+}
+
+model banners {
+  name  String
+  title_en  String
+  type  BannersTypeEnum
+  status  Boolean?
+  start_date  DateTime
+  expired_date  DateTime
+  sort  Float?
+  img_url_en  String?
+  has_detail  Boolean?
+  has_topup  Boolean?
+  credit  Float?
+  amount  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum Bcombo_transactionsStatusEnum {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model bcombo_transactions {
+  transaction_id  String  @unique
+  customer_name  String
+  bundle_name  String
+  amount  Float
+  payment_method  String
+  status  Bcombo_transactionsStatusEnum
+  completed_at  DateTime?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model blocked_schedules {
+  name  String
+  blocked_date  DateTime
+  start_time  String
+  end_time  String
+  cleaner_ids  String?
+  associated_address  String?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model categories {
+  name_en  String
+  name_km  String
+  thumbnail_url  String?
+  status  Boolean?
+  sort  Float?
+  platform  Json?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  category_category_addons_category_id_rel  category_category_addons[]
+  category_products_category_id_rel  category_products[]
+  orders_category_id_rel  orders[]
+  popular_service_items_category_id_rel  popular_service_items[]
+  task_info_category_id_rel  task_info[]
+}
+
+model category_addon_items {
+  addon_id  String
+  category_addons_rel  category_addons  @relation(fields: [addon_id], references: [id])
+  name_en  String
+  name_km  String
+  type  String
+  img_url  String?
+  amount  Float?
+  duration  Float?
+  status  Boolean?
+  sort  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  order_addons_addon_item_id_rel  order_addons[]
+}
+
+enum Category_addonsSelection_typeEnum {
+  SINGLE
+  MULTIPLE
+}
+
+model category_addons {
+  name_en  String
+  name_km  String
+  badge_en  String?
+  badge_km  String?
+  selection_type  Category_addonsSelection_typeEnum?
+  is_required  Boolean?
+  status  Boolean?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  category_addon_items_addon_id_rel  category_addon_items[]
+  category_category_addons_addon_id_rel  category_category_addons[]
+}
+
+model category_category_addons {
+  category_id  String
+  categories_rel  categories  @relation(fields: [category_id], references: [id])
+  addon_id  String
+  category_addons_rel  category_addons  @relation(fields: [addon_id], references: [id])
+  sort  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model category_product_options {
+  category_product_id  String
+  category_products_rel  category_products  @relation(fields: [category_product_id], references: [id])
+  product_option_id  String
+  product_options_rel  product_options  @relation(fields: [product_option_id], references: [id])
+  price  Float?
+  duration  Float?
+  sort  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+  orders_category_product_option_id_rel  orders[]
+}
+
+model category_products {
+  category_id  String
+  categories_rel  categories  @relation(fields: [category_id], references: [id])
+  product_id  String
+  products_rel  products  @relation(fields: [product_id], references: [id])
+  sort  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+  category_product_options_category_product_id_rel  category_product_options[]
+  orders_category_product_id_rel  orders[]
+  product_pairings_category_product_id_rel  product_pairings[]
+  product_pairings_paired_category_product_id_rel  product_pairings[]
+}
+
+enum CleanersGenderEnum {
+  Male
+  Female
+}
+
+enum CleanersRoleEnum {
+  LEADER
+  MEMBER
+}
+
+model cleaners {
+  name  String
+  gender  CleanersGenderEnum
+  role  CleanersRoleEnum
+  status  Boolean?
+  image_url  String?
+  phone  String?
+  joined_date  DateTime
+  auto_assign  Boolean?
+  expertises  String?
+  weekly_offs  String?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  orders_assigned_cleaner_id_rel  orders[]
+}
+
+enum CouponsTypeEnum {
+  FIXED
+  PERCENTAGE
+}
+
+enum CouponsTarget_userEnum {
+  ALL
+  SELECTED
+}
+
+model coupons {
+  name  String
+  code  String  @unique
+  type  CouponsTypeEnum
+  value  Float
+  status  Boolean?
+  target_user  CouponsTarget_userEnum?
+  promo_text_en  String?
+  remark  String?
+  effective_date  DateTime?
+  expired_date  DateTime?
+  is_new_user_only  Boolean?
+  total_usage_limit  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  orders_coupon_id_rel  orders[]
+}
+
+enum Finance_ordersStatusEnum {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model finance_orders {
+  order_id  String
+  orders_rel  orders  @relation(fields: [order_id], references: [id])
+  customer_name  String
+  customer_phone  String
+  service_category  String
+  specific_service  String
+  schedule_date  DateTime
+  time  String
+  address  String
+  status  Finance_ordersStatusEnum
+  payment_init_date  DateTime?
+  payment_completed_date  DateTime?
+  payment_method  String?
+  promo_code  String?
+  original_price  Float
+  discount  Float?
+  service_fee  Float?
+  transport_fee  Float?
+  net_revenue  Float?
+  vat  Float?
+  total_fee  Float
+  remark  String?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model items {
+  name_en  String
+  name_km  String
+  category  String
+  status  Boolean?
+  sort_order  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model modules {
+  key  String  @unique
+  label  String
+  section  String?
+  action_ids  Json?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  role_permissions_module_id_rel  role_permissions[]
+}
+
+model order_addons {
+  order_id  String
+  orders_rel  orders  @relation(fields: [order_id], references: [id])
+  addon_item_id  String
+  category_addon_items_rel  category_addon_items  @relation(fields: [addon_item_id], references: [id])
+  name_en  String
+  name_km  String
+  amount  Float
+  qty  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum OrdersStatusEnum {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum OrdersPayment_statusEnum {
+  PAID
+  UNPAID
+}
+
+enum OrdersTypeEnum {
+  ORDER
+  DIRECT_SALE
+}
+
+enum OrdersNewsletter_subscriptionEnum {
+  SUBSCRIBED
+  UNSUBSCRIBED
+}
+
+model orders {
+  bulk_order_id  String?
+  customer_user_id  String?
+  customer_first_name  String
+  customer_last_name  String
+  customer_phone  String
+  profile_url  String?
+  category  String
+  service_type  String
+  category_id  String?
+  categories_rel  categories  @relation(fields: [category_id], references: [id])
+  product_id  String?
+  products_rel  products  @relation(fields: [product_id], references: [id])
+  category_product_id  String?
+  category_products_rel  category_products  @relation(fields: [category_product_id], references: [id])
+  product_option_id  String?
+  product_options_rel  product_options  @relation(fields: [product_option_id], references: [id])
+  category_product_option_id  String?
+  category_product_options_rel  category_product_options  @relation(fields: [category_product_option_id], references: [id])
+  qty  Float?
+  schedule_date  DateTime
+  duration  Float
+  address  String
+  address_id  String?
+  latitude  Float?
+  longitude  Float?
+  floor_num  String?
+  room_num  String?
+  status  OrdersStatusEnum
+  payment_status  OrdersPayment_statusEnum?
+  payment_method  String?
+  coupon_id  String?
+  coupons_rel  coupons  @relation(fields: [coupon_id], references: [id])
+  coupon_code  String?
+  amount  Float
+  service_fee  Float?
+  transport_fee  Float?
+  vat_fee  Float?
+  discount  Float?
+  net_revenue  Float?
+  note  String?
+  type  OrdersTypeEnum?
+  exchange_rate  Float?
+  assigned_cleaner_id  String?
+  cleaners_rel  cleaners  @relation(fields: [assigned_cleaner_id], references: [id])
+  is_primary  Boolean?
+  newsletter_subscription  OrdersNewsletter_subscriptionEnum?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+  finance_orders_order_id_rel  finance_orders[]
+  order_addons_order_id_rel  order_addons[]
+}
+
+enum Payment_linksStatusEnum {
+  PENDING
+  PAID
+  EXPIRED
+}
+
+model payment_links {
+  customer_id  String
+  customer_name  String
+  amount  Float
+  status  Payment_linksStatusEnum?
+  expiry_date  DateTime
+  paid_at  DateTime?
+  remark  String?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum PlatformsVisibilityEnum {
+  public
+  beta
+  internal
+}
+
+model platforms {
+  name_en  String  @unique
+  name_km  String
+  description  String?
+  status  Boolean?
+  visibility  PlatformsVisibilityEnum?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum Popular_service_itemsTypeEnum {
+  CATEGORY
+  PRODUCT
+}
+
+model popular_service_items {
+  popular_service_id  String
+  popular_services_rel  popular_services  @relation(fields: [popular_service_id], references: [id])
+  type  Popular_service_itemsTypeEnum
+  category_id  String?
+  categories_rel  categories  @relation(fields: [category_id], references: [id])
+  product_id  String?
+  products_rel  products  @relation(fields: [product_id], references: [id])
+  priority  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model popular_services {
+  name_en  String
+  name_km  String
+  image_url  String?
+  status  Boolean?
+  display_order  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  popular_service_items_popular_service_id_rel  popular_service_items[]
+}
+
+model product_options {
+  name_en  String
+  name_km  String
+  type  String
+  status  Boolean?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  category_product_options_product_option_id_rel  category_product_options[]
+  orders_product_option_id_rel  orders[]
+}
+
+model product_pairings {
+  category_product_id  String
+  category_products_rel  category_products  @relation(fields: [category_product_id], references: [id])
+  paired_category_product_id  String
+  category_products_rel  category_products  @relation(fields: [paired_category_product_id], references: [id])
+  sort  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model products {
+  name_en  String
+  name_km  String
+  thumbnail_url  String?
+  status  Boolean?
+  sort  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  category_products_product_id_rel  category_products[]
+  orders_product_id_rel  orders[]
+  popular_service_items_product_id_rel  popular_service_items[]
+  task_info_product_id_rel  task_info[]
+}
+
+enum Push_notificationsTypeEnum {
+  GENERAL
+  PACKAGE_DEAL
+}
+
+enum Push_notificationsSchedule_typeEnum {
+  now
+  schedule
+  event
+}
+
+enum Push_notificationsStatusEnum {
+  DRAFT
+  SCHEDULED
+  SENT
+  FAILED
+}
+
+enum Push_notificationsAudienceEnum {
+  ALL
+  SELECTED
+}
+
+model push_notifications {
+  name  String
+  title_en  String
+  body_en  String
+  type  Push_notificationsTypeEnum
+  schedule_type  Push_notificationsSchedule_typeEnum
+  scheduled_at  DateTime?
+  status  Push_notificationsStatusEnum?
+  audience  Push_notificationsAudienceEnum?
+  target_user_ids  String?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model role_permissions {
+  role_id  String
+  roles_rel  roles  @relation(fields: [role_id], references: [id])
+  module_id  String
+  modules_rel  modules  @relation(fields: [module_id], references: [id])
+  action_id  String
+  actions_rel  actions  @relation(fields: [action_id], references: [id])
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum RolesStatusEnum {
+  active
+  inactive
+}
+
+model roles {
+  name  String  @unique
+  code  String  @unique
+  description  String?
+  status  RolesStatusEnum?
+  created_by  String
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  role_permissions_role_id_rel  role_permissions[]
+  users_role_id_rel  users[]
+}
+
+model task_info {
+  category_id  String?
+  categories_rel  categories  @relation(fields: [category_id], references: [id])
+  product_id  String?
+  products_rel  products  @relation(fields: [product_id], references: [id])
+  sort  Float?
+  title_en  String
+  title_km  String
+  description_en  Json?
+  description_km  Json?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum Topup_transactionsStatusEnum {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model topup_transactions {
+  transaction_id  String  @unique
+  customer_name  String
+  customer_phone  String?
+  amount  Float
+  payment_method  String
+  status  Topup_transactionsStatusEnum
+  completed_at  DateTime?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+enum UsersStatusEnum {
+  active
+  inactive
+}
+
+model users {
+  user_id  String  @unique
+  name  String
+  role_id  String
+  roles_rel  roles  @relation(fields: [role_id], references: [id])
+  email  String  @unique
+  actor_sheet_id  String?
+  status  UsersStatusEnum?
+  password_hash  String?
+  profile_url  String?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+}
+
+model addresses {
+  user_id  String
+  customers_rel  customers  @relation(fields: [user_id], references: [id])
+  label  String?
+  address  String
+  address_detail  String?
+  floor_num  String?
+  room_num  String?
+  note  String?
+  latitude  Float
+  longitude  Float
+  is_primary  Boolean?
+  sort  Float?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  deleted_at  DateTime?  @map("_deleted_at")
+  id  String  @map("_id") @id @default(cuid())
+  tenant_id  String
+  @@index([tenant_id])
+}
+
+enum CustomersStatusEnum {
+  active
+  inactive
+}
+
+enum CustomersGenderEnum {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model customers {
+  email  String
+  password_hash  String?
+  first_name  String
+  last_name  String
+  phone  String?
+  profile_url  String?
+  status  CustomersStatusEnum?
+  language  String?
+  gender  CustomersGenderEnum?
+  dob  DateTime?
+  created_at  DateTime?  @map("_created_at")
+  updated_at  DateTime?  @map("_updated_at")
+  id  String  @map("_id") @id @default(cuid())
+  addresses_user_id_rel  addresses[]
+  tenant_id  String
+  @@index([tenant_id])
+  @@unique([tenant_id, email])
+  @@unique([tenant_id, phone])
+}

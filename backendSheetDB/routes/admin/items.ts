@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 
 function toItemDto(r: Record<string, unknown>) {
@@ -12,7 +12,7 @@ function toItemDto(r: Record<string, unknown>) {
   }
 }
 
-export function createItemsRouter(adapter: SheetAdapter) {
+export function createItemsRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

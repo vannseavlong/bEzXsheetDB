@@ -1,0 +1,85 @@
+name: Deploy
+
+# Schema cutover to the Render Postgres production database. Modeled on
+# longcelot-sheet-db's own reference CI/CD pipeline (README.md § "Reference CI/CD pipeline").
+#
+# Environment split (see config/adapter.ts / config/env.ts):
+#   - Local dev / this repo's default: DB_DRIVER=sheets (Google Sheets) — nothing to run here.
+#   - Render production service: DB_DRIVER=postgres, DATABASE_URL points at the Render Postgres
+#     instance. Render auto-deploys the app itself on push (its own GitHub integration) — this
+#     workflow only owns the *schema* (and, on a tag, the one-time *data*) cutover, run before
+#     Render's deploy would otherwise start serving against a not-yet-migrated schema.
+#
+# Required repo secrets:
+#   PRODUCTION_DATABASE_URL   - Render Postgres connection string
+#   SHEET_DB_TOKENS           - JSON contents of .lsdb-tokens.json (Sheets OAuth tokens), used
+#                                as the read side for migrate-data's Sheets -> Postgres cutover
+#   RENDER_DEPLOY_HOOK_URL    - optional; Render service's deploy hook URL. If set, triggered
+#                                after a successful migration so Render always deploys against an
+#                                already-migrated schema instead of racing its own auto-deploy.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      run_data_cutover:
+        description: 'Also run the one-time Sheets -> Postgres data cutover (migrate-data --run)'
+        type: boolean
+        default: false
+
+jobs:
+  schema-migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Idempotent (CREATE TABLE/INDEX IF NOT EXISTS + a caught "already exists" for indexes on
+      # MySQL-only syntax gaps — see FAQ.md #13) — safe to run on every push to main, not just tags.
+      - name: Apply schema to production Postgres
+        run: npx lsdb migrate --sql --apply --connection-string "$DATABASE_URL"
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Trigger Render deploy
+        if: env.RENDER_DEPLOY_HOOK_URL != ''
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+  data-cutover:
+    # One-time (or dual-write-window-repeated) cutover, never on a plain push to main — only a
+    # version tag, or an explicit manual run. Safe to rerun: migrate-data --run upserts every row
+    # by _id. See FAQ.md #13 "dual-write-then-flip vs one-shot cutover" for the two ways to use this.
+    needs: schema-migrate
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.run_data_cutover == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Write Sheets token file
+        run: echo "$SHEET_DB_TOKENS" > .lsdb-tokens.json
+        env:
+          SHEET_DB_TOKENS: ${{ secrets.SHEET_DB_TOKENS }}
+
+      - name: Run Sheets -> Postgres data cutover
+        run: |
+          npx lsdb migrate-data --run --all-users \
+            --connection-string "$DATABASE_URL" \
+            --driver postgres \
+            --token-file .lsdb-tokens.json
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}

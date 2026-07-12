@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import type { AuthRequest } from '../../middleware/auth'
 import { checkCoupon } from './coupon-logic'
 
-export function createCouponRouter(adapter: SheetAdapter) {
+export function createCouponRouter(adapter: DatabaseAdapter) {
   const router = Router()
 
   // POST /coupon/validate

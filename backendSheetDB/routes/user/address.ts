@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import type { AuthRequest } from '../../middleware/auth'
 import { userCtx } from './context'
 import { haversineKm } from '../../utils/geo'
@@ -21,7 +21,7 @@ function toAddressDto(r: Record<string, unknown>) {
   }
 }
 
-export function createAddressRouter(adapter: SheetAdapter) {
+export function createAddressRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = (req: AuthRequest) => userCtx(adapter, req.user!.id as string)
 

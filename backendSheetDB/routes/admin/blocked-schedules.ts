@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import { listResource } from '../../utils/list-query'
 
 function toBlockedScheduleDto(r: Record<string, unknown>) {
@@ -14,7 +14,7 @@ function toBlockedScheduleDto(r: Record<string, unknown>) {
   }
 }
 
-export function createBlockedSchedulesRouter(adapter: SheetAdapter) {
+export function createBlockedSchedulesRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adapter.withContext({ userId: 'system', actor: 'admin', actorSheetId: '' })
 

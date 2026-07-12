@@ -1,17 +1,17 @@
 import { Router, type RequestHandler } from 'express'
 import { createAuthRouter, comparePassword } from 'longcelot-sheet-db'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter, SheetAdapter } from 'longcelot-sheet-db'
 import { env } from '../../config/env'
 import { signJwt } from '../../utils/jwt'
 import { requireAuth, type AuthRequest } from '../../middleware/auth'
 import { getRoles, getModules, getActions, getRolePermissions } from '../../utils/rbac-cache'
 
-async function resolveRole(adapter: SheetAdapter, roleId: string): Promise<any> {
+async function resolveRole(adapter: DatabaseAdapter, roleId: string): Promise<any> {
   const roles = await getRoles(adapter)
   return roles.find((r: any) => String(r._id) === String(roleId)) ?? null
 }
 
-async function buildPermissions(adapter: SheetAdapter, role: any): Promise<string[]> {
+async function buildPermissions(adapter: DatabaseAdapter, role: any): Promise<string[]> {
   if (!role || role.code === 'super_admin') return []
   const [all, modules, actions] = await Promise.all([
     getRolePermissions(adapter),
@@ -33,9 +33,12 @@ async function buildPermissions(adapter: SheetAdapter, role: any): Promise<strin
 
 // GET /api/admin/auth/google  →  GET /api/admin/auth/callback
 // Must be mounted on the root app (not inside a sub-router) so req.path is not stripped.
-export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHandler {
+export function createAdminGoogleAuthHandler(adapter: DatabaseAdapter): RequestHandler {
   const googleAuth = createAuthRouter({
-    adapter,
+    // See the matching comment in routes/user/auth.ts — createAuthRouter's adapter param is
+    // typed against the concrete SheetAdapter class but only ever uses the common
+    // withContext()/table() surface, so this cast is safe for any DatabaseAdapter.
+    adapter: adapter as SheetAdapter,
     basePath: '/api/admin',
     jwtSecret: env.JWT_SECRET,
     frontendUrl: `${env.FRONTEND_URL}/auth/callback`,
@@ -59,7 +62,7 @@ export function createAdminGoogleAuthHandler(adapter: SheetAdapter): RequestHand
   return googleAuth.handler as RequestHandler
 }
 
-export function createAuthRoutes(adapter: SheetAdapter) {
+export function createAuthRoutes(adapter: DatabaseAdapter) {
   const router = Router()
 
   // POST /api/auth/login

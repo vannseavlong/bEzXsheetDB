@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { Router } from 'express'
-import type { SheetAdapter } from 'longcelot-sheet-db'
+import type { DatabaseAdapter } from 'longcelot-sheet-db'
 import type { AuthRequest } from '../../middleware/auth'
 import { adminCtx, userCtx } from './context'
 import { HttpError } from '../../utils/http-error'
@@ -172,7 +172,7 @@ interface BuiltPreview {
   totals: ReturnType<typeof computeOrderTotals>
 }
 
-async function buildPreview(adapter: SheetAdapter, userId: string, payload: OrderPayload): Promise<BuiltPreview> {
+async function buildPreview(adapter: DatabaseAdapter, userId: string, payload: OrderPayload): Promise<BuiltPreview> {
   if (!payload.line?.categoryProductOptionId || !payload.line?.qty) {
     throw new HttpError(400, 'line.categoryProductOptionId and line.qty are required')
   }
@@ -214,7 +214,7 @@ function previewDto(built: BuiltPreview, scheduleStartDate: string, note: string
   }
 }
 
-export function createOrderRouter(adapter: SheetAdapter) {
+export function createOrderRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = () => adminCtx(adapter)
 
