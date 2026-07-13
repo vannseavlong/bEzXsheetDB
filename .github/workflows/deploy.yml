@@ -20,14 +20,24 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [master, main]
     tags: ['v*']
+    # Repo also contains admin-portal/, mini-app/, bEasy-portal/ — don't run a
+    # Postgres migration on frontend-only commits. Note: GitHub's path filtering
+    # is unreliable for tag pushes (a tag can point at a commit with no diff of
+    # its own) — if a `v*` tag doesn't trigger data-cutover as expected, use the
+    # workflow_dispatch `run_data_cutover` input instead, which isn't path-filtered.
+    paths: ['backendSheetDB/**']
   workflow_dispatch:
     inputs:
       run_data_cutover:
         description: 'Also run the one-time Sheets -> Postgres data cutover (migrate-data --run)'
         type: boolean
         default: false
+
+defaults:
+  run:
+    working-directory: backendSheetDB
 
 jobs:
   schema-migrate:
