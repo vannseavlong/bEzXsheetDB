@@ -11,7 +11,8 @@ name: Deploy
 #     Render's deploy would otherwise start serving against a not-yet-migrated schema.
 #
 # Required repo secrets:
-#   PRODUCTION_DATABASE_URL   - Render Postgres connection string
+#   DATABASE_URL              - Render Postgres connection string (External Database URL —
+#                                GitHub's runners aren't on Render's private network)
 #   SHEET_DB_TOKENS           - JSON contents of .lsdb-tokens.json (Sheets OAuth tokens), used
 #                                as the read side for migrate-data's Sheets -> Postgres cutover
 #   RENDER_DEPLOY_HOOK_URL    - optional; Render service's deploy hook URL. If set, triggered
@@ -63,7 +64,7 @@ jobs:
       - name: Apply schema to production Postgres
         run: npx lsdb migrate --sql --apply --connection-string "$DATABASE_URL"
         env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Trigger Render deploy
         if: env.RENDER_DEPLOY_HOOK_URL != ''
@@ -102,4 +103,4 @@ jobs:
             --driver postgres \
             --token-file .lsdb-tokens.json
         env:
-          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
