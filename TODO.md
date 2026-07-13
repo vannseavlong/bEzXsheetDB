@@ -310,15 +310,107 @@ production-safe and completing the real migration off Sheets, not adding more pr
   `category_addons.ts` (`_` < `s`), so its inline FK ran before the referenced table existed. Fixed
   package-side in `longcelot-sheet-db` v0.1.34 (`sortSchemasByDependency()`, topological sort on every
   schema's `ref()` edges, run right after `loadSchemas()`). See package `CHANGELOG.md` [0.1.34] /
-  `FAQ.md` §13. **Follow-up needed here:** bump `longcelot-sheet-db` to `0.1.34`+ in
-  `backendSheetDB/package.json` (currently still on whatever version picked up incident #1's fix) and
-  re-run `schema-migrate` end-to-end against the real Render instance to confirm all 33 tables apply
-  cleanly this time.
-- [ ] Migrate current staging Sheet data into the new Postgres DB once, verify row counts/relations match
-  — blocked on incident #2's fix landing (item above); `schema.sql`/`schema.prisma` (repo root, generated
-  via `lsdb migrate --sql` / `--prisma`) are ready to review/apply in the meantime.
-- [ ] Document the cutover steps end-to-end (this repo's specific secrets/env, not just the package's
-  generic docs) once a real cutover has actually been run once
+  `FAQ.md` §13. **Verified**: bumped `backendSheetDB` to `longcelot-sheet-db@0.1.34` and re-ran
+  `schema-migrate` against the real Render instance — all 33 tables applied cleanly, job green.
+- [x] **`schema-migrate` confirmed working end-to-end against production Postgres (2026-07-13)** —
+  both incidents above are closed; the CI job now runs SSL-correct and dependency-ordered on every push
+  to `main` (path-filtered to `backendSheetDB/**`), idempotent on rerun.
+- [x] **Migrate current staging Sheet data into the new Postgres DB — done (2026-07-14).** Ran
+  `lsdb migrate-data --run --all-users` locally against the real Render instance; hit two more real
+  issues along the way, both now fixed:
+  - **Data gap, not a package bug:** `categories` (and 8 other tables sharing the same `name_en`/
+    `name_km` pattern — `products`, `popular_services`, `platforms`, `product_options`,
+    `order_addons`, `category_addon_items`, `category_addons`, `items`) have real rows with no Khmer
+    translation yet (8 of 27 `categories` rows, found via direct query). Decision: relaxed `name_km`
+    from `.required()` to optional in all 9 schema files rather than blocking the cutover on
+    translation work — backfill later. **Done (2026-07-14)**: ran `ALTER TABLE <table> ALTER COLUMN
+    name_km DROP NOT NULL;` for all 9 tables directly against production Postgres — verified via a
+    direct `information_schema.columns` query, `is_nullable=YES` confirmed on all 9.
+  - **incident #3 (upsert/readonly), package-side:** rerunning `migrate-data` against a partially-migrated
+    table (some rows already existed from an earlier attempt) crashed with `Column _created_at is
+    readonly` — `upsert()`'s existing-row branch forwarded the full row payload (readonly `_id`/
+    `_created_at`/`_updated_at` included) straight to `update()`, which correctly rejects readonly
+    fields. Fixed package-side in `longcelot-sheet-db` v0.1.35, in all three adapters.
+  - **incident #4 (timestamp fidelity), package-side, found while fixing #3:** `create()` unconditionally
+    stamped `_created_at`/`_updated_at` to "now", silently discarding the real original Sheets creation
+    date on every freshly-migrated row. Fixed in the same v0.1.35 — `create()` now only defaults when
+    the field is missing. See package `CHANGELOG.md` [0.1.35] / `FAQ.md` §13.
+  - **incident #5 (stray column), package-side:** with the name_km data gap resolved, the next
+    `migrate-data` run got further into `categories` then failed with a real Postgres error,
+    `column "task_information" of relation "categories" does not exist` (`42703`) — a leftover/legacy
+    column still present on the actual Google Sheet's `categories` tab, not part of `categories.ts`
+    (or any schema file) anymore. `create()`/`createMany()`/`update()` built their column list straight
+    from the payload's own keys with no schema check, so the stray key reached Postgres as a literal
+    column reference. Fixed package-side in `longcelot-sheet-db` v0.1.36 — both the SQL adapter
+    (`serializeRow()`) and Prisma adapter (`filterKnownColumns()`) now drop any key that isn't a real
+    `schema.columns` entry before it reaches the database. See package `CHANGELOG.md` [0.1.36] /
+    `FAQ.md` §13.
+  - **incident #6 (FK ordering, again), package-side:** with the stray column fixed, the next
+    `migrate-data` run got past `categories`, then hit a real FK violation on `category_addon_items`:
+    `Key (addon_id)=(...) is not present in table "category_addons"` — same root cause as incident #2
+    (v0.1.34), but `migrate-data.ts` has its own separate, duplicated `loadSchemas()` that never
+    received that fix, so `category_addon_items` rows got upserted before any `category_addons` rows
+    existed. Fixed package-side in `longcelot-sheet-db` v0.1.37 — wired the existing
+    `sortSchemasByDependency()` into both of `migrate-data.ts`'s call sites. See package
+    `CHANGELOG.md` [0.1.37] / `FAQ.md` §13.
+  - **After bumping to v0.1.37, re-running surfaced two more FK violations** — one real data problem,
+    one more package bug:
+    - `category_products` row `_id: G1KONKYyiFhr6XFeB_GdW` referenced a `category_id` that was
+      genuinely gone from the Sheet (checked with `includeDeleted: true`, came back `null` — not
+      soft-deleted, just missing). Not a package bug — an orphaned join-table row. Confirmed it was
+      isolated (every other `ref('categories._id')` table — `category_category_addons`,
+      `popular_service_items`, `task_info`, `orders` — had zero orphans) and deleted the one row
+      directly from the Sheet.
+    - **incident #7 (soft-delete exclusion), package-side:** an `orders` row's `assigned_cleaner_id`
+      referenced a `cleaners` row that does exist but is soft-deleted — a real historical fact (the
+      order really was handled by that cleaner before removal), not something to delete.
+      `migrate-data.ts` read every table with plain `findMany({})`, which excludes soft-deleted rows
+      by default — correct for a normal app read, wrong for a data cutover. Fixed package-side in
+      `longcelot-sheet-db` v0.1.38 — all 6 read call sites now use
+      `findMany({ includeDeleted: true })`; doesn't change what the app sees post-cutover since the
+      target DB's own `findMany()` still filters `_deleted_at` by default. See package
+      `CHANGELOG.md` [0.1.38] / `FAQ.md` §13.
+  - **After bumping to v0.1.38, all admin tables processed with zero errors** (soft-deleted rows now
+    correctly included: `categories` 27→28, `cleaners` 1→7, `category_addon_items` 6→15) — but the
+    `--all-users` per-user Google Sheets API calls ran long and hit a 5-minute command timeout, not a
+    failure. Re-ran in the background for more headroom.
+  - **incident #8 (upsert/soft-delete idempotency), package-side:** the background rerun hit
+    `Unique constraint violation: Key (_id)=(...) already exists` on a `categories` row — that row was
+    already in Postgres, correctly soft-deleted, from the run above (which had actually succeeded on
+    admin tables before timing out on `--all-users`). `upsert()`'s own existence check
+    (`findOne({ where })`) doesn't pass `includeDeleted: true`, so it's blind to an already-soft-deleted
+    target row — concluded the row didn't exist, took the `create()` branch, hit the DB's own
+    primary-key constraint. This directly undid incident #7's fix: once soft-deleted rows actually
+    reach the target, `upsert()` needs to find them again on rerun, or `migrate-data` isn't safely
+    re-runnable past the first soft-deleted row it touches. Fixed package-side in `longcelot-sheet-db`
+    v0.1.39 — `upsert()`'s existence check now passes `includeDeleted: true` in all three adapters;
+    `update()` itself needed no change (never filtered its own match query by soft-delete to begin
+    with). See package `CHANGELOG.md` [0.1.39] / `FAQ.md` §13.
+  - **Succeeded end-to-end on the 6th attempt (2026-07-14)**, after bumping to `longcelot-sheet-db@0.1.39`
+    and re-running `migrate-data --run --all-users` in the background (needs more than 5 minutes for
+    `--all-users`'s per-user Sheets API calls). All 30 admin tables migrated with zero errors; verified
+    every table's row count in Postgres directly (`SELECT COUNT(*) FROM <table>`) against
+    `migrate-data`'s own reported counts — **all 30 match exactly** (411 rows total: `role_permissions`
+    175, `product_options` 57, `modules` 33, `categories` 28, etc.).
+  - **Separate gap found and closed manually, not a package bug:** `migrate-data --all-users` found
+    5 admin users but migrated **zero** `customers`/`addresses` rows — its per-user loop is built
+    around the admin `users` table's individual `actor_sheet_id` model (true per-user physical sheets),
+    but this repo's customer data still lives entirely in one **shared** `DEV_USER_SHEET_ID` sheet (the
+    already-documented dev/prod parity gap from `PACKAGE_IMPROVEMENT.md` item 6 — customers were never
+    moved to per-user physical sheets). Confirmed via direct query: 7 real customers + 1 address sitting
+    unmigrated in the shared sheet. Migrated them manually with a one-off script mirroring
+    `migrate-data`'s own upsert logic, scoped with `actorSheetId: env.DEV_USER_SHEET_ID` as the tenant
+    key for every customer — matching exactly what `routes/user/auth.ts` already uses for every customer
+    today, so Postgres behavior stays consistent with the app's current (shared-sheet) reality once the
+    driver flips. Verified: 7 `customers` + 1 `addresses` row now in Postgres.
+  - **New follow-up noticed, not blocking:** `lsdb` printed `Schema mismatch: table 'customers'/'addresses'
+    is outdated — run 'lsdb sync --all-users'` while reading the shared sheet — the Sheet's headers have
+    drifted from the current schema definition. Worth running `lsdb sync --all-users` at some point;
+    didn't block this migration (data still read correctly), not yet done.
+- [x] Document the cutover steps end-to-end — this F2 section (incidents #1–#8, the `name_km`
+  data-gap fix + the 9 `ALTER TABLE` statements, and the shared-sheet customer migration above) now
+  serves as the full record of this repo's specific secrets/env/steps; no separate standalone doc
+  was written, this section is it.
 
 ### F3 — OWASP Top 10 security review
 - [ ] Run through the OWASP Top 10 against `backendSheetDB`, `admin-portal`, `mini-app` (injection, auth,

@@ -7,7 +7,7 @@ export default defineTable({
   softDelete: true,
   columns: {
     name_en: string().required(),
-    name_km: string().required(),
+    name_km: string(), // optional — translations lag behind name_en for new content (2026-07-13)
     category: string().required(),
     status: boolean().default(true),
     sort_order: number().default(0),

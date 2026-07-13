@@ -7,7 +7,7 @@ export default defineTable({
   softDelete: true,
   columns: {
     name_en: string().required(),
-    name_km: string().required(),
+    name_km: string(), // optional — translations lag behind name_en for new content (2026-07-13)
     badge_en: string(),
     badge_km: string(),
     selection_type: string().enum(['SINGLE', 'MULTIPLE']).default('SINGLE'),

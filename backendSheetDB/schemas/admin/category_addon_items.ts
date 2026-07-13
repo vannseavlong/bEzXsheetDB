@@ -8,7 +8,7 @@ export default defineTable({
   columns: {
     addon_id: string().required().ref('category_addons._id'),
     name_en: string().required(),
-    name_km: string().required(),
+    name_km: string(), // optional — translations lag behind name_en for new content (2026-07-13)
     type: string().required(),
     img_url: string(),
     amount: number().min(0).default(0),

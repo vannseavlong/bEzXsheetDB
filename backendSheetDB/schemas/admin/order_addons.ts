@@ -10,7 +10,7 @@ export default defineTable({
     order_id: string().required().ref('orders._id'),
     addon_item_id: string().required().ref('category_addon_items._id'),
     name_en: string().required(),
-    name_km: string().required(),
+    name_km: string(), // optional — translations lag behind name_en for new content (2026-07-13)
     amount: number().min(0).required(),
     qty: number().min(1).default(1),
   },

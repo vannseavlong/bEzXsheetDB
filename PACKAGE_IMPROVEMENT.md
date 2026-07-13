@@ -202,6 +202,127 @@ post-creation `ALTER TABLE`) — not needed for any schema in this repo currentl
 
 ---
 
+## ✅ Fixed in v0.1.35
+
+| # | Item |
+|---|---|
+| 20 | `upsert()` on an already-existing row threw `Column ... is readonly` whenever the payload included `_id`/`_created_at`/`_updated_at` — shipped a fix stripping readonly columns from the payload before calling `update()`, in all three adapters |
+| 21 | `create()` unconditionally stamped `_created_at`/`_updated_at` to `now()`, discarding any caller-supplied historical timestamp — shipped a fix that only defaults to `now()` when the field is `undefined`/`null` |
+
+Found running the actual `lsdb migrate-data --run` data cutover (2026-07-13), same F2 phase as the
+two package fixes above. Item 20: `migrate-data` upserts by `_id`, passing the *entire* row it read
+back from Sheets (readonly system columns included). On a first run every row is new, so `upsert()`
+takes the `create()` branch (which doesn't enforce readonly) — but on a rerun against
+already-migrated rows (exactly what happened here, since an earlier attempt got partway through
+before hitting the v0.1.34 FK-ordering bug), `upsert()` finds the row and takes the `update()`
+branch instead, forwarding the same full-row payload straight through — and `update()` correctly
+rejects readonly columns. Fixed by having `upsert()` strip readonly columns from the payload before
+calling `update()` in all three adapters (`CRUDOperations`, `SQLTableOperations`,
+`PrismaTableOperations` — this package duplicates CRUD logic per-adapter rather than sharing it).
+
+Item 21 surfaced while fixing item 20, not from a crash: `create()` was unconditionally stamping
+`_created_at`/`_updated_at` to "now", so every row `migrate-data` creates for the first time would
+silently get "time of the migration run" instead of its real original Sheets creation date — no
+error anywhere to reveal it. Fixed so `create()`/`createMany()` only default to `now()` when the
+field is missing, letting a caller-supplied timestamp (like `migrate-data`'s) survive untouched;
+normal application-level `create()` calls are unaffected since they never supply these fields
+themselves. See the package's `CHANGELOG.md` [0.1.35] and `FAQ.md` §13 for the full incident
+write-up, including why this didn't surface until the second `migrate-data` run specifically.
+
+---
+
+## ✅ Fixed in v0.1.36
+
+| # | Item |
+|---|---|
+| 22 | `create()`/`createMany()`/`update()` built their column list straight from the payload's own keys, with no schema awareness — a stray key not in the schema reached the database as a literal column reference and failed — shipped column filtering against `schema.columns` in both the SQL and Prisma adapters |
+
+Found immediately after the two v0.1.35 fixes, same F2 data cutover: `migrate-data --run` got past
+`categories` this time, then failed on a specific row with `error: column "task_information" of
+relation "categories" does not exist` (`42703`). `task_information` doesn't exist anywhere in
+`categories.ts`, or anywhere in this repo at all — it's a leftover/legacy column still present on
+the real Google Sheet's `categories` tab, predating whatever schema change dropped it from
+`categories.ts`. `migrate-data` reads each row verbatim off the Sheet and upserts it as-is, so the
+stray column rode along. Root cause was in the package: `SQLTableOperations.serializeRow()` built
+`buildInsert()`/`buildUpdate()`'s column list from `Object.keys(data)` directly, no schema check at
+all — any extra key on the payload became a literal column reference. `SheetAdapter` was never
+exposed to this (it writes via known `headers`, not the payload's keys). Fixed by dropping any key
+that isn't a real `schema.columns` entry before it reaches the query builder / Prisma delegate, in
+both `SQLTableOperations.serializeRow()` and a new `PrismaTableOperations.filterKnownColumns()`
+(data payloads only, not `where` clauses — those legitimately carry non-schema tenant/soft-delete
+keys). See the package's `CHANGELOG.md` [0.1.36] and `FAQ.md` §13 for the full incident write-up.
+
+---
+
+## ✅ Fixed in v0.1.37
+
+| # | Item |
+|---|---|
+| 23 | `lsdb migrate-data --run` could upsert a referencing table's rows before the table it references had any rows, hitting a real FK violation — `migrate-data.ts` has its own duplicated `loadSchemas()` that never got the v0.1.34 `sortSchemasByDependency()` fix applied to it — shipped the same fix in both of its call sites |
+
+Found immediately after the v0.1.36 stray-column fix, same F2 cutover, once the run reached
+`category_addon_items`: `ValidationError: FK violation: Key (addon_id)=(...) is not present in
+table "category_addons"`. Same underlying cause as the earlier DDL-ordering incident (item 19,
+v0.1.34) — `category_addon_items.ts` (`ref('category_addons._id')`) sorts alphabetically before
+`category_addons.ts` — but this time it's `migrate-data.ts`, a completely separate command file
+with its own copy of `loadSchemas()` (never shared with `migrate.ts`'s), so the v0.1.34 fix never
+reached it. Fixed by wiring the same, already-tested `sortSchemasByDependency()` into both of
+`migrate-data.ts`'s call sites (the live `--run` path and the stub-script-generation path). Since
+`migrate-data` upserts by `_id` and is idempotent, everything already migrated in earlier attempts
+was unaffected by the rerun. See the package's `CHANGELOG.md` [0.1.37] and `FAQ.md` §13 for the full
+incident write-up.
+
+---
+
+## ✅ Fixed in v0.1.38
+
+| # | Item |
+|---|---|
+| 24 | `lsdb migrate-data` read every table with plain `findMany({})`, silently excluding soft-deleted rows — breaks FK integrity on the target whenever an active row still references a soft-deleted one — shipped `findMany({ includeDeleted: true })` across all 6 read call sites |
+
+Found finishing out the F2 cutover, after two consecutive FK violations that looked identical but
+had different causes. First: a `category_products` row referencing a category that was checked with
+`includeDeleted: true` and came back `null` — genuinely gone, not soft-deleted, a real orphaned
+join-table row (not a package bug; deleted the one broken row directly from the Sheet after
+confirming every other `ref('categories._id')` table — `category_category_addons`,
+`popular_service_items`, `task_info`, `orders` — had zero orphans of its own). Second: an `orders`
+row's `assigned_cleaner_id` pointing at a `cleaners` row that *does* exist but has `_deleted_at`
+set — a real historical fact (an order really was handled by that cleaner before they were removed
+from the roster), not something to delete. This one **was** a package bug: `migrate-data.ts` reads
+every table with plain `findMany({})`, which excludes soft-deleted rows by default (correct for a
+normal app read, wrong for a data cutover, since another row can still legitimately reference a
+soft-deleted one by FK). Fixed by switching all 6 read call sites (the live `--run` path and the
+generated stub-script path) to `findMany({ includeDeleted: true })` — doesn't change what the
+application sees post-cutover, since the target database's own `findMany()` still filters
+`_deleted_at` by default. See the package's `CHANGELOG.md` [0.1.38] and `FAQ.md` §13 for the full
+incident write-up, including the diagnostic pattern for telling a genuine orphan apart from a
+soft-deleted-but-valid reference.
+
+---
+
+## ✅ Fixed in v0.1.39
+
+| # | Item |
+|---|---|
+| 25 | `upsert()`'s own existence check (`findOne()`) didn't pass `includeDeleted: true`, so it couldn't see an already-soft-deleted target row — wrongly took the `create()` branch and hit a native unique-constraint violation, breaking `migrate-data`'s "safe to rerun" guarantee for any soft-deleted row |
+
+Found immediately after the v0.1.38 `includeDeleted` fix, same F2 cutover: a rerun of
+`migrate-data --run --all-users` (needed only because the previous run had timed out partway
+through `--all-users`'s per-user Sheets API calls, not because it failed) hit
+`ValidationError: Unique constraint violation: Key (_id)=(...) already exists` — thrown from
+`create()`. Checked both sides directly: the row existed in Postgres already, correctly
+soft-deleted, successfully migrated during the earlier timed-out-but-not-failed run. `upsert()`'s
+`findOne({ where: options.where })` check has no `includeDeleted` option, so it's blind to an
+already-soft-deleted target row — concluded the row didn't exist, took the `create()` branch, and
+the database's primary-key constraint caught it one layer too late. This directly undid the point
+of v0.1.38: once soft-deleted rows actually reach the target, `upsert()` needs to find them again
+on the next rerun. Fixed by passing `includeDeleted: true` to `upsert()`'s own existence check in
+all three adapters — `update()` itself needed no change, since none of the three ever filtered
+their own row-matching query by soft-delete status in the first place. See the package's
+`CHANGELOG.md` [0.1.39] and `FAQ.md` §13 for the full incident write-up.
+
+---
+
 ## 📬 Feature Request / Feedback — Table Names Aren't Actor-Scoped (submitted 2026-07-10)
 
 Discovered while adding the mini-app's customer-facing `user` actor schemas to `backendSheetDB`
