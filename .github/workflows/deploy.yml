@@ -44,11 +44,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # version pinned explicitly: pnpm/action-setup reads packageManager from
+      # $GITHUB_WORKSPACE/package.json by default, which doesn't respect
+      # `defaults.run.working-directory` (that only applies to `run:` steps) —
+      # and there's no package.json at the repo root, only in backendSheetDB/.
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: backendSheetDB/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
 
       # Idempotent (CREATE TABLE/INDEX IF NOT EXISTS + a caught "already exists" for indexes on
@@ -74,10 +81,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: backendSheetDB/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
 
       - name: Write Sheets token file
