@@ -18,8 +18,8 @@ importers:
         specifier: ^5.2.1
         version: 5.2.1
       longcelot-sheet-db:
-        specifier: ^0.1.32
-        version: 0.1.32(@types/node@25.9.1)(pg@8.22.0)
+        specifier: ^0.1.33
+        version: 0.1.33(@types/node@25.9.1)(pg@8.22.0)
       multer:
         specifier: ^2.2.0
         version: 2.2.0
@@ -658,8 +658,8 @@ packages:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
     engines: {node: '>=10'}
 
-  longcelot-sheet-db@0.1.32:
-    resolution: {integrity: sha512-RwU53dQ6HT0ql55rwo4+Ly/MUZEsnL74Gs9I/D+2U2T6vCl/Fqq0jsbMUoVLW8pwgGXP74kPLUFfa8x5h3JJ+Q==}
+  longcelot-sheet-db@0.1.33:
+    resolution: {integrity: sha512-r02Z0mMx9b/0iMjZV3x6/vlUqyOLGue1auahyCyRRCKl1Wu3MwiRtAe/xiHHQVyztM5FRTFtLdgwy78XRV4A3w==}
     engines: {node: '>=16.0.0'}
     hasBin: true
     peerDependencies:
@@ -1680,7 +1680,7 @@ snapshots:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
 
-  longcelot-sheet-db@0.1.32(@types/node@25.9.1)(pg@8.22.0):
+  longcelot-sheet-db@0.1.33(@types/node@25.9.1)(pg@8.22.0):
     dependencies:
       bcryptjs: 3.0.3
       chalk: 4.1.2

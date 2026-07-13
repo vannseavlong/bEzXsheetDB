@@ -157,6 +157,26 @@ straight through to `findMany` again.
 
 ---
 
+## ✅ Fixed in v0.1.33
+
+| # | Item |
+|---|---|
+| 18 | `lsdb migrate --sql --apply` / `createPostgresAdapter()` — no SSL support against managed Postgres (Render/Heroku/Supabase) — shipped `resolvePostgresSSL()`, auto-enables `ssl: { rejectUnauthorized: false }` for any non-localhost connection string |
+
+Discovered running the real F2 Render Postgres cutover (2026-07-13): the `schema-migrate` CI job
+connected fine, wrote `schema.sql`, then died a few seconds into applying DDL with
+`Error: Connection terminated unexpectedly` (`pg-pool`) — a generic error that reads like a network
+or credentials problem but isn't. Render (like Heroku, Supabase, and most managed Postgres) requires
+SSL on external connections and presents a cert outside Node's default trust store; neither
+`connectForApply()` (the CLI's `--apply` path) nor the runtime `createPostgresAdapter()` passed any
+`ssl` option to `pg.Pool`, so both the CI migration step and the actual production adapter would have
+hit the identical wall. Fixed in both places with a shared `resolvePostgresSSL()` helper — automatic
+for any non-localhost connection string, no config change needed on our side; `PostgresAdapterConfig`
+also gained an optional `ssl` override for providers that need one. See the package's `CHANGELOG.md`
+[0.1.33] and `FAQ.md` §13 for the full incident write-up.
+
+---
+
 ## 📬 Feature Request / Feedback — Table Names Aren't Actor-Scoped (submitted 2026-07-10)
 
 Discovered while adding the mini-app's customer-facing `user` actor schemas to `backendSheetDB`

@@ -285,15 +285,25 @@ production-safe and completing the real migration off Sheets, not adding more pr
   a dedicated always-on Sheets-backed client (`storage` in `config/adapter.ts`), independent of
   `DB_DRIVER` — the SQL adapters have no upload/storage concept of their own.
 - [x] Build the CI/CD pipeline: `.github/workflows/deploy.yml` — on push to `main`, runs
-  `lsdb migrate --sql --apply` against `$PRODUCTION_DATABASE_URL` (idempotent), then optionally pings a
+  `lsdb migrate --sql --apply` against `$DATABASE_URL` (idempotent), then optionally pings a
   Render deploy hook; on a `v*` tag (or manual `workflow_dispatch`), also runs
   `lsdb migrate-data --run --all-users --driver postgres` for the one-time (or dual-write-window-repeated)
   Sheets → Postgres data cutover. Modeled on the package's own reference pipeline (README.md).
-- [ ] Provision a Postgres instance on Render for production — needs Render dashboard access (not done
-  from here); once created, set `PRODUCTION_DATABASE_URL`, `SHEET_DB_TOKENS`, and (optional)
-  `RENDER_DEPLOY_HOOK_URL` as GitHub Actions repo secrets to activate the pipeline above.
+- [x] Provision a Postgres instance on Render for production; `DATABASE_URL` and `SHEET_DB_TOKENS` repo
+  secrets are set and the pipeline is live (`RENDER_DEPLOY_HOOK_URL` still optional/unset).
+  (Earlier note in this file said to name the secret `PRODUCTION_DATABASE_URL` — that was a typo against
+  what the workflow and `config/env.ts` actually read; corrected here to `DATABASE_URL`.)
+- [x] **2026-07-13 incident:** first real `schema-migrate` run against Render Postgres failed a few
+  seconds into applying DDL with `Error: Connection terminated unexpectedly` (pg-pool) — Render requires
+  SSL on external connections, and neither `lsdb migrate --sql --apply` nor the runtime
+  `createPostgresAdapter()` passed any `ssl` option to `pg.Pool`. Fixed package-side in
+  `longcelot-sheet-db` (`resolvePostgresSSL()`, auto-enables `ssl: { rejectUnauthorized: false }` for any
+  non-localhost connection string) — see the package's `CHANGELOG.md` [0.1.33] and `FAQ.md` §13 for the
+  full write-up. **Follow-up needed here:** bump `longcelot-sheet-db` to `0.1.33`+ in
+  `backendSheetDB/package.json` and re-run the `schema-migrate` job to confirm the fix against the real
+  Render instance.
 - [ ] Migrate current staging Sheet data into the new Postgres DB once, verify row counts/relations match
-  — blocked on the Postgres instance existing; `schema.sql`/`schema.prisma` (repo root, generated via
+  — blocked on the SSL fix landing (item above); `schema.sql`/`schema.prisma` (repo root, generated via
   `lsdb migrate --sql` / `--prisma`) are ready to review/apply in the meantime.
 - [ ] Document the cutover steps end-to-end (this repo's specific secrets/env, not just the package's
   generic docs) once a real cutover has actually been run once
