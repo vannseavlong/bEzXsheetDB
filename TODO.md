@@ -293,18 +293,30 @@ production-safe and completing the real migration off Sheets, not adding more pr
   secrets are set and the pipeline is live (`RENDER_DEPLOY_HOOK_URL` still optional/unset).
   (Earlier note in this file said to name the secret `PRODUCTION_DATABASE_URL` — that was a typo against
   what the workflow and `config/env.ts` actually read; corrected here to `DATABASE_URL`.)
-- [x] **2026-07-13 incident:** first real `schema-migrate` run against Render Postgres failed a few
-  seconds into applying DDL with `Error: Connection terminated unexpectedly` (pg-pool) — Render requires
-  SSL on external connections, and neither `lsdb migrate --sql --apply` nor the runtime
+- [x] **2026-07-13 incident #1 (SSL):** first real `schema-migrate` run against Render Postgres failed a
+  few seconds into applying DDL with `Error: Connection terminated unexpectedly` (pg-pool) — Render
+  requires SSL on external connections, and neither `lsdb migrate --sql --apply` nor the runtime
   `createPostgresAdapter()` passed any `ssl` option to `pg.Pool`. Fixed package-side in
-  `longcelot-sheet-db` (`resolvePostgresSSL()`, auto-enables `ssl: { rejectUnauthorized: false }` for any
-  non-localhost connection string) — see the package's `CHANGELOG.md` [0.1.33] and `FAQ.md` §13 for the
-  full write-up. **Follow-up needed here:** bump `longcelot-sheet-db` to `0.1.33`+ in
-  `backendSheetDB/package.json` and re-run the `schema-migrate` job to confirm the fix against the real
-  Render instance.
+  `longcelot-sheet-db` v0.1.33 (`resolvePostgresSSL()`, auto-enables `ssl: { rejectUnauthorized: false }`
+  for any non-localhost connection string). **Verified**: re-ran after bumping to 0.1.33 — connected
+  successfully and applied `CREATE TABLE` for 6 tables before hitting incident #2 below. Ruled out
+  Internal-vs-External Render URL and Render Access Control/IP allow-list as contributing causes before
+  landing on SSL as the actual root cause. See package `CHANGELOG.md` [0.1.33] / `FAQ.md` §13.
+- [x] **2026-07-13 incident #2 (FK ordering):** with SSL fixed, the same job got further, then failed with
+  a real Postgres error `relation "category_addons" does not exist` (`42P01`) while creating
+  `category_addon_items` (which has `ref('category_addons._id')`). Root cause: the package's
+  `loadSchemas()` reads schema files via unsorted `fs.readdirSync()`, and foreign keys are emitted inline
+  inside `CREATE TABLE` rather than deferred — `category_addon_items.ts` sorts alphabetically before
+  `category_addons.ts` (`_` < `s`), so its inline FK ran before the referenced table existed. Fixed
+  package-side in `longcelot-sheet-db` v0.1.34 (`sortSchemasByDependency()`, topological sort on every
+  schema's `ref()` edges, run right after `loadSchemas()`). See package `CHANGELOG.md` [0.1.34] /
+  `FAQ.md` §13. **Follow-up needed here:** bump `longcelot-sheet-db` to `0.1.34`+ in
+  `backendSheetDB/package.json` (currently still on whatever version picked up incident #1's fix) and
+  re-run `schema-migrate` end-to-end against the real Render instance to confirm all 33 tables apply
+  cleanly this time.
 - [ ] Migrate current staging Sheet data into the new Postgres DB once, verify row counts/relations match
-  — blocked on the SSL fix landing (item above); `schema.sql`/`schema.prisma` (repo root, generated via
-  `lsdb migrate --sql` / `--prisma`) are ready to review/apply in the meantime.
+  — blocked on incident #2's fix landing (item above); `schema.sql`/`schema.prisma` (repo root, generated
+  via `lsdb migrate --sql` / `--prisma`) are ready to review/apply in the meantime.
 - [ ] Document the cutover steps end-to-end (this repo's specific secrets/env, not just the package's
   generic docs) once a real cutover has actually been run once
 

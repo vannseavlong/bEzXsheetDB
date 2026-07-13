@@ -177,6 +177,31 @@ also gained an optional `ssl` override for providers that need one. See the pack
 
 ---
 
+## ✅ Fixed in v0.1.34
+
+| # | Item |
+|---|---|
+| 19 | `lsdb migrate --sql --apply` — table creation order ignores `ref()` foreign-key dependencies, so a referencing table can be created before the table it references — shipped `sortSchemasByDependency()`, a topological sort on `ref()` edges run right after schema loading |
+
+Found immediately after verifying the v0.1.33 SSL fix, same F2 Render cutover (2026-07-13): with SSL
+now negotiating correctly, `--apply` got further — created several tables — then failed with a real
+Postgres error, `relation "category_addons" does not exist` (`42P01`), while creating
+`category_addon_items` (which has `addon_id: string().required().ref('category_addons._id')`).
+Root cause: `loadSchemas()` reads schema files via plain `fs.readdirSync()` with no regard for
+`ref()` dependencies, and `generateSQLTable()` emits foreign keys **inline** inside `CREATE TABLE`
+rather than as a deferred `ALTER TABLE` — since `category_addon_items.ts` sorts alphabetically
+before `category_addons.ts` (`_` < `s`), its `CREATE TABLE ... FOREIGN KEY REFERENCES
+category_addons(...)` ran before that table existed. Affects a hand-applied `schema.sql` file
+identically, not just live `--apply`. Fixed with `sortSchemasByDependency()`
+(`src/cli/commands/migrate.ts`) — topologically sorts every schema by its `ref()` edges once,
+right after `loadSchemas()`, so both output paths get a dependency-safe order; self-referencing
+columns (e.g. `parent_id`) don't cause infinite recursion. A true circular FK between two different
+tables isn't handled by this first pass (would need one side's constraint deferred to a
+post-creation `ALTER TABLE`) — not needed for any schema in this repo currently. See the package's
+`CHANGELOG.md` [0.1.34] and `FAQ.md` §13 for the full incident write-up.
+
+---
+
 ## 📬 Feature Request / Feedback — Table Names Aren't Actor-Scoped (submitted 2026-07-10)
 
 Discovered while adding the mini-app's customer-facing `user` actor schemas to `backendSheetDB`
