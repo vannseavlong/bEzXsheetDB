@@ -78,7 +78,8 @@ export interface OrderDetail {
 const BASE = '/admin/orders'
 const resource = createResourceHooks<OrderDetail, never, OrderSummary>('orders', BASE)
 
-export const useOrders = (params?: ListParams) => resource.useList(params)
+export const useOrders = (params?: ListParams, options?: Parameters<typeof resource.useList>[1]) =>
+  resource.useList(params, options)
 export const useOrderDetail = (bulkOrderId: string | undefined) => resource.useGet(bulkOrderId)
 
 export function useUpdateOrderStatus() {

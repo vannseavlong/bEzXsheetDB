@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, keepPreviousData, type UseQueryOptions } from '@tanstack/react-query'
 import { apiClient, buildQuery } from './client'
 import { toast } from '@/hooks/use-toast'
 
@@ -39,11 +39,12 @@ export function createResourceHooks<TDb, TInput = Partial<TDb>, TList = TDb>(res
     })
   }
 
-  function useList(params: ListParams = {}) {
+  function useList(params: ListParams = {}, options?: Pick<UseQueryOptions<ListResponse<TList>>, 'enabled'>) {
     return useQuery({
       queryKey: listKey(params),
       queryFn: () => apiClient.get<ListResponse<TList>>(`${basePath}${buildQuery(params)}`),
       placeholderData: keepPreviousData,
+      ...options,
     })
   }
 

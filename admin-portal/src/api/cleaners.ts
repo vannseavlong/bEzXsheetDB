@@ -31,7 +31,8 @@ export type CleanerInput = {
 const BASE = '/admin/cleaners'
 const resource = createResourceHooks<DbCleaner, CleanerInput, Cleaner>('cleaners', BASE)
 
-export const useCleaners = (params?: ListParams) => resource.useList(params)
+export const useCleaners = (params?: ListParams, options?: Parameters<typeof resource.useList>[1]) =>
+  resource.useList(params, options)
 export const useCleaner = (id: string | undefined) => resource.useGet(id)
 export const useCreateCleaner = resource.useCreate
 export const useUpdateCleaner = resource.useUpdate

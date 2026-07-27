@@ -10,7 +10,7 @@ export function OverviewCard({
   title,
   value,
   trend = null,
-  changePercent,
+  changePercent = null,
   icon: Icon,
   description,
 }) {

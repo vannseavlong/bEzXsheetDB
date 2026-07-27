@@ -4,4 +4,5 @@ import type { ActivityLog } from '@/types'
 const BASE = '/admin/activity-log'
 const resource = createResourceHooks<ActivityLog, never, ActivityLog>('activity-log', BASE)
 
-export const useActivityLogs = (params?: ListParams) => resource.useList(params)
+export const useActivityLogs = (params?: ListParams, options?: Parameters<typeof resource.useList>[1]) =>
+  resource.useList(params, options)

@@ -20,7 +20,8 @@ export type ItemInput = {
 
 const resource = createResourceHooks<DbItem, ItemInput, Item>('items', '/admin/items')
 
-export const useItems = (params?: ListParams) => resource.useList(params)
+export const useItems = (params?: ListParams, options?: Parameters<typeof resource.useList>[1]) =>
+  resource.useList(params, options)
 export const useItem = (id: string | undefined) => resource.useGet(id)
 export const useCreateItem = resource.useCreate
 export const useUpdateItem = resource.useUpdate
