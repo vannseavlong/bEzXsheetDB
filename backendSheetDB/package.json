@@ -9,7 +9,17 @@
     "seed:super-admin": "lsdb seed seeds/super-admin.ts --skip-existing",
     "seed:add-user": "lsdb seed seeds/add-user.ts --skip-existing",
     "seed:platforms": "lsdb seed seeds/platforms.ts --skip-existing",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bench:gen-seeds": "tsx benchmark/genSeeds.ts",
+    "bench:seed:1k": "tsx benchmark/seedStep.ts seeds/bench-records-01-to-1k.ts",
+    "bench:seed:10k": "tsx benchmark/seedStep.ts seeds/bench-records-02-to-10k.ts",
+    "bench:seed:25k": "tsx benchmark/seedStep.ts seeds/bench-records-03-to-25k.ts",
+    "bench:seed:50k": "tsx benchmark/seedStep.ts seeds/bench-records-04-to-50k.ts",
+    "bench:seed:100k": "tsx benchmark/seedStep.ts seeds/bench-records-05-to-100k.ts",
+    "bench:status": "tsx benchmark/checkStatus.ts",
+    "bench:query": "tsx benchmark/queryBench.ts",
+    "bench:bulk-payload": "tsx benchmark/bulkPayloadBench.ts",
+    "bench:concurrency": "tsx benchmark/concurrencyBench.ts"
   },
   "keywords": [],
   "author": "",
