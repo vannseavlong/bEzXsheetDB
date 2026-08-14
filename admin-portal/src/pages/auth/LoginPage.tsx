@@ -44,7 +44,8 @@ export default function LoginPage() {
     setFormError(null)
     setIsSubmitting(true)
     try {
-      const res = await fetch('/api/admin/auth/login', {
+      const base = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
+      const res = await fetch(`${base}/admin/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
