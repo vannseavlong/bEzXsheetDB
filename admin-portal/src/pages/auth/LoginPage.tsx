@@ -80,10 +80,10 @@ export default function LoginPage() {
           className="w-[230px] h-[465px]"
         />
 
-        {/* <p className="relative mt-8 max-w-sm text-center text-sm text-muted-foreground">
+        <p className="relative mt-8 max-w-sm text-center text-sm text-slate-600">
           Manage bEasy&apos;s home-services platform: orders, cleaners,
           partners, customers, marketing, and finance.
-        </p> */}
+        </p>
       </div>
 
       {/* ── Right panel: login form ── */}
@@ -91,10 +91,16 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           {/* Brand */}
-          <div className="flex items-center gap-2 mb-8">
+          <div className="flex items-center gap-2 mb-3">
             <img src={beasyIcon} alt="bEasy" className="h-7 w-7 object-contain" />
             <span className="text-lg font-semibold">bEasy Admin Portal</span>
           </div>
+
+          <p className="mb-6 text-sm text-slate-600 lg:hidden">
+            The internal console bEasy staff use to manage orders, cleaners,
+            partners, customers, marketing, and finance for the bEasy
+            home-services platform.
+          </p>
 
           <h1 className="text-2xl font-bold text-foreground">Sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">
