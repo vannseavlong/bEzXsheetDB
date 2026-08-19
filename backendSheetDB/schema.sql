@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS blocked_schedules (
 
 CREATE TABLE IF NOT EXISTS categories (
   name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
   thumbnail_url VARCHAR(255),
   status BOOLEAN DEFAULT TRUE,
   sort DECIMAL(10,2) DEFAULT 0,
@@ -82,10 +82,25 @@ CREATE TABLE IF NOT EXISTS categories (
   PRIMARY KEY (_id)
 );
 
+CREATE TABLE IF NOT EXISTS category_addons (
+  name_en VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
+  badge_en VARCHAR(255),
+  badge_km VARCHAR(255),
+  selection_type VARCHAR(255) DEFAULT 'SINGLE' CHECK (selection_type IN ('SINGLE', 'MULTIPLE')),
+  is_required BOOLEAN DEFAULT FALSE,
+  status BOOLEAN DEFAULT TRUE,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _deleted_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id)
+);
+
 CREATE TABLE IF NOT EXISTS category_addon_items (
   addon_id VARCHAR(255) NOT NULL,
   name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
   type VARCHAR(255) NOT NULL,
   img_url VARCHAR(255),
   amount DECIMAL(10,2) DEFAULT 0,
@@ -100,21 +115,6 @@ CREATE TABLE IF NOT EXISTS category_addon_items (
   FOREIGN KEY (addon_id) REFERENCES category_addons(_id)
 );
 
-CREATE TABLE IF NOT EXISTS category_addons (
-  name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
-  badge_en VARCHAR(255),
-  badge_km VARCHAR(255),
-  selection_type VARCHAR(255) DEFAULT 'SINGLE' CHECK (selection_type IN ('SINGLE', 'MULTIPLE')),
-  is_required BOOLEAN DEFAULT FALSE,
-  status BOOLEAN DEFAULT TRUE,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _deleted_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id)
-);
-
 CREATE TABLE IF NOT EXISTS category_category_addons (
   category_id VARCHAR(255) NOT NULL,
   addon_id VARCHAR(255) NOT NULL,
@@ -125,6 +125,43 @@ CREATE TABLE IF NOT EXISTS category_category_addons (
   PRIMARY KEY (_id),
   FOREIGN KEY (category_id) REFERENCES categories(_id),
   FOREIGN KEY (addon_id) REFERENCES category_addons(_id)
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  name_en VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
+  thumbnail_url VARCHAR(255),
+  status BOOLEAN DEFAULT TRUE,
+  sort DECIMAL(10,2) DEFAULT 0,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _deleted_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id)
+);
+
+CREATE TABLE IF NOT EXISTS category_products (
+  category_id VARCHAR(255) NOT NULL,
+  product_id VARCHAR(255) NOT NULL,
+  sort DECIMAL(10,2) DEFAULT 0,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id),
+  FOREIGN KEY (category_id) REFERENCES categories(_id),
+  FOREIGN KEY (product_id) REFERENCES products(_id)
+);
+
+CREATE TABLE IF NOT EXISTS product_options (
+  name_en VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
+  type VARCHAR(255) NOT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _deleted_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id)
 );
 
 CREATE TABLE IF NOT EXISTS category_product_options (
@@ -139,18 +176,6 @@ CREATE TABLE IF NOT EXISTS category_product_options (
   PRIMARY KEY (_id),
   FOREIGN KEY (category_product_id) REFERENCES category_products(_id),
   FOREIGN KEY (product_option_id) REFERENCES product_options(_id)
-);
-
-CREATE TABLE IF NOT EXISTS category_products (
-  category_id VARCHAR(255) NOT NULL,
-  product_id VARCHAR(255) NOT NULL,
-  sort DECIMAL(10,2) DEFAULT 0,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id),
-  FOREIGN KEY (category_id) REFERENCES categories(_id),
-  FOREIGN KEY (product_id) REFERENCES products(_id)
 );
 
 CREATE TABLE IF NOT EXISTS cleaners (
@@ -189,75 +214,6 @@ CREATE TABLE IF NOT EXISTS coupons (
   _deleted_at TIMESTAMP,
   _id VARCHAR(255) NOT NULL,
   PRIMARY KEY (_id)
-);
-
-CREATE TABLE IF NOT EXISTS finance_orders (
-  order_id VARCHAR(255) NOT NULL,
-  customer_name VARCHAR(255) NOT NULL,
-  customer_phone VARCHAR(255) NOT NULL,
-  service_category VARCHAR(255) NOT NULL,
-  specific_service VARCHAR(255) NOT NULL,
-  schedule_date TIMESTAMP NOT NULL,
-  time VARCHAR(255) NOT NULL,
-  address VARCHAR(255) NOT NULL,
-  status VARCHAR(255) NOT NULL CHECK (status IN ('PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')),
-  payment_init_date TIMESTAMP,
-  payment_completed_date TIMESTAMP,
-  payment_method VARCHAR(255),
-  promo_code VARCHAR(255),
-  original_price DECIMAL(10,2) NOT NULL,
-  discount DECIMAL(10,2) DEFAULT 0,
-  service_fee DECIMAL(10,2) DEFAULT 0,
-  transport_fee DECIMAL(10,2) DEFAULT 0,
-  net_revenue DECIMAL(10,2) DEFAULT 0,
-  vat DECIMAL(10,2) DEFAULT 0,
-  total_fee DECIMAL(10,2) NOT NULL,
-  remark VARCHAR(255),
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id),
-  FOREIGN KEY (order_id) REFERENCES orders(_id)
-);
-
-CREATE TABLE IF NOT EXISTS items (
-  name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
-  category VARCHAR(255) NOT NULL,
-  status BOOLEAN DEFAULT TRUE,
-  sort_order DECIMAL(10,2) DEFAULT 0,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _deleted_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id)
-);
-
-CREATE TABLE IF NOT EXISTS modules (
-  key VARCHAR(255) NOT NULL UNIQUE,
-  label VARCHAR(255) NOT NULL,
-  section VARCHAR(255) DEFAULT 'Other',
-  action_ids JSON DEFAULT ('[]'),
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _deleted_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id)
-);
-
-CREATE TABLE IF NOT EXISTS order_addons (
-  order_id VARCHAR(255) NOT NULL,
-  addon_item_id VARCHAR(255) NOT NULL,
-  name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
-  amount DECIMAL(10,2) NOT NULL,
-  qty DECIMAL(10,2) DEFAULT 1,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id),
-  FOREIGN KEY (order_id) REFERENCES orders(_id),
-  FOREIGN KEY (addon_item_id) REFERENCES category_addon_items(_id)
 );
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -313,6 +269,75 @@ CREATE TABLE IF NOT EXISTS orders (
   FOREIGN KEY (assigned_cleaner_id) REFERENCES cleaners(_id)
 );
 
+CREATE TABLE IF NOT EXISTS finance_orders (
+  order_id VARCHAR(255) NOT NULL,
+  customer_name VARCHAR(255) NOT NULL,
+  customer_phone VARCHAR(255) NOT NULL,
+  service_category VARCHAR(255) NOT NULL,
+  specific_service VARCHAR(255) NOT NULL,
+  schedule_date TIMESTAMP NOT NULL,
+  time VARCHAR(255) NOT NULL,
+  address VARCHAR(255) NOT NULL,
+  status VARCHAR(255) NOT NULL CHECK (status IN ('PENDING', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')),
+  payment_init_date TIMESTAMP,
+  payment_completed_date TIMESTAMP,
+  payment_method VARCHAR(255),
+  promo_code VARCHAR(255),
+  original_price DECIMAL(10,2) NOT NULL,
+  discount DECIMAL(10,2) DEFAULT 0,
+  service_fee DECIMAL(10,2) DEFAULT 0,
+  transport_fee DECIMAL(10,2) DEFAULT 0,
+  net_revenue DECIMAL(10,2) DEFAULT 0,
+  vat DECIMAL(10,2) DEFAULT 0,
+  total_fee DECIMAL(10,2) NOT NULL,
+  remark VARCHAR(255),
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id),
+  FOREIGN KEY (order_id) REFERENCES orders(_id)
+);
+
+CREATE TABLE IF NOT EXISTS items (
+  name_en VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
+  category VARCHAR(255) NOT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  sort_order DECIMAL(10,2) DEFAULT 0,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _deleted_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id)
+);
+
+CREATE TABLE IF NOT EXISTS modules (
+  key VARCHAR(255) NOT NULL UNIQUE,
+  label VARCHAR(255) NOT NULL,
+  section VARCHAR(255) DEFAULT 'Other',
+  action_ids JSON DEFAULT ('[]'),
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _deleted_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id)
+);
+
+CREATE TABLE IF NOT EXISTS order_addons (
+  order_id VARCHAR(255) NOT NULL,
+  addon_item_id VARCHAR(255) NOT NULL,
+  name_en VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
+  amount DECIMAL(10,2) NOT NULL,
+  qty DECIMAL(10,2) DEFAULT 1,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id),
+  FOREIGN KEY (order_id) REFERENCES orders(_id),
+  FOREIGN KEY (addon_item_id) REFERENCES category_addon_items(_id)
+);
+
 CREATE TABLE IF NOT EXISTS payment_links (
   customer_id VARCHAR(255) NOT NULL,
   customer_name VARCHAR(255) NOT NULL,
@@ -329,10 +354,23 @@ CREATE TABLE IF NOT EXISTS payment_links (
 
 CREATE TABLE IF NOT EXISTS platforms (
   name_en VARCHAR(255) NOT NULL UNIQUE,
-  name_km VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
   description VARCHAR(255),
   status BOOLEAN DEFAULT TRUE,
   visibility VARCHAR(255) DEFAULT 'public' CHECK (visibility IN ('public', 'beta', 'internal')),
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _deleted_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id)
+);
+
+CREATE TABLE IF NOT EXISTS popular_services (
+  name_en VARCHAR(255) NOT NULL,
+  name_km VARCHAR(255),
+  image_url VARCHAR(255),
+  status BOOLEAN DEFAULT TRUE,
+  display_order DECIMAL(10,2) DEFAULT 0,
   _created_at TIMESTAMP,
   _updated_at TIMESTAMP,
   _deleted_at TIMESTAMP,
@@ -355,31 +393,6 @@ CREATE TABLE IF NOT EXISTS popular_service_items (
   FOREIGN KEY (product_id) REFERENCES products(_id)
 );
 
-CREATE TABLE IF NOT EXISTS popular_services (
-  name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
-  image_url VARCHAR(255),
-  status BOOLEAN DEFAULT TRUE,
-  display_order DECIMAL(10,2) DEFAULT 0,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _deleted_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id)
-);
-
-CREATE TABLE IF NOT EXISTS product_options (
-  name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
-  type VARCHAR(255) NOT NULL,
-  status BOOLEAN DEFAULT TRUE,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _deleted_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id)
-);
-
 CREATE TABLE IF NOT EXISTS product_pairings (
   category_product_id VARCHAR(255) NOT NULL,
   paired_category_product_id VARCHAR(255) NOT NULL,
@@ -390,19 +403,6 @@ CREATE TABLE IF NOT EXISTS product_pairings (
   PRIMARY KEY (_id),
   FOREIGN KEY (category_product_id) REFERENCES category_products(_id),
   FOREIGN KEY (paired_category_product_id) REFERENCES category_products(_id)
-);
-
-CREATE TABLE IF NOT EXISTS products (
-  name_en VARCHAR(255) NOT NULL,
-  name_km VARCHAR(255) NOT NULL,
-  thumbnail_url VARCHAR(255),
-  status BOOLEAN DEFAULT TRUE,
-  sort DECIMAL(10,2) DEFAULT 0,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _deleted_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id)
 );
 
 CREATE TABLE IF NOT EXISTS push_notifications (
@@ -421,19 +421,6 @@ CREATE TABLE IF NOT EXISTS push_notifications (
   PRIMARY KEY (_id)
 );
 
-CREATE TABLE IF NOT EXISTS role_permissions (
-  role_id VARCHAR(255) NOT NULL,
-  module_id VARCHAR(255) NOT NULL,
-  action_id VARCHAR(255) NOT NULL,
-  _created_at TIMESTAMP,
-  _updated_at TIMESTAMP,
-  _id VARCHAR(255) NOT NULL,
-  PRIMARY KEY (_id),
-  FOREIGN KEY (role_id) REFERENCES roles(_id),
-  FOREIGN KEY (module_id) REFERENCES modules(_id),
-  FOREIGN KEY (action_id) REFERENCES actions(_id)
-);
-
 CREATE TABLE IF NOT EXISTS roles (
   name VARCHAR(255) NOT NULL UNIQUE,
   code VARCHAR(255) NOT NULL UNIQUE,
@@ -445,6 +432,19 @@ CREATE TABLE IF NOT EXISTS roles (
   _deleted_at TIMESTAMP,
   _id VARCHAR(255) NOT NULL,
   PRIMARY KEY (_id)
+);
+
+CREATE TABLE IF NOT EXISTS role_permissions (
+  role_id VARCHAR(255) NOT NULL,
+  module_id VARCHAR(255) NOT NULL,
+  action_id VARCHAR(255) NOT NULL,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id),
+  FOREIGN KEY (role_id) REFERENCES roles(_id),
+  FOREIGN KEY (module_id) REFERENCES modules(_id),
+  FOREIGN KEY (action_id) REFERENCES actions(_id)
 );
 
 CREATE TABLE IF NOT EXISTS task_info (
@@ -494,6 +494,28 @@ CREATE TABLE IF NOT EXISTS users (
   FOREIGN KEY (role_id) REFERENCES roles(_id)
 );
 
+CREATE TABLE IF NOT EXISTS customers (
+  email VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255),
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
+  phone VARCHAR(255),
+  profile_url VARCHAR(255),
+  status VARCHAR(255) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  language VARCHAR(255) DEFAULT 'en',
+  gender VARCHAR(255) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
+  dob TIMESTAMP,
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  tenant_id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id),
+  UNIQUE (tenant_id, email),
+  UNIQUE (tenant_id, phone)
+);
+
+CREATE INDEX idx_customers_tenant_id ON customers(tenant_id);
+
 CREATE TABLE IF NOT EXISTS addresses (
   user_id VARCHAR(255) NOT NULL,
   label VARCHAR(255),
@@ -517,24 +539,47 @@ CREATE TABLE IF NOT EXISTS addresses (
 
 CREATE INDEX idx_addresses_tenant_id ON addresses(tenant_id);
 
-CREATE TABLE IF NOT EXISTS customers (
-  email VARCHAR(255) NOT NULL,
-  password_hash VARCHAR(255),
-  first_name VARCHAR(255) NOT NULL,
-  last_name VARCHAR(255) NOT NULL,
-  phone VARCHAR(255),
-  profile_url VARCHAR(255),
-  status VARCHAR(255) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
-  language VARCHAR(255) DEFAULT 'en',
-  gender VARCHAR(255) CHECK (gender IN ('MALE', 'FEMALE', 'OTHER')),
-  dob TIMESTAMP,
+CREATE TABLE IF NOT EXISTS benchmark_records (
+  sku VARCHAR(255) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description VARCHAR(255),
+  price DECIMAL(10,2) NOT NULL,
+  stock DECIMAL(10,2) NOT NULL,
+  active BOOLEAN NOT NULL,
+  category VARCHAR(255) NOT NULL CHECK (category IN ('electronics', 'apparel', 'grocery', 'home', 'toys')),
+  rating DECIMAL(10,2),
+  featured BOOLEAN,
+  tags JSON,
+  notes VARCHAR(255),
+  created_by VARCHAR(255),
   _created_at TIMESTAMP,
   _updated_at TIMESTAMP,
   _id VARCHAR(255) NOT NULL,
   tenant_id VARCHAR(255) NOT NULL,
   PRIMARY KEY (_id),
-  UNIQUE (tenant_id, email),
-  UNIQUE (tenant_id, phone)
+  UNIQUE (tenant_id, sku)
 );
 
-CREATE INDEX idx_customers_tenant_id ON customers(tenant_id);
+CREATE INDEX idx_benchmark_records_tenant_id ON benchmark_records(tenant_id);
+
+CREATE TABLE IF NOT EXISTS benchmark_scratch (
+  run_id VARCHAR(255) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description VARCHAR(255),
+  price DECIMAL(10,2) NOT NULL,
+  stock DECIMAL(10,2) NOT NULL,
+  active BOOLEAN NOT NULL,
+  category VARCHAR(255) NOT NULL CHECK (category IN ('electronics', 'apparel', 'grocery', 'home', 'toys')),
+  rating DECIMAL(10,2),
+  featured BOOLEAN,
+  tags JSON,
+  notes VARCHAR(255),
+  created_by VARCHAR(255),
+  _created_at TIMESTAMP,
+  _updated_at TIMESTAMP,
+  _id VARCHAR(255) NOT NULL,
+  tenant_id VARCHAR(255) NOT NULL,
+  PRIMARY KEY (_id)
+);
+
+CREATE INDEX idx_benchmark_scratch_tenant_id ON benchmark_scratch(tenant_id);

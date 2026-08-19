@@ -11,7 +11,7 @@ export default defineTable({
     role: string().required().enum(['LEADER', 'MEMBER']),
     status: boolean().default(true),
     image_url: string(),
-    phone: string(),
+    phone_number: string(),
     joined_date: date().required(),
     auto_assign: boolean().default(false),
     expertises: string(),     // JSON array of expertise strings
