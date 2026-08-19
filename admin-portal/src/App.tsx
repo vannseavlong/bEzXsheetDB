@@ -3,6 +3,7 @@ import Layout from '@/components/layout/Layout'
 import ProtectedRoute from '@/components/layout/ProtectedRoute'
 import { MODULES } from '@/lib/permission-registry'
 import LoginPage from '@/pages/auth/LoginPage'
+import LandingPage from '@/pages/LandingPage'
 import AuthCallbackPage from '@/pages/auth/AuthCallbackPage'
 
 import Dashboard from '@/pages/Dashboard'
@@ -88,13 +89,20 @@ export default function App() {
         </Route>
       </Route>
 
+      {/* Homepage: public landing page for signed-out visitors, Dashboard for signed-in staff.
+          publicFallback keeps "/" from bouncing straight to /login, since it also serves as
+          the app's OAuth-branding "Application home page" and must describe the app on its own. */}
+      <Route path="/" element={<ProtectedRoute publicFallback={<LandingPage />} />}>
+        <Route element={<Layout />}>
+          <Route element={<ProtectedRoute module={MODULES.DASHBOARD} />}>
+            <Route index element={<Dashboard />} />
+          </Route>
+        </Route>
+      </Route>
+
       {/* Layout-wrapped authenticated routes */}
       <Route element={<ProtectedRoute />}>
       <Route element={<Layout />}>
-        <Route element={<ProtectedRoute module={MODULES.DASHBOARD} />}>
-          <Route path="/" element={<Dashboard />} />
-        </Route>
-
         {/* Cleaners */}
         <Route element={<ProtectedRoute module={MODULES.CLEANER} />}>
           <Route path="/cleaner" element={<CleanerList />} />
