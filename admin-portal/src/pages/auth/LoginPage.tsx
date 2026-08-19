@@ -79,16 +79,21 @@ export default function LoginPage() {
           src="/home-screen.png"
           className="w-[230px] h-[465px]"
         />
+
+        {/* <p className="relative mt-8 max-w-sm text-center text-sm text-muted-foreground">
+          Manage bEasy&apos;s home-services platform: orders, cleaners,
+          partners, customers, marketing, and finance.
+        </p> */}
       </div>
 
       {/* ── Right panel: login form ── */}
       <div className="flex flex-1 items-center justify-center bg-background px-6 py-10">
         <div className="w-full max-w-sm">
 
-          {/* Mobile brand */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
+          {/* Brand */}
+          <div className="flex items-center gap-2 mb-8">
             <img src={beasyIcon} alt="bEasy" className="h-7 w-7 object-contain" />
-            <span className="text-lg font-semibold">bEasy Admin</span>
+            <span className="text-lg font-semibold">bEasy Admin Portal</span>
           </div>
 
           <h1 className="text-2xl font-bold text-foreground">Sign in</h1>
@@ -170,6 +175,9 @@ export default function LoginPage() {
 
           <p className="mt-2 text-center text-xs text-muted-foreground">
             Access is restricted to authorised admin accounts only.
+            <br /> <br />
+            Manage bEasy&apos;s home-services platform: orders, cleaners,
+            partners, customers, marketing, and finance.
           </p>
         </div>
       </div>
