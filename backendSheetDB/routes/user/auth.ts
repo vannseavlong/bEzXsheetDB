@@ -59,6 +59,7 @@ export function createUserGoogleAuthHandler(adapter: DatabaseAdapter): RequestHa
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       redirectUri: env.GOOGLE_USER_REDIRECT_URI,
     },
+    scopes: ['openid', 'email', 'profile'],
     async onUser(profile: GoogleProfile, adapter) {
       // Rare, but an unverified email can't be trusted as the account identity —
       // fall through to a bare-profile token (no id/role) rather than provisioning it.

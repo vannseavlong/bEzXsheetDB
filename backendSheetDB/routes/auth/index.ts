@@ -43,6 +43,7 @@ export function createAdminGoogleAuthHandler(adapter: DatabaseAdapter): RequestH
     jwtSecret: env.JWT_SECRET,
     frontendUrl: `${env.FRONTEND_URL}/auth/callback`,
     registrationPolicy: 'login-only',
+    scopes: ['openid', 'email', 'profile'],
     async onUser(profile, adapter) {
       const ctx = adapter.withContext({ userId: 'auth', actor: 'admin', actorSheetId: '' })
       const user = await ctx.table('users').findOne({ where: { email: profile.email } }) as any
