@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useReactTable, getCoreRowModel } from '@tanstack/react-table'
+import { eachDayOfInterval, format, isSameDay, startOfDay, subDays } from 'date-fns'
 import { ClipboardList, Clock, Users, Package, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,8 @@ import { DataTableHeader } from '@/components/data-table/DataTableHeader'
 import { TableRows } from '@/components/data-table/TableRows'
 import { TableRowSkeleton } from '@/components/data-table/TableRowSkeleton'
 import { OverviewCard } from '@/components/shared/OverviewCard'
+import { OrdersTrendChart } from '@/components/dashboard/OrdersTrendChart'
+import { OrderStatusBreakdown } from '@/components/dashboard/OrderStatusBreakdown'
 import { dashboardOrderColumns } from '@/components/data-table/columns/DashboardOrderColumns'
 import { activityLogColumns } from '@/components/data-table/columns/ActivityLogColumns'
 import { useOrders } from '@/api/orders'
@@ -17,8 +20,14 @@ import { useItems } from '@/api/items'
 import { useActivityLogs } from '@/api/activity-log'
 import { usePermission } from '@/hooks/use-permission'
 import { ACTIONS, MODULES } from '@/lib/permission-registry'
+import type { OrderStatus } from '@/types'
 
 const RECENT_LIMIT = 5
+const TREND_DAYS = 14
+// Backend has no analytics/aggregate endpoint, so the trend chart and status
+// breakdown below are computed client-side from the most recent orders page
+// (capped at the API's max page size) rather than the whole table.
+const TREND_SAMPLE_LIMIT = 100
 
 export default function Dashboard() {
   const { hasPermission } = usePermission()
@@ -46,9 +55,31 @@ export default function Dashboard() {
     { limit: RECENT_LIMIT },
     { enabled: canViewActivity }
   )
+  const { data: trendOrders, isLoading: loadingTrend } = useOrders(
+    { limit: TREND_SAMPLE_LIMIT },
+    { enabled: canViewOrders }
+  )
 
   const orderRows = useMemo(() => recentOrders?.data ?? [], [recentOrders])
   const activityRows = useMemo(() => recentActivity?.data ?? [], [recentActivity])
+
+  const trendRows = trendOrders?.data ?? []
+  const ordersTrend = useMemo(() => {
+    const days = eachDayOfInterval({ start: subDays(startOfDay(new Date()), TREND_DAYS - 1), end: new Date() })
+    return days.map((day) => ({
+      date: format(day, 'yyyy-MM-dd'),
+      label: format(day, 'MMM d'),
+      count: trendRows.filter((order) => order.createdAt && isSameDay(new Date(order.createdAt), day)).length,
+    }))
+  }, [trendRows])
+  const orderStatusCounts = useMemo(
+    () =>
+      trendRows.reduce<Partial<Record<OrderStatus, number>>>((acc, order) => {
+        acc[order.status] = (acc[order.status] ?? 0) + 1
+        return acc
+      }, {}),
+    [trendRows]
+  )
 
   const ordersTable = useReactTable({
     data: orderRows,
@@ -81,6 +112,7 @@ export default function Dashboard() {
                 value={loadingOrderCount ? '—' : (allOrders?.meta.total ?? 0)}
                 icon={ClipboardList}
                 description="All bookings received"
+                tone="blue"
               />
             )}
             {canViewOrders && (
@@ -89,6 +121,7 @@ export default function Dashboard() {
                 value={loadingPendingCount ? '—' : (pendingOrders?.meta.total ?? 0)}
                 icon={Clock}
                 description="Awaiting acceptance"
+                tone="amber"
               />
             )}
             {canViewCleaners && (
@@ -97,6 +130,7 @@ export default function Dashboard() {
                 value={loadingCleanerCount ? '—' : (activeCleaners?.meta.total ?? 0)}
                 icon={Users}
                 description="Available for assignment"
+                tone="green"
               />
             )}
             {canViewItems && (
@@ -105,9 +139,19 @@ export default function Dashboard() {
                 value={loadingItemCount ? '—' : (allItems?.meta.total ?? 0)}
                 icon={Package}
                 description="Active service items"
+                tone="purple"
               />
             )}
           </div>
+
+          {canViewOrders && (
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+              <div className="xl:col-span-2">
+                <OrdersTrendChart data={ordersTrend} isLoading={loadingTrend} />
+              </div>
+              <OrderStatusBreakdown counts={orderStatusCounts} isLoading={loadingTrend} />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             {canViewOrders && (
