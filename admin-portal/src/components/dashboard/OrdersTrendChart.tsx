@@ -1,21 +1,24 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { TrendBucket } from '@/lib/dashboard-date-ranges'
 
-export interface OrdersTrendPoint {
-  date: string
-  label: string
-  count: number
-}
-
-export function OrdersTrendChart({ data, isLoading }: { data: OrdersTrendPoint[]; isLoading?: boolean }) {
+export function OrdersTrendChart({
+  data,
+  isLoading,
+  rangeLabel,
+}: {
+  data: TrendBucket[]
+  isLoading?: boolean
+  rangeLabel: string
+}) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>Orders Trend</CardTitle>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="h-2 w-2 rounded-full bg-primary" />
-          Orders placed, last 14 days
+          Orders placed, {rangeLabel}
         </div>
       </CardHeader>
       <CardContent>

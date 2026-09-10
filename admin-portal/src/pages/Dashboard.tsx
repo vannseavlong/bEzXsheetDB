@@ -1,7 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useReactTable, getCoreRowModel } from '@tanstack/react-table'
-import { eachDayOfInterval, format, isSameDay, startOfDay, subDays } from 'date-fns'
 import { ClipboardList, Clock, Users, Package, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,6 +11,14 @@ import { TableRowSkeleton } from '@/components/data-table/TableRowSkeleton'
 import { OverviewCard } from '@/components/shared/OverviewCard'
 import { OrdersTrendChart } from '@/components/dashboard/OrdersTrendChart'
 import { OrderStatusBreakdown } from '@/components/dashboard/OrderStatusBreakdown'
+import { UpcomingOrdersCard } from '@/components/dashboard/UpcomingOrdersCard'
+import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter'
+import {
+  DATE_RANGE_PRESETS,
+  buildTrendBuckets,
+  getDateRangeForPreset,
+  type DateRangePreset,
+} from '@/lib/dashboard-date-ranges'
 import { dashboardOrderColumns } from '@/components/data-table/columns/DashboardOrderColumns'
 import { activityLogColumns } from '@/components/data-table/columns/ActivityLogColumns'
 import { useOrders } from '@/api/orders'
@@ -23,10 +30,10 @@ import { ACTIONS, MODULES } from '@/lib/permission-registry'
 import type { OrderStatus } from '@/types'
 
 const RECENT_LIMIT = 5
-const TREND_DAYS = 14
-// Backend has no analytics/aggregate endpoint, so the trend chart and status
-// breakdown below are computed client-side from the most recent orders page
-// (capped at the API's max page size) rather than the whole table.
+// Backend has no analytics/aggregate endpoint, so the trend chart, status
+// breakdown, and upcoming-orders widget below are all computed client-side
+// from one recent-orders sample (capped at the API's max page size) rather
+// than the whole table — fine for this thesis dataset's size.
 const TREND_SAMPLE_LIMIT = 100
 
 export default function Dashboard() {
@@ -63,23 +70,48 @@ export default function Dashboard() {
   const orderRows = useMemo(() => recentOrders?.data ?? [], [recentOrders])
   const activityRows = useMemo(() => recentActivity?.data ?? [], [recentActivity])
 
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('this_month')
+  const rangeLabel = DATE_RANGE_PRESETS.find((p) => p.value === dateRangePreset)?.label.toLowerCase() ?? ''
+
   const trendRows = trendOrders?.data ?? []
-  const ordersTrend = useMemo(() => {
-    const days = eachDayOfInterval({ start: subDays(startOfDay(new Date()), TREND_DAYS - 1), end: new Date() })
-    return days.map((day) => ({
-      date: format(day, 'yyyy-MM-dd'),
-      label: format(day, 'MMM d'),
-      count: trendRows.filter((order) => order.createdAt && isSameDay(new Date(order.createdAt), day)).length,
-    }))
-  }, [trendRows])
+  const { from, to } = useMemo(() => getDateRangeForPreset(dateRangePreset), [dateRangePreset])
+  const rowsInRange = useMemo(
+    () =>
+      trendRows.filter((order) => {
+        if (!order.createdAt) return false
+        const created = new Date(order.createdAt)
+        if (from && created < from) return false
+        if (to && created > to) return false
+        return true
+      }),
+    [trendRows, from, to]
+  )
+
+  const ordersTrend = useMemo(
+    () => buildTrendBuckets(rowsInRange.map((o) => new Date(o.createdAt as string)), from, to),
+    [rowsInRange, from, to]
+  )
   const orderStatusCounts = useMemo(
     () =>
-      trendRows.reduce<Partial<Record<OrderStatus, number>>>((acc, order) => {
+      rowsInRange.reduce<Partial<Record<OrderStatus, number>>>((acc, order) => {
         acc[order.status] = (acc[order.status] ?? 0) + 1
         return acc
       }, {}),
-    [trendRows]
+    [rowsInRange]
   )
+  const upcomingOrders = useMemo(() => {
+    const now = new Date()
+    return trendRows
+      .filter(
+        (order) =>
+          order.scheduleDate &&
+          new Date(order.scheduleDate) >= now &&
+          order.status !== 'CANCELLED' &&
+          order.status !== 'COMPLETED'
+      )
+      .sort((a, b) => new Date(a.scheduleDate as string).getTime() - new Date(b.scheduleDate as string).getTime())
+      .slice(0, 5)
+  }, [trendRows])
 
   const ordersTable = useReactTable({
     data: orderRows,
@@ -145,12 +177,20 @@ export default function Dashboard() {
           </div>
 
           {canViewOrders && (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-              <div className="xl:col-span-2">
-                <OrdersTrendChart data={ordersTrend} isLoading={loadingTrend} />
+            <>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-foreground">Overview</h2>
+                <DateRangeFilter value={dateRangePreset} onChange={setDateRangePreset} />
               </div>
-              <OrderStatusBreakdown counts={orderStatusCounts} isLoading={loadingTrend} />
-            </div>
+
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+                <div className="xl:col-span-2">
+                  <OrdersTrendChart data={ordersTrend} isLoading={loadingTrend} rangeLabel={rangeLabel} />
+                </div>
+                <OrderStatusBreakdown counts={orderStatusCounts} isLoading={loadingTrend} />
+                <UpcomingOrdersCard orders={upcomingOrders} isLoading={loadingTrend} />
+              </div>
+            </>
           )}
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
