@@ -360,6 +360,9 @@ export function createOrderRouter(adapter: DatabaseAdapter) {
       const byBulkId = groupBy(rows, 'bulk_order_id', (r) => r)
       const primaries = rows.filter((r) => r.is_primary)
 
+      const products = await ctx().table('products').findMany({}) as Record<string, unknown>[]
+      const productById = Object.fromEntries(products.map((p) => [p._id, p]))
+
       const items = primaries.map((primary) => {
         const lines = byBulkId[primary.bulk_order_id as string] ?? [primary]
         const totalPayableAmount = lines.reduce((sum, l) => sum + (l.amount as number), 0)
@@ -368,7 +371,7 @@ export function createOrderRouter(adapter: DatabaseAdapter) {
         return {
           id: primary._id,
           bulkOrderId: primary.bulk_order_id,
-          thumbnailUrl: null,
+          thumbnailUrl: (productById[primary.product_id as string]?.thumbnail_url as string | undefined) ?? null,
           amount: primary.amount,
           status: primary.status,
           itemCount: lines.length,
@@ -394,13 +397,17 @@ export function createOrderRouter(adapter: DatabaseAdapter) {
       if (rows.length === 0) return res.status(404).json({ message: 'Not found' })
 
       const primary = rows.find((r) => r.is_primary) ?? rows[0]
-      const allAddons = await ctx().table('order_addons').findMany({}) as Record<string, unknown>[]
+      const [allAddons, products] = await Promise.all([
+        ctx().table('order_addons').findMany({}) as Promise<Record<string, unknown>[]>,
+        ctx().table('products').findMany({}) as Promise<Record<string, unknown>[]>,
+      ])
       const addonsByOrder = groupBy(allAddons, 'order_id', (a) => a)
+      const productById = Object.fromEntries(products.map((p) => [p._id, p]))
 
       const items = rows.map((r) => ({
         nameEn: r.category,
         optionEn: r.service_type,
-        thumbnailUrl: null,
+        thumbnailUrl: (productById[r.product_id as string]?.thumbnail_url as string | undefined) ?? null,
         qty: r.qty,
         amount: (r.amount as number) / ((r.qty as number) || 1),
         subTotal: r.amount,
