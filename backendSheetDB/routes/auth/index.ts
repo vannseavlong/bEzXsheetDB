@@ -128,10 +128,14 @@ export function createAuthRoutes(adapter: DatabaseAdapter) {
       const payload = {
         id: user._id,
         email: user.email,
-        name: user.name,
+        // Fall back to the JWT's name/profileUrl so Google OAuth users don't lose
+        // their display name and photo after the first /me refresh (the DB columns
+        // are only populated for password-login users; Google users get these from
+        // profile.name / profile.picture during the OAuth callback).
+        name: user.name || (req.user?.name as string) || null,
         role: role?.code ?? null,
         permissions,
-        profileUrl: user.profile_url ?? null,
+        profileUrl: user.profile_url ?? (req.user?.profileUrl as string) ?? null,
       }
 
       res.json({ token: signJwt(payload, env.JWT_SECRET), user: payload })

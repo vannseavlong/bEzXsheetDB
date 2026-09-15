@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useReactTable, getCoreRowModel } from '@tanstack/react-table'
 import { ClipboardList, Clock, Users, Package, ArrowRight } from 'lucide-react'
@@ -9,6 +9,16 @@ import { DataTableHeader } from '@/components/data-table/DataTableHeader'
 import { TableRows } from '@/components/data-table/TableRows'
 import { TableRowSkeleton } from '@/components/data-table/TableRowSkeleton'
 import { OverviewCard } from '@/components/shared/OverviewCard'
+import { OrdersTrendChart } from '@/components/dashboard/OrdersTrendChart'
+import { OrderStatusBreakdown } from '@/components/dashboard/OrderStatusBreakdown'
+import { UpcomingOrdersCard } from '@/components/dashboard/UpcomingOrdersCard'
+import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter'
+import {
+  DATE_RANGE_PRESETS,
+  buildTrendBuckets,
+  getDateRangeForPreset,
+  type DateRangePreset,
+} from '@/lib/dashboard-date-ranges'
 import { dashboardOrderColumns } from '@/components/data-table/columns/DashboardOrderColumns'
 import { activityLogColumns } from '@/components/data-table/columns/ActivityLogColumns'
 import { useOrders } from '@/api/orders'
@@ -17,8 +27,14 @@ import { useItems } from '@/api/items'
 import { useActivityLogs } from '@/api/activity-log'
 import { usePermission } from '@/hooks/use-permission'
 import { ACTIONS, MODULES } from '@/lib/permission-registry'
+import type { OrderStatus } from '@/types'
 
 const RECENT_LIMIT = 5
+// Backend has no analytics/aggregate endpoint, so the trend chart, status
+// breakdown, and upcoming-orders widget below are all computed client-side
+// from one recent-orders sample (capped at the API's max page size) rather
+// than the whole table — fine for this thesis dataset's size.
+const TREND_SAMPLE_LIMIT = 100
 
 export default function Dashboard() {
   const { hasPermission } = usePermission()
@@ -46,9 +62,56 @@ export default function Dashboard() {
     { limit: RECENT_LIMIT },
     { enabled: canViewActivity }
   )
+  const { data: trendOrders, isLoading: loadingTrend } = useOrders(
+    { limit: TREND_SAMPLE_LIMIT },
+    { enabled: canViewOrders }
+  )
 
   const orderRows = useMemo(() => recentOrders?.data ?? [], [recentOrders])
   const activityRows = useMemo(() => recentActivity?.data ?? [], [recentActivity])
+
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('this_month')
+  const rangeLabel = DATE_RANGE_PRESETS.find((p) => p.value === dateRangePreset)?.label.toLowerCase() ?? ''
+
+  const trendRows = trendOrders?.data ?? []
+  const { from, to } = useMemo(() => getDateRangeForPreset(dateRangePreset), [dateRangePreset])
+  const rowsInRange = useMemo(
+    () =>
+      trendRows.filter((order) => {
+        if (!order.createdAt) return false
+        const created = new Date(order.createdAt)
+        if (from && created < from) return false
+        if (to && created > to) return false
+        return true
+      }),
+    [trendRows, from, to]
+  )
+
+  const ordersTrend = useMemo(
+    () => buildTrendBuckets(rowsInRange.map((o) => new Date(o.createdAt as string)), from, to),
+    [rowsInRange, from, to]
+  )
+  const orderStatusCounts = useMemo(
+    () =>
+      rowsInRange.reduce<Partial<Record<OrderStatus, number>>>((acc, order) => {
+        acc[order.status] = (acc[order.status] ?? 0) + 1
+        return acc
+      }, {}),
+    [rowsInRange]
+  )
+  const upcomingOrders = useMemo(() => {
+    const now = new Date()
+    return trendRows
+      .filter(
+        (order) =>
+          order.scheduleDate &&
+          new Date(order.scheduleDate) >= now &&
+          order.status !== 'CANCELLED' &&
+          order.status !== 'COMPLETED'
+      )
+      .sort((a, b) => new Date(a.scheduleDate as string).getTime() - new Date(b.scheduleDate as string).getTime())
+      .slice(0, 5)
+  }, [trendRows])
 
   const ordersTable = useReactTable({
     data: orderRows,
@@ -81,6 +144,7 @@ export default function Dashboard() {
                 value={loadingOrderCount ? '—' : (allOrders?.meta.total ?? 0)}
                 icon={ClipboardList}
                 description="All bookings received"
+                tone="blue"
               />
             )}
             {canViewOrders && (
@@ -89,6 +153,7 @@ export default function Dashboard() {
                 value={loadingPendingCount ? '—' : (pendingOrders?.meta.total ?? 0)}
                 icon={Clock}
                 description="Awaiting acceptance"
+                tone="amber"
               />
             )}
             {canViewCleaners && (
@@ -97,6 +162,7 @@ export default function Dashboard() {
                 value={loadingCleanerCount ? '—' : (activeCleaners?.meta.total ?? 0)}
                 icon={Users}
                 description="Available for assignment"
+                tone="green"
               />
             )}
             {canViewItems && (
@@ -105,9 +171,27 @@ export default function Dashboard() {
                 value={loadingItemCount ? '—' : (allItems?.meta.total ?? 0)}
                 icon={Package}
                 description="Active service items"
+                tone="purple"
               />
             )}
           </div>
+
+          {canViewOrders && (
+            <>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-foreground">Overview</h2>
+                <DateRangeFilter value={dateRangePreset} onChange={setDateRangePreset} />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+                <div className="xl:col-span-2">
+                  <OrdersTrendChart data={ordersTrend} isLoading={loadingTrend} rangeLabel={rangeLabel} />
+                </div>
+                <OrderStatusBreakdown counts={orderStatusCounts} isLoading={loadingTrend} />
+                <UpcomingOrdersCard orders={upcomingOrders} isLoading={loadingTrend} />
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             {canViewOrders && (
