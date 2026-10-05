@@ -60,7 +60,24 @@ export function createAdminGoogleAuthHandler(adapter: DatabaseAdapter): RequestH
       }
     },
   })
-  return googleAuth.handler as RequestHandler
+  // createAuthRouter swallows the Google code-exchange error and returns a bare 401, so log
+  // what reached the callback and what we answered — shows double hits and the real response.
+  console.log(
+    `[auth] admin login redirectUri=${env.GOOGLE_REDIRECT_URI} clientId=...${env.GOOGLE_CLIENT_ID.slice(-30)}`,
+  )
+  const handler = googleAuth.handler as RequestHandler
+  return (req, res, next) => {
+    if (req.path === '/api/admin/auth/callback') {
+      const state = String(req.query.state ?? '').slice(0, 8)
+      console.log(`[auth] admin callback hit state=${state}… code=${req.query.code ? 'present' : 'missing'}`)
+      const json = res.json.bind(res)
+      res.json = (body: unknown) => {
+        console.log(`[auth] admin callback -> ${res.statusCode}`, JSON.stringify(body))
+        return json(body)
+      }
+    }
+    return handler(req, res, next)
+  }
 }
 
 export function createAuthRoutes(adapter: DatabaseAdapter) {

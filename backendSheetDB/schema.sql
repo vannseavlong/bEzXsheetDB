@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS cleaners (
   role VARCHAR(255) NOT NULL CHECK (role IN ('LEADER', 'MEMBER')),
   status BOOLEAN DEFAULT TRUE,
   image_url VARCHAR(255),
-  phone VARCHAR(255),
+  phone_number VARCHAR(255),
   joined_date TIMESTAMP NOT NULL,
   auto_assign BOOLEAN DEFAULT FALSE,
   expertises VARCHAR(255),
