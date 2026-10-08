@@ -44,6 +44,9 @@ import ordersSchema from '../schemas/admin/orders'
 import productPairingsSchema from '../schemas/admin/product_pairings'
 import orderAddonsSchema from '../schemas/admin/order_addons'
 import activityLogsSchema from '../schemas/admin/activity_logs'
+import analyticsEventsSchema from '../schemas/admin/analytics_events'
+import analyticsSyncRunsSchema from '../schemas/admin/analytics_sync_runs'
+import analyticsDailyEventsSchema from '../schemas/admin/analytics_daily_events'
 
 // User (customer) schemas
 import customersSchema from '../schemas/user/customers'
@@ -131,6 +134,9 @@ export function createAdapter(): AppAdapter {
   registrable.registerSchema(productPairingsSchema)
   registrable.registerSchema(orderAddonsSchema)
   registrable.registerSchema(activityLogsSchema)
+  registrable.registerSchema(analyticsEventsSchema)
+  registrable.registerSchema(analyticsSyncRunsSchema)
+  registrable.registerSchema(analyticsDailyEventsSchema)
 
   registrable.registerSchema(customersSchema)
   registrable.registerSchema(addressesSchema)

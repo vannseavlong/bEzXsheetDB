@@ -58,6 +58,7 @@ import ItemForm from '@/pages/item/ItemForm'
 import BlockedScheduleList from '@/pages/blocked-schedule/BlockedScheduleList'
 import BlockedScheduleForm from '@/pages/blocked-schedule/BlockedScheduleForm'
 import ActivityLog from '@/pages/ActivityLog'
+import Analytics from '@/pages/analytics/Analytics'
 
 import CustomerOverview from '@/pages/customer-service/CustomerOverview'
 import CustomerList from '@/pages/customer-service/CustomerList'
@@ -158,6 +159,10 @@ export default function App() {
           <Route path="/push-notification" element={<PushNotificationList />} />
           <Route path="/push-notification/:id" element={<PushNotificationForm />} />
           <Route path="/push-notification/:id/detail" element={<PushNotificationDetail />} />
+        </Route>
+
+        <Route element={<ProtectedRoute module={MODULES.ANALYTICS} />}>
+          <Route path="/analytics" element={<Analytics />} />
         </Route>
 
         {/* Finance */}

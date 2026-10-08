@@ -1,5 +1,6 @@
 import type { ElementType } from 'react';
 import {
+  Analytics01Icon,
   BubbleChatIcon,
   Calendar03Icon,
   CustomerSupportIcon,
@@ -86,6 +87,7 @@ export const navSections: NavSection[] = [
           { title: 'Push Notification', url: '/push-notification', module: MODULES.MARKETING_NOTIFICATION },
         ],
       },
+      { title: 'App Analytics', url: '/analytics', icon: Analytics01Icon, module: MODULES.ANALYTICS },
       {
         title: 'Finance',
         icon: SaveMoneyDollarIcon,

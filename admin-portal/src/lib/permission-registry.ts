@@ -58,6 +58,7 @@ export const MODULES = {
   SETUP_ITEM: 'SETUP-ITEM',
   SETUP_SCHEDULE: 'SETUP-SCHEDULE',
   ACTIVITY_LOG: 'ACTIVITY_LOG',
+  ANALYTICS: 'ANALYTICS',
   RBAC: 'RBAC',
   ADMIN_USERS: 'ADMIN_USERS',
 } as const
@@ -93,6 +94,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
   { key: MODULES.MARKETING_OTP, label: 'OTP', section: 'Business Growth', actions: [ACTIONS.VIEW] },
   { key: MODULES.MARKETING_BANNER, label: 'Banner', section: 'Business Growth', actions: CRUD_ACTIONS },
   { key: MODULES.MARKETING_NOTIFICATION, label: 'Push Notification', section: 'Business Growth', actions: CRUD_ACTIONS },
+  { key: MODULES.ANALYTICS, label: 'App Analytics (BigQuery)', section: 'Business Growth', actions: [ACTIONS.VIEW, ACTIONS.UPDATE] },
   { key: MODULES.FINANCE_ORDER, label: 'Finance › Orders', section: 'Business Growth', actions: [ACTIONS.VIEW, ACTIONS.EXPORT] },
   { key: MODULES.FINANCE_TOPUP, label: 'Finance › Top-up', section: 'Business Growth', actions: [ACTIONS.VIEW, ACTIONS.ADD, ACTIONS.EXPORT] },
   { key: MODULES.FINANCE_BCOMBO, label: 'Finance › BCombo', section: 'Business Growth', actions: [ACTIONS.VIEW, ACTIONS.EXPORT] },

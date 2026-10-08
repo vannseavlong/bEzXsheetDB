@@ -51,4 +51,19 @@ export const env = {
   SERVICE_ORIGIN_LAT: parseFloat(get('SERVICE_ORIGIN_LAT', '11.5564')),
   SERVICE_ORIGIN_LNG: parseFloat(get('SERVICE_ORIGIN_LNG', '104.9282')),
   MAX_SERVICE_DISTANCE_KM: parseFloat(get('MAX_SERVICE_DISTANCE_KM', '25')),
+  // ─── Firebase → BigQuery analytics sync (see Docs/tracking/bigquery-setup-guide.md) ─────────
+  // Leave BQ_PROJECT_ID / BQ_DATASET unset to disable the feature; the portal then shows setup hints.
+  BQ_PROJECT_ID: process.env.BQ_PROJECT_ID,
+  BQ_DATASET: process.env.BQ_DATASET, // e.g. analytics_123456789
+  BQ_LOCATION: process.env.BQ_LOCATION, // dataset region, e.g. asia-southeast1
+  // Service-account key as raw JSON (hosted envs) or a file path (local). Neither → Application Default Credentials.
+  BQ_CREDENTIALS_JSON: process.env.BQ_CREDENTIALS_JSON,
+  BQ_KEY_FILE: process.env.BQ_KEY_FILE,
+  BQ_LOOKBACK_DAYS: parseInt(get('BQ_LOOKBACK_DAYS', '3'), 10),
+  BQ_MAX_ROWS_PER_SYNC: parseInt(get('BQ_MAX_ROWS_PER_SYNC', '5000'), 10),
+  BQ_INCLUDE_INTRADAY: get('BQ_INCLUDE_INTRADAY', 'true') === 'true',
+  // Minutes between automatic syncs; 0 = manual only (portal button).
+  // GA4 property id for the history backfill (Data API). Defaults to the number in BQ_DATASET (analytics_<id>).
+  GA_PROPERTY_ID: process.env.GA_PROPERTY_ID ?? process.env.BQ_DATASET?.replace(/^analytics_/, ''),
+  ANALYTICS_SYNC_INTERVAL_MIN: parseInt(get('ANALYTICS_SYNC_INTERVAL_MIN', '0'), 10),
 }

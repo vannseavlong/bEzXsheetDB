@@ -18,6 +18,7 @@ import { createUploadRouter } from './upload'
 import { createOrdersRouter } from './orders'
 import { createCleanersRouter } from './cleaners'
 import { createActivityLogRouter } from './activity-log'
+import { createAnalyticsRouter } from './analytics'
 
 /**
  * All /api/admin/* routes.
@@ -48,6 +49,7 @@ export function createAdminRouter(adapter: DatabaseAdapter, storage: SheetAdapte
   router.use('/orders', requirePermission('ORDER', 'VIEW'), createOrdersRouter(adapter))
   router.use('/cleaners', requirePermission('CLEANER', 'VIEW'), createCleanersRouter(adapter))
   router.use('/activity-log', requirePermission('ACTIVITY_LOG', 'VIEW'), createActivityLogRouter(adapter))
+  router.use('/analytics', requirePermission('ANALYTICS', 'VIEW'), createAnalyticsRouter(adapter))
   router.use('/upload', createUploadRouter(storage))
 
   return router
