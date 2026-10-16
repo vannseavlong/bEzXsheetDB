@@ -1,0 +1,830 @@
+{
+  "range": {
+    "from": "2026-08-01",
+    "to": "2026-09-30"
+  },
+  "property": "506666727",
+  "generatedAt": "2026-10-16T06:17:47.987Z",
+  "dailyFirstOpenByPlatform": {
+    "2026-08-01": {
+      "iOS": 18,
+      "Android": 2
+    },
+    "2026-08-02": {
+      "iOS": 20,
+      "Android": 6
+    },
+    "2026-08-03": {
+      "iOS": 17,
+      "Android": 4
+    },
+    "2026-08-04": {
+      "iOS": 11,
+      "Android": 3
+    },
+    "2026-08-05": {
+      "Android": 10,
+      "iOS": 9
+    },
+    "2026-08-06": {
+      "iOS": 18,
+      "Android": 6
+    },
+    "2026-08-07": {
+      "iOS": 10,
+      "Android": 5
+    },
+    "2026-08-08": {
+      "iOS": 13,
+      "Android": 7
+    },
+    "2026-08-09": {
+      "iOS": 12,
+      "Android": 5
+    },
+    "2026-08-10": {
+      "iOS": 12,
+      "Android": 4
+    },
+    "2026-08-11": {
+      "iOS": 13,
+      "Android": 3
+    },
+    "2026-08-12": {
+      "iOS": 16,
+      "Android": 5
+    },
+    "2026-08-13": {
+      "iOS": 9,
+      "Android": 4
+    },
+    "2026-08-14": {
+      "iOS": 9,
+      "Android": 1
+    },
+    "2026-08-15": {
+      "iOS": 13,
+      "Android": 4
+    },
+    "2026-08-16": {
+      "iOS": 15,
+      "Android": 4
+    },
+    "2026-08-17": {
+      "Android": 14,
+      "iOS": 13
+    },
+    "2026-08-18": {
+      "iOS": 17,
+      "Android": 3
+    },
+    "2026-08-19": {
+      "iOS": 9,
+      "Android": 4
+    },
+    "2026-08-20": {
+      "Android": 11,
+      "iOS": 10
+    },
+    "2026-08-21": {
+      "iOS": 8,
+      "Android": 5
+    },
+    "2026-08-22": {
+      "iOS": 11,
+      "Android": 9
+    },
+    "2026-08-23": {
+      "iOS": 11,
+      "Android": 4
+    },
+    "2026-08-24": {
+      "Android": 9,
+      "iOS": 9
+    },
+    "2026-08-25": {
+      "Android": 11,
+      "iOS": 8
+    },
+    "2026-08-26": {
+      "iOS": 13,
+      "Android": 2
+    },
+    "2026-08-27": {
+      "iOS": 8,
+      "Android": 1
+    },
+    "2026-08-28": {
+      "Android": 8,
+      "iOS": 8
+    },
+    "2026-08-29": {
+      "iOS": 10,
+      "Android": 5
+    },
+    "2026-08-30": {
+      "iOS": 14,
+      "Android": 10
+    },
+    "2026-08-31": {
+      "iOS": 45,
+      "Android": 15
+    },
+    "2026-09-01": {
+      "iOS": 35,
+      "Android": 10
+    },
+    "2026-09-02": {
+      "iOS": 12,
+      "Android": 9
+    },
+    "2026-09-03": {
+      "iOS": 14,
+      "Android": 2
+    },
+    "2026-09-04": {
+      "iOS": 21,
+      "Android": 12
+    },
+    "2026-09-05": {
+      "Android": 30,
+      "iOS": 15
+    },
+    "2026-09-06": {
+      "iOS": 20,
+      "Android": 9
+    },
+    "2026-09-07": {
+      "iOS": 28,
+      "Android": 14
+    },
+    "2026-09-08": {
+      "iOS": 19,
+      "Android": 14
+    },
+    "2026-09-09": {
+      "iOS": 11,
+      "Android": 4
+    },
+    "2026-09-10": {
+      "iOS": 18,
+      "Android": 6
+    },
+    "2026-09-11": {
+      "iOS": 8,
+      "Android": 7
+    },
+    "2026-09-12": {
+      "iOS": 14,
+      "Android": 10
+    },
+    "2026-09-13": {
+      "iOS": 11,
+      "Android": 4
+    },
+    "2026-09-14": {
+      "iOS": 20,
+      "Android": 5
+    },
+    "2026-09-15": {
+      "iOS": 12,
+      "Android": 1
+    },
+    "2026-09-16": {
+      "iOS": 16,
+      "Android": 11
+    },
+    "2026-09-17": {
+      "iOS": 20,
+      "Android": 7
+    },
+    "2026-09-18": {
+      "Android": 12,
+      "iOS": 11
+    },
+    "2026-09-19": {
+      "iOS": 8,
+      "Android": 4
+    },
+    "2026-09-20": {
+      "Android": 8,
+      "iOS": 8
+    },
+    "2026-09-21": {
+      "iOS": 8,
+      "Android": 3
+    },
+    "2026-09-22": {
+      "iOS": 13,
+      "Android": 6
+    },
+    "2026-09-23": {
+      "Android": 26,
+      "iOS": 14
+    },
+    "2026-09-24": {
+      "Android": 13,
+      "iOS": 8
+    },
+    "2026-09-25": {
+      "iOS": 22,
+      "Android": 9
+    },
+    "2026-09-26": {
+      "iOS": 18,
+      "Android": 6
+    },
+    "2026-09-27": {
+      "iOS": 19,
+      "Android": 2
+    },
+    "2026-09-28": {
+      "iOS": 18,
+      "Android": 5
+    },
+    "2026-09-29": {
+      "iOS": 11,
+      "Android": 4
+    },
+    "2026-09-30": {
+      "iOS": 14,
+      "Android": 3
+    }
+  },
+  "androidByDeviceModel": [
+    {
+      "value": "OnePlus8Pro",
+      "firstOpens": 48,
+      "users": 48
+    },
+    {
+      "value": "Pixel 6 Pro",
+      "firstOpens": 36,
+      "users": 36
+    },
+    {
+      "value": "sdk_gphone16k_arm64",
+      "firstOpens": 24,
+      "users": 24
+    },
+    {
+      "value": "SM-S928B",
+      "firstOpens": 14,
+      "users": 14
+    },
+    {
+      "value": "SM-S948B",
+      "firstOpens": 10,
+      "users": 10
+    },
+    {
+      "value": "SM-F976B",
+      "firstOpens": 9,
+      "users": 9
+    },
+    {
+      "value": "sdk_gphone_arm64",
+      "firstOpens": 9,
+      "users": 9
+    },
+    {
+      "value": "SM-S938B",
+      "firstOpens": 8,
+      "users": 8
+    },
+    {
+      "value": "SM-S918B",
+      "firstOpens": 7,
+      "users": 7
+    },
+    {
+      "value": "TECNO LJ9",
+      "firstOpens": 7,
+      "users": 7
+    },
+    {
+      "value": "sdk_gphone64_x86_64",
+      "firstOpens": 7,
+      "users": 7
+    },
+    {
+      "value": "CPH2387",
+      "firstOpens": 5,
+      "users": 5
+    },
+    {
+      "value": "CPH2641",
+      "firstOpens": 5,
+      "users": 5
+    },
+    {
+      "value": "SM-A566B",
+      "firstOpens": 5,
+      "users": 5
+    },
+    {
+      "value": "Pixel 5",
+      "firstOpens": 4,
+      "users": 4
+    },
+    {
+      "value": "SM-S908E",
+      "firstOpens": 4,
+      "users": 4
+    },
+    {
+      "value": "25028RN03A",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "CPH2127",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "CPH2237",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "CPH2565",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "CPH2591",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "Pixel 6",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "Pixel 9a",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "SM-A556E",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "SM-F966B",
+      "firstOpens": 3,
+      "users": 3
+    }
+  ],
+  "androidByAppVersion": [
+    {
+      "value": "2.5.18",
+      "firstOpens": 90,
+      "users": 90
+    },
+    {
+      "value": "2.5.13",
+      "firstOpens": 57,
+      "users": 57
+    },
+    {
+      "value": "2.5.25",
+      "firstOpens": 43,
+      "users": 43
+    },
+    {
+      "value": "2.5.24",
+      "firstOpens": 32,
+      "users": 32
+    },
+    {
+      "value": "2.5.21",
+      "firstOpens": 31,
+      "users": 31
+    },
+    {
+      "value": "2.5.12",
+      "firstOpens": 30,
+      "users": 30
+    },
+    {
+      "value": "2.5.22",
+      "firstOpens": 26,
+      "users": 26
+    },
+    {
+      "value": "2.5.16",
+      "firstOpens": 24,
+      "users": 24
+    },
+    {
+      "value": "2.5.19",
+      "firstOpens": 24,
+      "users": 24
+    },
+    {
+      "value": "2.5.14",
+      "firstOpens": 21,
+      "users": 21
+    },
+    {
+      "value": "2.5.20",
+      "firstOpens": 18,
+      "users": 18
+    },
+    {
+      "value": "2.5.17",
+      "firstOpens": 15,
+      "users": 15
+    },
+    {
+      "value": "2.5.23",
+      "firstOpens": 10,
+      "users": 10
+    },
+    {
+      "value": "2.5.6",
+      "firstOpens": 4,
+      "users": 4
+    },
+    {
+      "value": "2.1.6",
+      "firstOpens": 3,
+      "users": 3
+    }
+  ],
+  "androidByOsVersion": [
+    {
+      "value": "16",
+      "firstOpens": 162,
+      "users": 162
+    },
+    {
+      "value": "11",
+      "firstOpens": 68,
+      "users": 68
+    },
+    {
+      "value": "17",
+      "firstOpens": 57,
+      "users": 57
+    },
+    {
+      "value": "14",
+      "firstOpens": 40,
+      "users": 40
+    },
+    {
+      "value": "12",
+      "firstOpens": 38,
+      "users": 38
+    },
+    {
+      "value": "15",
+      "firstOpens": 37,
+      "users": 37
+    },
+    {
+      "value": "13",
+      "firstOpens": 24,
+      "users": 24
+    },
+    {
+      "value": "10",
+      "firstOpens": 6,
+      "users": 6
+    },
+    {
+      "value": "9",
+      "firstOpens": 5,
+      "users": 5
+    },
+    {
+      "value": "8.1.0",
+      "firstOpens": 3,
+      "users": 3
+    }
+  ],
+  "androidByCountry": [
+    {
+      "value": "Cambodia",
+      "firstOpens": 338,
+      "users": 338
+    },
+    {
+      "value": "(not set)",
+      "firstOpens": 48,
+      "users": 48
+    },
+    {
+      "value": "United States",
+      "firstOpens": 34,
+      "users": 34
+    },
+    {
+      "value": "Iran",
+      "firstOpens": 5,
+      "users": 5
+    },
+    {
+      "value": "Singapore",
+      "firstOpens": 3,
+      "users": 3
+    },
+    {
+      "value": "France",
+      "firstOpens": 2,
+      "users": 2
+    },
+    {
+      "value": "Germany",
+      "firstOpens": 2,
+      "users": 2
+    },
+    {
+      "value": "Australia",
+      "firstOpens": 1,
+      "users": 1
+    },
+    {
+      "value": "Denmark",
+      "firstOpens": 1,
+      "users": 1
+    },
+    {
+      "value": "India",
+      "firstOpens": 1,
+      "users": 1
+    }
+  ],
+  "androidBySource": [
+    {
+      "value": "google-play",
+      "firstOpens": 171,
+      "users": 171
+    },
+    {
+      "value": "unknown",
+      "firstOpens": 128,
+      "users": 128
+    },
+    {
+      "value": "(direct)",
+      "firstOpens": 102,
+      "users": 102
+    },
+    {
+      "value": "facebook",
+      "firstOpens": 22,
+      "users": 22
+    },
+    {
+      "value": "ig",
+      "firstOpens": 14,
+      "users": 14
+    },
+    {
+      "value": "restricted",
+      "firstOpens": 2,
+      "users": 2
+    },
+    {
+      "value": "fb",
+      "firstOpens": 1,
+      "users": 1
+    }
+  ],
+  "iosByAppVersion": [
+    {
+      "value": "2.5.13",
+      "firstOpens": 186,
+      "users": 186
+    },
+    {
+      "value": "2.5.18",
+      "firstOpens": 169,
+      "users": 167
+    },
+    {
+      "value": "2.5.21",
+      "firstOpens": 98,
+      "users": 98
+    },
+    {
+      "value": "2.5.25",
+      "firstOpens": 94,
+      "users": 94
+    },
+    {
+      "value": "2.5.12",
+      "firstOpens": 84,
+      "users": 84
+    },
+    {
+      "value": "2.5.19",
+      "firstOpens": 62,
+      "users": 61
+    },
+    {
+      "value": "2.5.24",
+      "firstOpens": 61,
+      "users": 60
+    },
+    {
+      "value": "2.5.16",
+      "firstOpens": 44,
+      "users": 44
+    },
+    {
+      "value": "2.5.17",
+      "firstOpens": 30,
+      "users": 30
+    },
+    {
+      "value": "2.5.23",
+      "firstOpens": 19,
+      "users": 19
+    }
+  ],
+  "bigQueryAndroid": {
+    "summary": {
+      "first_opens": 77,
+      "instances": 77,
+      "from_date": "20261007",
+      "to_date": "20261016"
+    },
+    "bySource": [
+      {
+        "install_source": "com.android.vending",
+        "first_opens": 61
+      },
+      {
+        "install_source": "manual_install",
+        "first_opens": 12
+      },
+      {
+        "install_source": "com.google.android.packageinstaller",
+        "first_opens": 3
+      },
+      {
+        "install_source": "com.heytap.market",
+        "first_opens": 1
+      }
+    ],
+    "byModel": [
+      {
+        "brand": null,
+        "model": null,
+        "first_opens": 14
+      },
+      {
+        "brand": "OnePlus",
+        "model": "IN2025",
+        "first_opens": 12
+      },
+      {
+        "brand": "OnePlus",
+        "model": "A5000",
+        "first_opens": 4
+      },
+      {
+        "brand": "Google",
+        "model": "Pixel 6 Pro",
+        "first_opens": 3
+      },
+      {
+        "brand": "Samsung",
+        "model": "SM-S938B",
+        "first_opens": 3
+      },
+      {
+        "brand": "Honor",
+        "model": "MBH-N49",
+        "first_opens": 2
+      },
+      {
+        "brand": "Samsung",
+        "model": "SM-S918B",
+        "first_opens": 2
+      },
+      {
+        "brand": "Tecno",
+        "model": "LJ9",
+        "first_opens": 2
+      },
+      {
+        "brand": "OPPO",
+        "model": "CPH2113",
+        "first_opens": 2
+      },
+      {
+        "brand": "Samsung",
+        "model": "SM-S911B",
+        "first_opens": 1
+      },
+      {
+        "brand": "Vivo",
+        "model": "V2118",
+        "first_opens": 1
+      },
+      {
+        "brand": "Samsung",
+        "model": "SM-G781W",
+        "first_opens": 1
+      },
+      {
+        "brand": "Samsung",
+        "model": "SM-N976N",
+        "first_opens": 1
+      },
+      {
+        "brand": "Xiaomi",
+        "model": "2509FPN0BC",
+        "first_opens": 1
+      },
+      {
+        "brand": "OPPO",
+        "model": "CPH2251",
+        "first_opens": 1
+      },
+      {
+        "brand": "Xiaomi",
+        "model": "23106RN0DA",
+        "first_opens": 1
+      },
+      {
+        "brand": "Samsung",
+        "model": "SM-F976B",
+        "first_opens": 1
+      },
+      {
+        "brand": "Samsung",
+        "model": "SM-F946B",
+        "first_opens": 1
+      },
+      {
+        "brand": "OPPO",
+        "model": "CPH2471",
+        "first_opens": 1
+      },
+      {
+        "brand": "Honor",
+        "model": "GFY-LX2",
+        "first_opens": 1
+      }
+    ],
+    "byVersion": [
+      {
+        "version": "2.5.27",
+        "first_opens": 27
+      },
+      {
+        "version": "2.5.29",
+        "first_opens": 22
+      },
+      {
+        "version": "2.5.28",
+        "first_opens": 12
+      },
+      {
+        "version": "2.5.26",
+        "first_opens": 7
+      },
+      {
+        "version": "2.5.17",
+        "first_opens": 2
+      },
+      {
+        "version": "2.1.6",
+        "first_opens": 1
+      },
+      {
+        "version": "2.5.19",
+        "first_opens": 1
+      },
+      {
+        "version": "2.5.21",
+        "first_opens": 1
+      },
+      {
+        "version": "2.5.30",
+        "first_opens": 1
+      },
+      {
+        "version": "2.2.1",
+        "first_opens": 1
+      },
+      {
+        "version": "2.5.12",
+        "first_opens": 1
+      },
+      {
+        "version": "2.2.0",
+        "first_opens": 1
+      }
+    ],
+    "note": "BigQuery only holds data since the export link (October 2026)."
+  }
+}

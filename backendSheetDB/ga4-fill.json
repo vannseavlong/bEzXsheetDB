@@ -1,0 +1,1635 @@
+{
+  "property": "506666727",
+  "generatedAt": "2026-10-16T04:27:33.838Z",
+  "note": "GA4 Data API, platform in (Android, iOS) for Combined. Unique users are for the whole month.",
+  "months": {
+    "2026-08": {
+      "Android": {
+        "events": {
+          "home_screen": {
+            "eventCount": 932,
+            "totalUsers": 379
+          },
+          "session_start": {
+            "eventCount": 729,
+            "totalUsers": 460
+          },
+          "inactive_users": {
+            "eventCount": 294,
+            "totalUsers": 116
+          },
+          "screen_view": {
+            "eventCount": 285,
+            "totalUsers": 242
+          },
+          "user_engagement": {
+            "eventCount": 230,
+            "totalUsers": 180
+          },
+          "notification_receive": {
+            "eventCount": 208,
+            "totalUsers": 7
+          },
+          "first_open": {
+            "eventCount": 184,
+            "totalUsers": 184
+          },
+          "deep_cleaning": {
+            "eventCount": 134,
+            "totalUsers": 48
+          },
+          "notification_dismiss": {
+            "eventCount": 96,
+            "totalUsers": 6
+          },
+          "upholstery": {
+            "eventCount": 87,
+            "totalUsers": 27
+          },
+          "tasK_information": {
+            "eventCount": 85,
+            "totalUsers": 48
+          },
+          "cleaning": {
+            "eventCount": 81,
+            "totalUsers": 38
+          },
+          "create_account_button": {
+            "eventCount": 81,
+            "totalUsers": 36
+          },
+          "booking_screen": {
+            "eventCount": 59,
+            "totalUsers": 30
+          },
+          "profile_screen": {
+            "eventCount": 49,
+            "totalUsers": 26
+          },
+          "language_selection": {
+            "eventCount": 47,
+            "totalUsers": 37
+          },
+          "order_detail_screen": {
+            "eventCount": 42,
+            "totalUsers": 13
+          },
+          "sign_in_sign_up": {
+            "eventCount": 42,
+            "totalUsers": 30
+          },
+          "register_button_on_home": {
+            "eventCount": 37,
+            "totalUsers": 26
+          },
+          "pest_control": {
+            "eventCount": 33,
+            "totalUsers": 14
+          },
+          "bcombos_click": {
+            "eventCount": 32,
+            "totalUsers": 28
+          },
+          "location_screen": {
+            "eventCount": 32,
+            "totalUsers": 24
+          },
+          "contact_us_telegram": {
+            "eventCount": 26,
+            "totalUsers": 11
+          },
+          "increase_quantity": {
+            "eventCount": 26,
+            "totalUsers": 7
+          },
+          "topup_screen": {
+            "eventCount": 24,
+            "totalUsers": 14
+          },
+          "decrease_quantity": {
+            "eventCount": 23,
+            "totalUsers": 7
+          },
+          "customer_source_screen_tap": {
+            "eventCount": 20,
+            "totalUsers": 14
+          },
+          "app_remove": {
+            "eventCount": 14,
+            "totalUsers": 14
+          },
+          "os_update": {
+            "eventCount": 13,
+            "totalUsers": 12
+          },
+          "top_up_history": {
+            "eventCount": 13,
+            "totalUsers": 7
+          },
+          "null": {
+            "eventCount": 12,
+            "totalUsers": 4
+          },
+          "post_renovation": {
+            "eventCount": 10,
+            "totalUsers": 3
+          },
+          "pay_now_order_details": {
+            "eventCount": 7,
+            "totalUsers": 4
+          },
+          "软包清洁": {
+            "eventCount": 5,
+            "totalUsers": 1
+          },
+          "app_clear_data": {
+            "eventCount": 4,
+            "totalUsers": 4
+          },
+          "top_up_status": {
+            "eventCount": 3,
+            "totalUsers": 2
+          },
+          "diệt_côn_trùng": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "dọn_dẹp_sâu": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "notification_open": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "profile_info_screen": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "đến_dọn_dẹp": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "軟包清潔": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "bed_mattress": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "leave_review_submitted": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "office_cleaning": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "one_item_at_a_time": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "rating_selected": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "日常清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "深層清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "深度清洁": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "(not set)": {
+            "eventCount": 0,
+            "totalUsers": 126
+          }
+        },
+        "totals": {
+          "activeUsers": 244,
+          "newUsers": 184,
+          "sessions": 759,
+          "userEngagementDurationSec": 4534
+        },
+        "returningUsers": 75,
+        "topServices": {
+          "unavailable": "3 INVALID_ARGUMENT: "
+        }
+      },
+      "iOS": {
+        "events": {
+          "home_screen": {
+            "eventCount": 2352,
+            "totalUsers": 651
+          },
+          "session_start": {
+            "eventCount": 1247,
+            "totalUsers": 624
+          },
+          "deep_cleaning": {
+            "eventCount": 716,
+            "totalUsers": 180
+          },
+          "cleaning": {
+            "eventCount": 413,
+            "totalUsers": 155
+          },
+          "first_open": {
+            "eventCount": 409,
+            "totalUsers": 407
+          },
+          "user_engagement": {
+            "eventCount": 409,
+            "totalUsers": 407
+          },
+          "create_account_button": {
+            "eventCount": 308,
+            "totalUsers": 132
+          },
+          "upholstery": {
+            "eventCount": 286,
+            "totalUsers": 85
+          },
+          "order_detail_screen": {
+            "eventCount": 269,
+            "totalUsers": 52
+          },
+          "tasK_information": {
+            "eventCount": 250,
+            "totalUsers": 136
+          },
+          "booking_screen": {
+            "eventCount": 248,
+            "totalUsers": 94
+          },
+          "location_screen": {
+            "eventCount": 208,
+            "totalUsers": 85
+          },
+          "inactive_users": {
+            "eventCount": 195,
+            "totalUsers": 109
+          },
+          "language_selection": {
+            "eventCount": 190,
+            "totalUsers": 99
+          },
+          "profile_screen": {
+            "eventCount": 177,
+            "totalUsers": 92
+          },
+          "pest_control": {
+            "eventCount": 118,
+            "totalUsers": 36
+          },
+          "sign_in_sign_up": {
+            "eventCount": 115,
+            "totalUsers": 84
+          },
+          "topup_screen": {
+            "eventCount": 111,
+            "totalUsers": 59
+          },
+          "customer_source_screen_tap": {
+            "eventCount": 105,
+            "totalUsers": 50
+          },
+          "register_button_on_home": {
+            "eventCount": 98,
+            "totalUsers": 78
+          },
+          "bcombos_click": {
+            "eventCount": 70,
+            "totalUsers": 51
+          },
+          "post_renovation": {
+            "eventCount": 56,
+            "totalUsers": 19
+          },
+          "increase_quantity": {
+            "eventCount": 50,
+            "totalUsers": 22
+          },
+          "top_up_history": {
+            "eventCount": 48,
+            "totalUsers": 35
+          },
+          "pay_now_order_details": {
+            "eventCount": 42,
+            "totalUsers": 20
+          },
+          "profile_info_screen": {
+            "eventCount": 42,
+            "totalUsers": 28
+          },
+          "decrease_quantity": {
+            "eventCount": 40,
+            "totalUsers": 16
+          },
+          "top_up_status": {
+            "eventCount": 25,
+            "totalUsers": 20
+          },
+          "contact_us_telegram": {
+            "eventCount": 22,
+            "totalUsers": 20
+          },
+          "null": {
+            "eventCount": 18,
+            "totalUsers": 8
+          },
+          "office_cleaning": {
+            "eventCount": 16,
+            "totalUsers": 8
+          },
+          "深度清洁": {
+            "eventCount": 11,
+            "totalUsers": 4
+          },
+          "日常清洁": {
+            "eventCount": 9,
+            "totalUsers": 4
+          },
+          "软包清洁": {
+            "eventCount": 9,
+            "totalUsers": 3
+          },
+          "đến_dọn_dẹp": {
+            "eventCount": 7,
+            "totalUsers": 3
+          },
+          "one_item_at_a_time": {
+            "eventCount": 6,
+            "totalUsers": 2
+          },
+          "驱虫服务": {
+            "eventCount": 6,
+            "totalUsers": 3
+          },
+          "leave_review": {
+            "eventCount": 5,
+            "totalUsers": 4
+          },
+          "leave_review_submitted": {
+            "eventCount": 4,
+            "totalUsers": 3
+          },
+          "rating_selected": {
+            "eventCount": 4,
+            "totalUsers": 2
+          },
+          "bed_mattress": {
+            "eventCount": 3,
+            "totalUsers": 3
+          },
+          "reschedule_button_click": {
+            "eventCount": 3,
+            "totalUsers": 2
+          },
+          "app_update": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "appsflyer_install": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "diệt_côn_trùng": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "reschedule_button_confirm": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "termite_extermination": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "dọn_dẹp_sâu": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "(not set)": {
+            "eventCount": 0,
+            "totalUsers": 8
+          }
+        },
+        "totals": {
+          "activeUsers": 407,
+          "newUsers": 409,
+          "sessions": 1294,
+          "userEngagementDurationSec": 0
+        },
+        "returningUsers": 36,
+        "topServices": {
+          "unavailable": "3 INVALID_ARGUMENT: "
+        }
+      },
+      "Combined": {
+        "events": {
+          "home_screen": {
+            "eventCount": 3284,
+            "totalUsers": 1030
+          },
+          "session_start": {
+            "eventCount": 1976,
+            "totalUsers": 1084
+          },
+          "deep_cleaning": {
+            "eventCount": 850,
+            "totalUsers": 228
+          },
+          "user_engagement": {
+            "eventCount": 639,
+            "totalUsers": 587
+          },
+          "first_open": {
+            "eventCount": 593,
+            "totalUsers": 591
+          },
+          "cleaning": {
+            "eventCount": 494,
+            "totalUsers": 193
+          },
+          "inactive_users": {
+            "eventCount": 489,
+            "totalUsers": 225
+          },
+          "create_account_button": {
+            "eventCount": 389,
+            "totalUsers": 168
+          },
+          "upholstery": {
+            "eventCount": 373,
+            "totalUsers": 112
+          },
+          "tasK_information": {
+            "eventCount": 335,
+            "totalUsers": 184
+          },
+          "order_detail_screen": {
+            "eventCount": 311,
+            "totalUsers": 65
+          },
+          "booking_screen": {
+            "eventCount": 307,
+            "totalUsers": 124
+          },
+          "screen_view": {
+            "eventCount": 285,
+            "totalUsers": 242
+          },
+          "location_screen": {
+            "eventCount": 240,
+            "totalUsers": 109
+          },
+          "language_selection": {
+            "eventCount": 237,
+            "totalUsers": 136
+          },
+          "profile_screen": {
+            "eventCount": 226,
+            "totalUsers": 118
+          },
+          "notification_receive": {
+            "eventCount": 208,
+            "totalUsers": 7
+          },
+          "sign_in_sign_up": {
+            "eventCount": 157,
+            "totalUsers": 114
+          },
+          "pest_control": {
+            "eventCount": 151,
+            "totalUsers": 50
+          },
+          "register_button_on_home": {
+            "eventCount": 135,
+            "totalUsers": 104
+          },
+          "topup_screen": {
+            "eventCount": 135,
+            "totalUsers": 73
+          },
+          "customer_source_screen_tap": {
+            "eventCount": 125,
+            "totalUsers": 64
+          },
+          "bcombos_click": {
+            "eventCount": 102,
+            "totalUsers": 79
+          },
+          "notification_dismiss": {
+            "eventCount": 96,
+            "totalUsers": 6
+          },
+          "increase_quantity": {
+            "eventCount": 76,
+            "totalUsers": 29
+          },
+          "post_renovation": {
+            "eventCount": 66,
+            "totalUsers": 22
+          },
+          "decrease_quantity": {
+            "eventCount": 63,
+            "totalUsers": 23
+          },
+          "top_up_history": {
+            "eventCount": 61,
+            "totalUsers": 42
+          },
+          "pay_now_order_details": {
+            "eventCount": 49,
+            "totalUsers": 24
+          },
+          "contact_us_telegram": {
+            "eventCount": 48,
+            "totalUsers": 31
+          },
+          "profile_info_screen": {
+            "eventCount": 44,
+            "totalUsers": 29
+          },
+          "null": {
+            "eventCount": 30,
+            "totalUsers": 12
+          },
+          "top_up_status": {
+            "eventCount": 28,
+            "totalUsers": 22
+          },
+          "office_cleaning": {
+            "eventCount": 17,
+            "totalUsers": 9
+          },
+          "app_remove": {
+            "eventCount": 14,
+            "totalUsers": 14
+          },
+          "软包清洁": {
+            "eventCount": 14,
+            "totalUsers": 4
+          },
+          "os_update": {
+            "eventCount": 13,
+            "totalUsers": 12
+          },
+          "深度清洁": {
+            "eventCount": 12,
+            "totalUsers": 5
+          },
+          "đến_dọn_dẹp": {
+            "eventCount": 9,
+            "totalUsers": 4
+          },
+          "日常清洁": {
+            "eventCount": 9,
+            "totalUsers": 4
+          },
+          "one_item_at_a_time": {
+            "eventCount": 7,
+            "totalUsers": 3
+          },
+          "驱虫服务": {
+            "eventCount": 6,
+            "totalUsers": 3
+          },
+          "leave_review": {
+            "eventCount": 5,
+            "totalUsers": 4
+          },
+          "leave_review_submitted": {
+            "eventCount": 5,
+            "totalUsers": 4
+          },
+          "rating_selected": {
+            "eventCount": 5,
+            "totalUsers": 3
+          },
+          "app_clear_data": {
+            "eventCount": 4,
+            "totalUsers": 4
+          },
+          "bed_mattress": {
+            "eventCount": 4,
+            "totalUsers": 4
+          },
+          "diệt_côn_trùng": {
+            "eventCount": 4,
+            "totalUsers": 2
+          },
+          "dọn_dẹp_sâu": {
+            "eventCount": 3,
+            "totalUsers": 2
+          },
+          "reschedule_button_click": {
+            "eventCount": 3,
+            "totalUsers": 2
+          },
+          "app_update": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "appsflyer_install": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "notification_open": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "reschedule_button_confirm": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "termite_extermination": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "軟包清潔": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "日常清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "深層清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "(not set)": {
+            "eventCount": 0,
+            "totalUsers": 134
+          }
+        },
+        "totals": {
+          "activeUsers": 651,
+          "newUsers": 593,
+          "sessions": 2051,
+          "userEngagementDurationSec": 4534
+        },
+        "returningUsers": 111,
+        "topServices": {
+          "unavailable": "3 INVALID_ARGUMENT: "
+        }
+      }
+    },
+    "2026-09": {
+      "Android": {
+        "events": {
+          "home_screen": {
+            "eventCount": 1447,
+            "totalUsers": 354
+          },
+          "session_start": {
+            "eventCount": 925,
+            "totalUsers": 501
+          },
+          "app_open": {
+            "eventCount": 723,
+            "totalUsers": 317
+          },
+          "screen_view": {
+            "eventCount": 331,
+            "totalUsers": 291
+          },
+          "first_open": {
+            "eventCount": 256,
+            "totalUsers": 256
+          },
+          "skan_install": {
+            "eventCount": 249,
+            "totalUsers": 16
+          },
+          "inactive_users": {
+            "eventCount": 240,
+            "totalUsers": 139
+          },
+          "deep_cleaning": {
+            "eventCount": 172,
+            "totalUsers": 61
+          },
+          "view_content": {
+            "eventCount": 171,
+            "totalUsers": 36
+          },
+          "user_engagement": {
+            "eventCount": 166,
+            "totalUsers": 129
+          },
+          "tracking_pages": {
+            "eventCount": 139,
+            "totalUsers": 23
+          },
+          "service_click": {
+            "eventCount": 130,
+            "totalUsers": 32
+          },
+          "splash_ad_screen": {
+            "eventCount": 129,
+            "totalUsers": 55
+          },
+          "tasK_information": {
+            "eventCount": 125,
+            "totalUsers": 56
+          },
+          "notification_receive": {
+            "eventCount": 120,
+            "totalUsers": 6
+          },
+          "cleaning": {
+            "eventCount": 118,
+            "totalUsers": 52
+          },
+          "booking_screen": {
+            "eventCount": 101,
+            "totalUsers": 34
+          },
+          "upholstery": {
+            "eventCount": 99,
+            "totalUsers": 27
+          },
+          "profile_screen": {
+            "eventCount": 81,
+            "totalUsers": 35
+          },
+          "create_account_button": {
+            "eventCount": 79,
+            "totalUsers": 29
+          },
+          "language_selection": {
+            "eventCount": 71,
+            "totalUsers": 44
+          },
+          "sign_in_screen": {
+            "eventCount": 65,
+            "totalUsers": 24
+          },
+          "splash_skip_button": {
+            "eventCount": 63,
+            "totalUsers": 31
+          },
+          "bcombos_click": {
+            "eventCount": 53,
+            "totalUsers": 33
+          },
+          "register_button_on_home": {
+            "eventCount": 52,
+            "totalUsers": 36
+          },
+          "location_screen": {
+            "eventCount": 51,
+            "totalUsers": 25
+          },
+          "sign_in_sign_up": {
+            "eventCount": 49,
+            "totalUsers": 37
+          },
+          "notification_dismiss": {
+            "eventCount": 42,
+            "totalUsers": 4
+          },
+          "order_detail_screen": {
+            "eventCount": 38,
+            "totalUsers": 19
+          },
+          "select_service": {
+            "eventCount": 34,
+            "totalUsers": 12
+          },
+          "begin_checkout": {
+            "eventCount": 33,
+            "totalUsers": 12
+          },
+          "see_more_screen": {
+            "eventCount": 31,
+            "totalUsers": 17
+          },
+          "instant_cleaning": {
+            "eventCount": 28,
+            "totalUsers": 11
+          },
+          "app_remove": {
+            "eventCount": 27,
+            "totalUsers": 26
+          },
+          "sign_in_continue": {
+            "eventCount": 23,
+            "totalUsers": 16
+          },
+          "pest_control": {
+            "eventCount": 22,
+            "totalUsers": 9
+          },
+          "topup_screen": {
+            "eventCount": 22,
+            "totalUsers": 15
+          },
+          "booking_started": {
+            "eventCount": 19,
+            "totalUsers": 11
+          },
+          "customer_source_screen_tap": {
+            "eventCount": 16,
+            "totalUsers": 13
+          },
+          "my_media_source": {
+            "eventCount": 16,
+            "totalUsers": 5
+          },
+          "contact_us_telegram": {
+            "eventCount": 14,
+            "totalUsers": 11
+          },
+          "referrer_install": {
+            "eventCount": 14,
+            "totalUsers": 14
+          },
+          "top_up_history": {
+            "eventCount": 13,
+            "totalUsers": 12
+          },
+          "leave_review_submitted": {
+            "eventCount": 12,
+            "totalUsers": 3
+          },
+          "banner_detail_screen": {
+            "eventCount": 11,
+            "totalUsers": 9
+          },
+          "post_renovation": {
+            "eventCount": 10,
+            "totalUsers": 3
+          },
+          "purchase": {
+            "eventCount": 9,
+            "totalUsers": 8
+          },
+          "sign_up_screen": {
+            "eventCount": 9,
+            "totalUsers": 8
+          },
+          "bed_mattress": {
+            "eventCount": 7,
+            "totalUsers": 3
+          },
+          "null": {
+            "eventCount": 7,
+            "totalUsers": 5
+          },
+          "splash_cta_button": {
+            "eventCount": 7,
+            "totalUsers": 3
+          },
+          "app_clear_data": {
+            "eventCount": 6,
+            "totalUsers": 5
+          },
+          "decrease_quantity": {
+            "eventCount": 6,
+            "totalUsers": 3
+          },
+          "increase_quantity": {
+            "eventCount": 6,
+            "totalUsers": 4
+          },
+          "sign_up": {
+            "eventCount": 6,
+            "totalUsers": 6
+          },
+          "top_up_status": {
+            "eventCount": 6,
+            "totalUsers": 4
+          },
+          "Social_facebook": {
+            "eventCount": 5,
+            "totalUsers": 3
+          },
+          "os_update": {
+            "eventCount": 5,
+            "totalUsers": 5
+          },
+          "unknown": {
+            "eventCount": 5,
+            "totalUsers": 5
+          },
+          "rating_selected": {
+            "eventCount": 3,
+            "totalUsers": 3
+          },
+          "深度清洁": {
+            "eventCount": 3,
+            "totalUsers": 1
+          },
+          "instant_cleaning_explore_other_options": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "leave_review": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "profile_info_screen": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "reschedule_button_click": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "add_payment_info": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "notification_open": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "reschedule_button_confirm": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "rug": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "日常清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "深層清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "(not set)": {
+            "eventCount": 0,
+            "totalUsers": 361
+          }
+        },
+        "totals": {
+          "activeUsers": 289,
+          "newUsers": 256,
+          "sessions": 960,
+          "userEngagementDurationSec": 4331
+        },
+        "returningUsers": 54,
+        "topServices": {
+          "unavailable": "3 INVALID_ARGUMENT: "
+        }
+      },
+      "iOS": {
+        "events": {
+          "home_screen": {
+            "eventCount": 2614,
+            "totalUsers": 702
+          },
+          "session_start": {
+            "eventCount": 1561,
+            "totalUsers": 714
+          },
+          "app_open": {
+            "eventCount": 1191,
+            "totalUsers": 490
+          },
+          "deep_cleaning": {
+            "eventCount": 755,
+            "totalUsers": 228
+          },
+          "view_content": {
+            "eventCount": 614,
+            "totalUsers": 138
+          },
+          "service_click": {
+            "eventCount": 494,
+            "totalUsers": 131
+          },
+          "cleaning": {
+            "eventCount": 473,
+            "totalUsers": 182
+          },
+          "user_engagement": {
+            "eventCount": 468,
+            "totalUsers": 464
+          },
+          "first_open": {
+            "eventCount": 466,
+            "totalUsers": 464
+          },
+          "upholstery": {
+            "eventCount": 408,
+            "totalUsers": 113
+          },
+          "create_account_button": {
+            "eventCount": 387,
+            "totalUsers": 164
+          },
+          "tracking_pages": {
+            "eventCount": 343,
+            "totalUsers": 62
+          },
+          "tasK_information": {
+            "eventCount": 313,
+            "totalUsers": 143
+          },
+          "inactive_users": {
+            "eventCount": 305,
+            "totalUsers": 183
+          },
+          "splash_ad_screen": {
+            "eventCount": 284,
+            "totalUsers": 165
+          },
+          "booking_screen": {
+            "eventCount": 247,
+            "totalUsers": 107
+          },
+          "language_selection": {
+            "eventCount": 225,
+            "totalUsers": 139
+          },
+          "profile_screen": {
+            "eventCount": 222,
+            "totalUsers": 116
+          },
+          "location_screen": {
+            "eventCount": 212,
+            "totalUsers": 75
+          },
+          "customer_source_screen_tap": {
+            "eventCount": 187,
+            "totalUsers": 71
+          },
+          "splash_skip_button": {
+            "eventCount": 167,
+            "totalUsers": 109
+          },
+          "skan_install": {
+            "eventCount": 147,
+            "totalUsers": 28
+          },
+          "order_detail_screen": {
+            "eventCount": 140,
+            "totalUsers": 37
+          },
+          "topup_screen": {
+            "eventCount": 140,
+            "totalUsers": 82
+          },
+          "sign_in_sign_up": {
+            "eventCount": 131,
+            "totalUsers": 93
+          },
+          "sign_in_screen": {
+            "eventCount": 118,
+            "totalUsers": 83
+          },
+          "register_button_on_home": {
+            "eventCount": 112,
+            "totalUsers": 86
+          },
+          "booking_started": {
+            "eventCount": 105,
+            "totalUsers": 41
+          },
+          "bcombos_click": {
+            "eventCount": 102,
+            "totalUsers": 73
+          },
+          "pest_control": {
+            "eventCount": 100,
+            "totalUsers": 36
+          },
+          "increase_quantity": {
+            "eventCount": 97,
+            "totalUsers": 24
+          },
+          "begin_checkout": {
+            "eventCount": 93,
+            "totalUsers": 31
+          },
+          "select_service": {
+            "eventCount": 86,
+            "totalUsers": 32
+          },
+          "instant_cleaning": {
+            "eventCount": 82,
+            "totalUsers": 46
+          },
+          "see_more_screen": {
+            "eventCount": 69,
+            "totalUsers": 37
+          },
+          "sign_in_continue": {
+            "eventCount": 64,
+            "totalUsers": 54
+          },
+          "top_up_history": {
+            "eventCount": 60,
+            "totalUsers": 47
+          },
+          "profile_info_screen": {
+            "eventCount": 50,
+            "totalUsers": 30
+          },
+          "decrease_quantity": {
+            "eventCount": 46,
+            "totalUsers": 14
+          },
+          "post_renovation": {
+            "eventCount": 44,
+            "totalUsers": 18
+          },
+          "sign_up_screen": {
+            "eventCount": 43,
+            "totalUsers": 40
+          },
+          "sign_up": {
+            "eventCount": 35,
+            "totalUsers": 35
+          },
+          "splash_cta_button": {
+            "eventCount": 35,
+            "totalUsers": 15
+          },
+          "purchase": {
+            "eventCount": 34,
+            "totalUsers": 27
+          },
+          "contact_us_telegram": {
+            "eventCount": 33,
+            "totalUsers": 28
+          },
+          "one_item_at_a_time": {
+            "eventCount": 21,
+            "totalUsers": 8
+          },
+          "top_up_status": {
+            "eventCount": 20,
+            "totalUsers": 18
+          },
+          "unknown": {
+            "eventCount": 18,
+            "totalUsers": 13
+          },
+          "add_payment_info": {
+            "eventCount": 17,
+            "totalUsers": 13
+          },
+          "banner_detail_screen": {
+            "eventCount": 17,
+            "totalUsers": 15
+          },
+          "null": {
+            "eventCount": 15,
+            "totalUsers": 7
+          },
+          "office_cleaning": {
+            "eventCount": 15,
+            "totalUsers": 5
+          },
+          "bed_mattress": {
+            "eventCount": 12,
+            "totalUsers": 4
+          },
+          "日常清洁": {
+            "eventCount": 11,
+            "totalUsers": 6
+          },
+          "深度清洁": {
+            "eventCount": 11,
+            "totalUsers": 5
+          },
+          "instant_cleaning_explore_other_options": {
+            "eventCount": 9,
+            "totalUsers": 8
+          },
+          "软包清洁": {
+            "eventCount": 7,
+            "totalUsers": 3
+          },
+          "驱虫服务": {
+            "eventCount": 6,
+            "totalUsers": 2
+          },
+          "app_update": {
+            "eventCount": 4,
+            "totalUsers": 4
+          },
+          "Social_facebook": {
+            "eventCount": 3,
+            "totalUsers": 3
+          },
+          "os_update": {
+            "eventCount": 3,
+            "totalUsers": 3
+          },
+          "leave_review_submitted": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "rating_selected": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "全鋪地毯清潔": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "Social_instagram": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "leave_review": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "my_media_source": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "notification_open": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "reschedule_button_click": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "白蚁灭治": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "装修后": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "(not set)": {
+            "eventCount": 0,
+            "totalUsers": 283
+          }
+        },
+        "totals": {
+          "activeUsers": 464,
+          "newUsers": 466,
+          "sessions": 1611,
+          "userEngagementDurationSec": 0
+        },
+        "returningUsers": 50,
+        "topServices": {
+          "unavailable": "3 INVALID_ARGUMENT: "
+        }
+      },
+      "Combined": {
+        "events": {
+          "home_screen": {
+            "eventCount": 4061,
+            "totalUsers": 1056
+          },
+          "session_start": {
+            "eventCount": 2486,
+            "totalUsers": 1215
+          },
+          "app_open": {
+            "eventCount": 1914,
+            "totalUsers": 807
+          },
+          "deep_cleaning": {
+            "eventCount": 927,
+            "totalUsers": 289
+          },
+          "view_content": {
+            "eventCount": 785,
+            "totalUsers": 174
+          },
+          "first_open": {
+            "eventCount": 722,
+            "totalUsers": 720
+          },
+          "user_engagement": {
+            "eventCount": 634,
+            "totalUsers": 593
+          },
+          "service_click": {
+            "eventCount": 624,
+            "totalUsers": 163
+          },
+          "cleaning": {
+            "eventCount": 591,
+            "totalUsers": 234
+          },
+          "inactive_users": {
+            "eventCount": 545,
+            "totalUsers": 322
+          },
+          "upholstery": {
+            "eventCount": 507,
+            "totalUsers": 140
+          },
+          "tracking_pages": {
+            "eventCount": 482,
+            "totalUsers": 85
+          },
+          "create_account_button": {
+            "eventCount": 466,
+            "totalUsers": 193
+          },
+          "tasK_information": {
+            "eventCount": 438,
+            "totalUsers": 199
+          },
+          "splash_ad_screen": {
+            "eventCount": 413,
+            "totalUsers": 220
+          },
+          "skan_install": {
+            "eventCount": 396,
+            "totalUsers": 44
+          },
+          "booking_screen": {
+            "eventCount": 348,
+            "totalUsers": 141
+          },
+          "screen_view": {
+            "eventCount": 331,
+            "totalUsers": 291
+          },
+          "profile_screen": {
+            "eventCount": 303,
+            "totalUsers": 151
+          },
+          "language_selection": {
+            "eventCount": 296,
+            "totalUsers": 183
+          },
+          "location_screen": {
+            "eventCount": 263,
+            "totalUsers": 100
+          },
+          "splash_skip_button": {
+            "eventCount": 230,
+            "totalUsers": 140
+          },
+          "customer_source_screen_tap": {
+            "eventCount": 203,
+            "totalUsers": 84
+          },
+          "sign_in_screen": {
+            "eventCount": 183,
+            "totalUsers": 107
+          },
+          "sign_in_sign_up": {
+            "eventCount": 180,
+            "totalUsers": 130
+          },
+          "order_detail_screen": {
+            "eventCount": 178,
+            "totalUsers": 56
+          },
+          "register_button_on_home": {
+            "eventCount": 164,
+            "totalUsers": 122
+          },
+          "topup_screen": {
+            "eventCount": 162,
+            "totalUsers": 97
+          },
+          "bcombos_click": {
+            "eventCount": 155,
+            "totalUsers": 106
+          },
+          "begin_checkout": {
+            "eventCount": 126,
+            "totalUsers": 43
+          },
+          "booking_started": {
+            "eventCount": 124,
+            "totalUsers": 52
+          },
+          "pest_control": {
+            "eventCount": 122,
+            "totalUsers": 45
+          },
+          "notification_receive": {
+            "eventCount": 120,
+            "totalUsers": 6
+          },
+          "select_service": {
+            "eventCount": 120,
+            "totalUsers": 44
+          },
+          "instant_cleaning": {
+            "eventCount": 110,
+            "totalUsers": 57
+          },
+          "increase_quantity": {
+            "eventCount": 103,
+            "totalUsers": 28
+          },
+          "see_more_screen": {
+            "eventCount": 100,
+            "totalUsers": 54
+          },
+          "sign_in_continue": {
+            "eventCount": 87,
+            "totalUsers": 70
+          },
+          "top_up_history": {
+            "eventCount": 73,
+            "totalUsers": 59
+          },
+          "post_renovation": {
+            "eventCount": 54,
+            "totalUsers": 21
+          },
+          "decrease_quantity": {
+            "eventCount": 52,
+            "totalUsers": 17
+          },
+          "profile_info_screen": {
+            "eventCount": 52,
+            "totalUsers": 32
+          },
+          "sign_up_screen": {
+            "eventCount": 52,
+            "totalUsers": 48
+          },
+          "contact_us_telegram": {
+            "eventCount": 47,
+            "totalUsers": 39
+          },
+          "purchase": {
+            "eventCount": 43,
+            "totalUsers": 35
+          },
+          "notification_dismiss": {
+            "eventCount": 42,
+            "totalUsers": 4
+          },
+          "splash_cta_button": {
+            "eventCount": 42,
+            "totalUsers": 18
+          },
+          "sign_up": {
+            "eventCount": 41,
+            "totalUsers": 41
+          },
+          "banner_detail_screen": {
+            "eventCount": 28,
+            "totalUsers": 24
+          },
+          "app_remove": {
+            "eventCount": 27,
+            "totalUsers": 26
+          },
+          "top_up_status": {
+            "eventCount": 26,
+            "totalUsers": 22
+          },
+          "unknown": {
+            "eventCount": 23,
+            "totalUsers": 18
+          },
+          "null": {
+            "eventCount": 22,
+            "totalUsers": 12
+          },
+          "one_item_at_a_time": {
+            "eventCount": 21,
+            "totalUsers": 8
+          },
+          "bed_mattress": {
+            "eventCount": 19,
+            "totalUsers": 7
+          },
+          "add_payment_info": {
+            "eventCount": 18,
+            "totalUsers": 14
+          },
+          "my_media_source": {
+            "eventCount": 17,
+            "totalUsers": 6
+          },
+          "office_cleaning": {
+            "eventCount": 15,
+            "totalUsers": 5
+          },
+          "leave_review_submitted": {
+            "eventCount": 14,
+            "totalUsers": 5
+          },
+          "referrer_install": {
+            "eventCount": 14,
+            "totalUsers": 14
+          },
+          "深度清洁": {
+            "eventCount": 14,
+            "totalUsers": 6
+          },
+          "instant_cleaning_explore_other_options": {
+            "eventCount": 11,
+            "totalUsers": 10
+          },
+          "日常清洁": {
+            "eventCount": 11,
+            "totalUsers": 6
+          },
+          "Social_facebook": {
+            "eventCount": 8,
+            "totalUsers": 6
+          },
+          "os_update": {
+            "eventCount": 8,
+            "totalUsers": 8
+          },
+          "软包清洁": {
+            "eventCount": 7,
+            "totalUsers": 3
+          },
+          "app_clear_data": {
+            "eventCount": 6,
+            "totalUsers": 5
+          },
+          "驱虫服务": {
+            "eventCount": 6,
+            "totalUsers": 2
+          },
+          "rating_selected": {
+            "eventCount": 5,
+            "totalUsers": 5
+          },
+          "app_update": {
+            "eventCount": 4,
+            "totalUsers": 4
+          },
+          "leave_review": {
+            "eventCount": 3,
+            "totalUsers": 3
+          },
+          "reschedule_button_click": {
+            "eventCount": 3,
+            "totalUsers": 3
+          },
+          "notification_open": {
+            "eventCount": 2,
+            "totalUsers": 2
+          },
+          "全鋪地毯清潔": {
+            "eventCount": 2,
+            "totalUsers": 1
+          },
+          "Social_instagram": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "reschedule_button_confirm": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "rug": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "日常清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "深層清潔": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "白蚁灭治": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "装修后": {
+            "eventCount": 1,
+            "totalUsers": 1
+          },
+          "(not set)": {
+            "eventCount": 0,
+            "totalUsers": 644
+          }
+        },
+        "totals": {
+          "activeUsers": 753,
+          "newUsers": 722,
+          "sessions": 2573,
+          "userEngagementDurationSec": 4331
+        },
+        "returningUsers": 104,
+        "topServices": {
+          "unavailable": "3 INVALID_ARGUMENT: "
+        }
+      }
+    }
+  }
+}
