@@ -25,9 +25,30 @@ export function createAddressRouter(adapter: DatabaseAdapter) {
   const router = Router()
   const ctx = (req: AuthRequest) => userCtx(adapter, req.user!.id as string)
 
+  /** Fixed-address mode: find or lazily create this customer's single pinned address row. */
+  async function ensureFixedAddress(req: AuthRequest): Promise<Record<string, unknown>> {
+    const table = ctx(req).table('addresses')
+    const existing = await table.findOne({
+      where: { user_id: req.user!.id, address: env.FIXED_SERVICE_ADDRESS },
+    }) as Record<string, unknown> | null
+    if (existing) return existing
+    return await table.create({
+      user_id: req.user!.id,
+      label: 'Service location',
+      address: env.FIXED_SERVICE_ADDRESS,
+      latitude: env.FIXED_SERVICE_LAT,
+      longitude: env.FIXED_SERVICE_LNG,
+      is_primary: true,
+      sort: 0,
+    }) as Record<string, unknown>
+  }
+
   // GET /address/list
   router.get('/list', async (req: AuthRequest, res, next) => {
     try {
+      if (env.FIXED_SERVICE_ADDRESS) {
+        return res.json({ data: [toAddressDto(await ensureFixedAddress(req))] })
+      }
       const rows = await ctx(req).table('addresses').findMany({
         where: { user_id: req.user!.id },
       }) as Record<string, unknown>[]
@@ -39,6 +60,9 @@ export function createAddressRouter(adapter: DatabaseAdapter) {
   // POST /address/create
   router.post('/create', async (req: AuthRequest, res, next) => {
     try {
+      if (env.FIXED_SERVICE_ADDRESS) {
+        return res.status(201).json({ data: toAddressDto(await ensureFixedAddress(req)) })
+      }
       const { name, address, addressDetail, floorNum, roomNum, note, latitude, longitude } = req.body as {
         name?: string; address?: string; addressDetail?: string; floorNum?: string
         roomNum?: string; note?: string; latitude?: number; longitude?: number
@@ -105,6 +129,9 @@ export function createAddressRouter(adapter: DatabaseAdapter) {
   // POST /address/check/distance
   router.post('/check/distance', async (req: AuthRequest, res, next) => {
     try {
+      if (env.FIXED_SERVICE_ADDRESS) {
+        return res.json({ data: { distanceKm: 0, maxDistanceKm: env.MAX_SERVICE_DISTANCE_KM, isExceeded: false } })
+      }
       const { latitude, longitude } = req.body as { latitude?: number; longitude?: number }
       if (latitude === undefined || longitude === undefined) {
         return res.status(400).json({ message: 'latitude and longitude are required' })

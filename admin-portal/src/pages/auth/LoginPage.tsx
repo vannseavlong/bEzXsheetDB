@@ -4,7 +4,7 @@ import { useAuth, type AdminUser } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import beasyIcon from '@/assets/beasy-icon.png'
+import lsdbLogo from '@/assets/lsdb-logo.png'
 
 function GoogleIcon() {
   return (
@@ -14,14 +14,6 @@ function GoogleIcon() {
       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
     </svg>
-  )
-}
-
-function PhoneFrame({ src, className = '' }: { src: string; className?: string }) {
-  return (
-    <div className={`relative rounded-[24px] overflow-hidden border-[10px] border-slate-800 shadow-2xl ${className}`}>
-      <img src={src} alt="" className="w-full h-full object-cover" draggable={false} />
-    </div>
   )
 }
 
@@ -74,15 +66,10 @@ export default function LoginPage() {
         <div className="absolute w-[300px] h-[300px] rounded-full opacity-10 blur-2xl pointer-events-none"
           style={{ background: 'var(--bEasy-linear)', bottom: '10%', right: '5%' }} />
 
-        {/* Phone frame */}
-        <PhoneFrame
-          src="/home-screen.png"
-          className="w-[230px] h-[465px]"
-        />
+        <img src={lsdbLogo} alt="LSDB logo" className="relative w-[280px] h-auto rounded-xl shadow-2xl" />
 
         <p className="relative mt-8 max-w-sm text-center text-sm text-slate-600">
-          Manage bEasy&apos;s home-services platform: orders, cleaners,
-          partners, customers, marketing, and finance.
+          A test admin console for the longcelot-sheet-db package.
         </p>
       </div>
 
@@ -92,19 +79,17 @@ export default function LoginPage() {
 
           {/* Brand */}
           <div className="flex items-center gap-2 mb-3">
-            <img src={beasyIcon} alt="bEasy" className="h-7 w-7 object-contain" />
-            <span className="text-lg font-semibold">bEasy Admin Portal</span>
+            <img src={lsdbLogo} alt="LSDB logo" className="h-7 w-auto rounded-[4px] object-contain" />
+            <span className="text-lg font-semibold">LSDB Sandbox Portal</span>
           </div>
 
           <p className="mb-6 text-sm text-slate-600 lg:hidden">
-            The internal console bEasy staff use to manage orders, cleaners,
-            partners, customers, marketing, and finance for the bEasy
-            home-services platform.
+            A test admin console for the longcelot-sheet-db package.
           </p>
 
           <h1 className="text-2xl font-bold text-foreground">Sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Access your bEasy admin portal
+            Access the sandbox admin portal
           </p>
 
           {errorMsg && (
@@ -167,23 +152,10 @@ export default function LoginPage() {
             Continue with Google
           </Button>
 
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            By continuing, you agree to our{' '}
-            <Link to="/terms-of-use" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
-              Terms of Use
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-
           <p className="mt-2 text-center text-xs text-muted-foreground">
             Access is restricted to authorised admin accounts only.
             <br /> <br />
-            Manage bEasy&apos;s home-services platform: orders, cleaners,
-            partners, customers, marketing, and finance.
+            A test admin console for the longcelot-sheet-db package.
           </p>
         </div>
       </div>

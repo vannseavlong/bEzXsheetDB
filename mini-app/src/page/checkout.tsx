@@ -92,9 +92,11 @@ export default function Checkout() {
     return `${year}-${month}-${day} ${hourStr}:${minuteStr}:00`;
   };
 
-  const selectedAddressObj = addressList?.find(
-    (addr: AddressAttributes) => addr.address === selectedAddress
-  );
+  // Fall back to the customer's only address (e.g. the fixed service location) when none
+  // has been explicitly picked, so checkout isn't blocked on selecting one.
+  const selectedAddressObj =
+    addressList?.find((addr: AddressAttributes) => addr.address === selectedAddress) ??
+    (addressList?.length === 1 ? addressList[0] : undefined);
 
   // Build order payload (also used for /order/preview, which shares the same shape)
   const buildOrderPayload = (
@@ -223,7 +225,7 @@ export default function Checkout() {
         setSelectedServices={setSelectedServices}
         scheduleData={scheduleData}
         setScheduleData={setScheduleData}
-        selectedAddress={selectedAddress ?? undefined}
+        selectedAddress={selectedAddressObj?.address ?? selectedAddress ?? undefined}
         note={note}
         customerInfo={customerInfo}
         onCustomerUpdate={handleCustomerUpdate}

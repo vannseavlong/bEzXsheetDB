@@ -66,4 +66,10 @@ export const env = {
   // GA4 property id for the history backfill (Data API). Defaults to the number in BQ_DATASET (analytics_<id>).
   GA_PROPERTY_ID: process.env.GA_PROPERTY_ID ?? process.env.BQ_DATASET?.replace(/^analytics_/, ''),
   ANALYTICS_SYNC_INTERVAL_MIN: parseInt(get('ANALYTICS_SYNC_INTERVAL_MIN', '0'), 10),
+  // When FIXED_SERVICE_ADDRESS is set, every mini-app customer is pinned to this one address:
+  // /address/list lazily creates it per user and returns only it, /address/create returns it
+  // instead of adding another, and the distance guard always passes. Unset = normal behaviour.
+  FIXED_SERVICE_ADDRESS: process.env.FIXED_SERVICE_ADDRESS || undefined,
+  FIXED_SERVICE_LAT: parseFloat(get('FIXED_SERVICE_LAT', get('SERVICE_ORIGIN_LAT', '11.5564'))),
+  FIXED_SERVICE_LNG: parseFloat(get('FIXED_SERVICE_LNG', get('SERVICE_ORIGIN_LNG', '104.9282'))),
 }

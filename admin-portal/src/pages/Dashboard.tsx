@@ -130,7 +130,7 @@ export default function Dashboard() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500">Welcome to bEasy Admin Portal.</p>
+        <p className="text-gray-500">Welcome to LSDB Sandbox Portal.</p>
       </div>
 
       {!hasAnyWidget ? (
